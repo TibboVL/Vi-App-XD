@@ -6,7 +6,7 @@ export default function DiscoverScreen() {
     <SafeAreaView>
       <View style={styles.Container}>
         <Text style={{ color: "black" }}>Hello world!</Text>
-        <Image source={require("../../assets/images/ViLogo.png")} />
+        <Image source={require("../../../assets/images/ViLogo.png")} />
         <Button title="Hello world!" />
       </View>
     </SafeAreaView>

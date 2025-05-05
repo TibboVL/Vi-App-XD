@@ -55,11 +55,11 @@ export default function WelcomeScreen() {
         </View>
 
         <ViButton
-          enabled={user != null}
+          // enabled={user != null}
           variant="secondary"
           type="light"
           title="To App"
-          onPress={() => router.push("/(tabs)")}
+          onPress={() => router.replace("/(authenticated)/(tabs)")}
         />
 
         {/* <Button onPress={handleLogout} title="Log out" /> */}

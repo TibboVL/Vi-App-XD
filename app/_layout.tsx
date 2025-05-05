@@ -40,9 +40,12 @@ export default function RootLayout() {
     >
       <>
         <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="register" />
+          <Stack.Screen
+            name="(authenticated)"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="signIn" options={{ headerShown: false }} />
+          {/* <Stack.Screen name="register" /> */}
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="dark" />

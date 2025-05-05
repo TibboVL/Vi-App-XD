@@ -1,8 +1,9 @@
+import { Link } from "expo-router";
 import { Gear } from "phosphor-react-native";
 import { View, Text, StyleSheet, Image } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
-const globStyles = require("../../globalStyles");
+const globStyles = require("../../../../globalStyles");
 
 export default function ProfileScreen() {
   const { user } = useAuth0();
@@ -45,12 +46,15 @@ export default function ProfileScreen() {
             </Text>
           </View>
 
-          <Gear />
+          <Link href={"/(authenticated)/(tabs)/profile/settings"}>
+            <Gear />
+          </Link>
         </View>
       </View>
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   Container: {
     paddingInline: 16,

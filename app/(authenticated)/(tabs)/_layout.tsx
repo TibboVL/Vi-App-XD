@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { router, Tabs, usePathname, useRouter, useSegments } from "expo-router";
 import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
 
@@ -9,6 +9,10 @@ import { Calendar, Compass, Scales, Smiley, User } from "phosphor-react-native";
 import Animated from "react-native-reanimated";
 
 export default function TabLayout() {
+  const pathname = useSegments();
+  // console.log(pathname);
+  // console.log(pathname.length > 3);
+
   return (
     <Tabs
       screenOptions={{
@@ -27,11 +31,13 @@ export default function TabLayout() {
             position: "absolute",
             height: 80,
             backgroundColor: "#f1f5f9",
+            display: pathname.length > 3 ? "none" : "flex",
           },
           android: {
             height: 80,
             backgroundColor: "#f1f5f9",
             paddingInline: 12,
+            display: pathname.length > 3 ? "none" : "flex",
           },
           default: {},
         }),
