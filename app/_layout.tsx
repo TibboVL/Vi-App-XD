@@ -11,7 +11,7 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 import { View, StyleProp } from "react-native";
 import * as NavigationBar from "expo-navigation-bar";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 import { useAuth0, Auth0Provider } from "react-native-auth0";
 SplashScreen.preventAutoHideAsync();
@@ -38,7 +38,7 @@ export default function RootLayout() {
       domain={"vi-auth.eu.auth0.com"}
       clientId={"W6Hoc4HcrkiGrTc29yM8i7mP7g6QAcsy"}
     >
-      <>
+      <SafeAreaProvider>
         <Stack>
           <Stack.Screen
             name="(authenticated)"
@@ -49,7 +49,7 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="dark" />
-      </>
+      </SafeAreaProvider>
     </Auth0Provider>
   );
 }

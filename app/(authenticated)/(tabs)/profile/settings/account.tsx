@@ -1,3 +1,5 @@
+import { ViButton } from "@/components/ViButton";
+import { ViInput } from "@/components/ViInput";
 import {
   BellRinging,
   CaretRight,
@@ -9,40 +11,87 @@ import {
   ThumbsUp,
   User,
 } from "phosphor-react-native";
-import { View, Text, StyleSheet, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TextInput,
+  ScrollView,
+} from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SvgProps } from "react-native-svg";
 const globStyles = require("../../../../../globalStyles");
 
 export default function SettingsScreen() {
-  const { user } = useAuth0();
+  const { user, clearSession } = useAuth0();
+
+  const handleLogout = async () => {
+    try {
+      await clearSession();
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   return (
     <SafeAreaView>
-      <View style={[styles.Container]}>
-        <View
-          style={{
-            width: "100%",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 8,
-            paddingBlock: 32,
-          }}
-        >
-          <Image
+      <View
+        style={{
+          height: "100%",
+          display: "flex",
+        }}
+      >
+        <ScrollView style={[styles.Container]}>
+          <View
             style={{
-              width: 48 * 3,
-              height: 48 * 3,
-              borderRadius: 999,
+              flexDirection: "column",
+              gap: 8,
             }}
-            src={user ? user.picture : undefined}
+          >
+            <View
+              style={{
+                width: "100%",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 8,
+                paddingBlock: 32,
+              }}
+            >
+              <Image
+                style={{
+                  width: 48 * 3,
+                  height: 48 * 3,
+                  borderRadius: 999,
+                }}
+                src={user ? user.picture : undefined}
+              />
+              <Text style={[globStyles.h3, { textTransform: "capitalize" }]}>
+                {user ? user.name : "NOT LOGGED IN"}
+              </Text>
+            </View>
+            <ViInput label="Username" />
+            <ViInput label="Email" />
+            <Text style={globStyles.h3}>Password & Authentication </Text>
+            <ViButton
+              title="Change password"
+              variant="primary"
+              type="outline"
+            />
+            <Text style={globStyles.h3}>Account removal </Text>
+            <ViButton title="Disable account" variant="danger" type="outline" />
+            <ViButton title="Delete account" variant="danger" type="light" />
+          </View>
+        </ScrollView>
+        <View style={[styles.BottomContainer]}>
+          <ViButton
+            title="Log out"
+            variant="primary"
+            type="light"
+            onPress={handleLogout}
           />
-          <Text style={[globStyles.h3, { textTransform: "capitalize" }]}>
-            {user ? user.name : "NOT LOGGED IN"}
-          </Text>
         </View>
-        <Text>My account </Text>
       </View>
     </SafeAreaView>
   );
@@ -50,6 +99,13 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   Container: {
+    paddingInline: 16,
+    flexDirection: "column",
+    // alignItems: "flex-start",
+    gap: 8,
+  },
+  BottomContainer: {
+    paddingBlock: 16,
     paddingInline: 16,
     flexDirection: "column",
     alignItems: "flex-start",
