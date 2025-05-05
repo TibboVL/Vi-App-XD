@@ -80,7 +80,7 @@ export default function TabLayout() {
                 backgroundColor: focused ? "#e0e0eb" : "#f1f5f9",
               }}
             >
-              <Smiley color={color} weight={focused ? "fill" : "regular"} />{" "}
+              <Smiley color={color} weight={focused ? "fill" : "regular"} />
             </View>
           ),
         }}
@@ -96,7 +96,7 @@ export default function TabLayout() {
                 backgroundColor: focused ? "#e0e0eb" : "#f1f5f9",
               }}
             >
-              <Scales color={color} weight={focused ? "fill" : "regular"} />{" "}
+              <Scales color={color} weight={focused ? "fill" : "regular"} />
             </View>
           ),
         }}
@@ -112,7 +112,7 @@ export default function TabLayout() {
                 backgroundColor: focused ? "#e0e0eb" : "#f1f5f9",
               }}
             >
-              <User color={color} weight={focused ? "fill" : "regular"} />{" "}
+              <User color={color} weight={focused ? "fill" : "regular"} />
             </View>
           ),
         }}

@@ -13,11 +13,13 @@ import { View, StyleProp } from "react-native";
 import * as NavigationBar from "expo-navigation-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
+import { useAuth0, Auth0Provider } from "react-native-auth0";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    //SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    AnekMalayalam: require("../assets/fonts/AnekMalayalam-VariableFont_wdth,wght.ttf"),
   });
 
   useEffect(() => {
@@ -32,12 +34,19 @@ export default function RootLayout() {
   }
 
   return (
-    <>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="dark" />
-    </>
+    <Auth0Provider
+      domain={"vi-auth.eu.auth0.com"}
+      clientId={"W6Hoc4HcrkiGrTc29yM8i7mP7g6QAcsy"}
+    >
+      <>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="register" />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="dark" />
+      </>
+    </Auth0Provider>
   );
 }

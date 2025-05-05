@@ -4,33 +4,41 @@
     "slug": "Vi",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/ViLogo.png",
+    "icon": "./assets/images/Vi-SplashIcon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.balance.vi"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/ViLogo.png",
-        "backgroundColor": "#ffffff"
-      }
+        "foregroundImage": "./assets/images/Vi-SplashIcon.png",
+        "backgroundColor": "#fbfbfe"
+      },
+      "package": "com.balance.vi"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/ViLogo.png"
+      "favicon": "./assets/images/Vi-SplashIcon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/ViLogo.png",
+          "image": "./assets/images/Vi-SplashIcon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#fbfbfe"
+        }
+      ],
+      [
+        "react-native-auth0",
+        {
+          "domain": "vi-auth.eu.auth0.com"
         }
       ]
     ],
