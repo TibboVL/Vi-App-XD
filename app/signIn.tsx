@@ -1,20 +1,29 @@
 import { StyleSheet, View, Text, Button, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
-import { useAuth0, Auth0Provider } from "react-native-auth0";
+import Auth0, { useAuth0, Auth0Provider } from "react-native-auth0";
 import { ViButton } from "@/components/ViButton";
 import * as Svg from "react-native-svg";
 import ViSVGLogo from "@/components/ViSVGLogo";
 const globStyles = require("../globalStyles");
 
 export default function WelcomeScreen() {
-  const { authorize, clearSession, user, error } = useAuth0();
+  const { authorize, clearSession, user, error, getCredentials } = useAuth0();
 
   const handleLogin = async () => {
+    // try {
+    //   await authorize();
+    // } catch (e) {
+    //   console.log(e);
+    // }
+
     try {
-      await authorize();
+      await authorize({
+        audience: "https://Vi-Auth-API", // ← EXACT match of your Auth0 API Identifier
+        scope: "openid profile email", // add any custom scopes you need
+      });
     } catch (e) {
-      console.log(e);
+      console.error("Login failed:", e);
     }
   };
   const handleLogout = async () => {
@@ -25,11 +34,43 @@ export default function WelcomeScreen() {
     }
   };
 
+  const sendAPICall = async () => {
+    try {
+      const creds = await getCredentials();
+      const accessToken = creds!.accessToken;
+      if (!accessToken) {
+        console.warn("No access token available");
+        return;
+      }
+
+      const res = await fetch(
+        "https://vi-backend-xd.onrender.com/api/v1/users",
+        {
+          method: "POST", // or POST if you need a body
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            username: "test",
+          }),
+        }
+      );
+
+      if (res.ok) {
+        console.log("API success:", await res.json());
+      } else {
+        console.error("API error:", res.status, await res.text());
+      }
+    } catch (e) {
+      console.error("sendAPICall failed:", e);
+    }
+  };
+
   return (
     <SafeAreaView>
       <View style={[styles.Container]}>
         <ViSVGLogo />
-
         <View>
           {user ? (
             <Text>Logged in as {user.name}</Text>
@@ -53,7 +94,6 @@ export default function WelcomeScreen() {
             onPress={handleLogout}
           />
         </View>
-
         <ViButton
           // enabled={user != null}
           variant="secondary"
@@ -61,7 +101,12 @@ export default function WelcomeScreen() {
           title="To App"
           onPress={() => router.replace("/(authenticated)/(tabs)")}
         />
-
+        <ViButton
+          variant="secondary"
+          type="light"
+          title="test api call with token"
+          onPress={sendAPICall}
+        />
         {/* <Button onPress={handleLogout} title="Log out" /> */}
         {/* <ViButton
           variant="secondary"

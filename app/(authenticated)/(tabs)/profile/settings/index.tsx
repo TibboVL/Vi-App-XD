@@ -96,7 +96,7 @@ const SettingsTile = ({ title, icon: Icon, onPress }: settingsTilePorps) => {
         }}
       >
         <Icon />
-        <Text>{title}</Text>
+        <Text style={globStyles.bodyLarge}>{title}</Text>
       </View>
       <CaretRight />
     </Pressable>
