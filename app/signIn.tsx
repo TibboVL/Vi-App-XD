@@ -1,22 +1,17 @@
 import { StyleSheet, View, Text, Button, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, router } from "expo-router";
-import Auth0, { useAuth0, Auth0Provider } from "react-native-auth0";
-import { ViButton } from "@/components/ViButton";
-import * as Svg from "react-native-svg";
+import { router } from "expo-router";
+import { useAuth0 } from "react-native-auth0";
+import { lightStyles, ViButton } from "@/components/ViButton";
 import ViSVGLogo from "@/components/ViSVGLogo";
+import { Rect } from "react-native-svg";
+import { ViDivider } from "@/components/ViDivider";
 const globStyles = require("../globalStyles");
 
 export default function WelcomeScreen() {
   const { authorize, clearSession, user, error, getCredentials } = useAuth0();
 
   const handleLogin = async () => {
-    // try {
-    //   await authorize();
-    // } catch (e) {
-    //   console.log(e);
-    // }
-
     try {
       await authorize({
         audience: "https://Vi-Auth-API", // ← EXACT match of your Auth0 API Identifier
@@ -70,16 +65,42 @@ export default function WelcomeScreen() {
   return (
     <SafeAreaView>
       <View style={[styles.Container]}>
-        <ViSVGLogo />
-        <View>
-          {user ? (
-            <Text>Logged in as {user.name}</Text>
-          ) : (
-            <Text>Not logged in</Text>
-          )}
-          {error ? <Text>{error.message}</Text> : null}
+        <View
+          style={{
+            width: "100%",
+            height: "100%",
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 32,
+          }}
+        >
+          <ViSVGLogo />
+          <View
+            style={{
+              alignItems: "center",
+            }}
+          >
+            <Text>Status</Text>
+            {user ? (
+              <Text>Logged in as {user.name}</Text>
+            ) : (
+              <Text>Not logged in</Text>
+            )}
+            {error ? (
+              <Text
+                style={{
+                  paddingBlock: 16,
+                  color: "red",
+                }}
+              >
+                An error occured: {error.message}
+              </Text>
+            ) : null}
+          </View>
         </View>
-        <View style={{ width: "100%", gap: 8, paddingBottom: 64 }}>
+
+        <View style={{ width: "100%", height: "100%", flex: 1, gap: 8 }}>
           <ViButton
             enabled={!user}
             variant="primary"
@@ -93,20 +114,22 @@ export default function WelcomeScreen() {
             title="Log out"
             onPress={handleLogout}
           />
+          <ViDivider />
+          <Text>These buttons are for testing</Text>
+          <ViButton
+            // enabled={user != null}
+            variant="secondary"
+            type="light"
+            title="To App"
+            onPress={() => router.replace("/(authenticated)/(tabs)/discover")}
+          />
+          <ViButton
+            variant="secondary"
+            type="light"
+            title="test api call with token"
+            onPress={sendAPICall}
+          />
         </View>
-        <ViButton
-          // enabled={user != null}
-          variant="secondary"
-          type="light"
-          title="To App"
-          onPress={() => router.replace("/(authenticated)/(tabs)/discover")}
-        />
-        <ViButton
-          variant="secondary"
-          type="light"
-          title="test api call with token"
-          onPress={sendAPICall}
-        />
       </View>
     </SafeAreaView>
   );
@@ -123,6 +146,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   Image: {
+    flex: 1,
     height: "40%",
     // height: "100%",
   },
