@@ -59,6 +59,9 @@ export function ViButton({
         >
           <Text
             style={[
+              {
+                textTransform: "capitalize",
+              },
               globStyles.CTA,
               variant === "primary"
                 ? styles.textPrimary
@@ -77,7 +80,8 @@ export function ViButton({
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
+    flex: 1, // shrink if needed
+    width: "100%", // expand as much as possible
     borderRadius: 16,
     overflow: "hidden",
   },

@@ -101,14 +101,14 @@ const styles = StyleSheet.create({
   Container: {
     paddingInline: 16,
     flexDirection: "column",
-    // alignItems: "flex-start",
     gap: 8,
   },
   BottomContainer: {
     paddingBlock: 16,
     paddingInline: 16,
-    flexDirection: "column",
-    alignItems: "flex-start",
+    flexDirection: "row",
+    width: "100%",
+    display: "flex",
     gap: 8,
   },
 });

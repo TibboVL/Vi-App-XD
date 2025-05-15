@@ -99,7 +99,7 @@ export default function WelcomeScreen() {
           variant="secondary"
           type="light"
           title="To App"
-          onPress={() => router.replace("/(authenticated)/(tabs)")}
+          onPress={() => router.replace("/(authenticated)/(tabs)/discover")}
         />
         <ViButton
           variant="secondary"
@@ -107,28 +107,6 @@ export default function WelcomeScreen() {
           title="test api call with token"
           onPress={sendAPICall}
         />
-        {/* <Button onPress={handleLogout} title="Log out" /> */}
-        {/* <ViButton
-          variant="secondary"
-          title="My Vi button"
-          onPress={() => console.log("pressed")}
-        />
-        <ViButton
-          variant="danger"
-          title="My Vi button"
-          onPress={() => console.log("pressed")}
-        />
-        <ViButton title="My Vi button" onPress={() => console.log("pressed")} />
-        <ViButton
-          title="My Vi button"
-          type="outline"
-          onPress={() => console.log("pressed")}
-        />
-        <ViButton
-          title="My Vi button"
-          type="text-only"
-          onPress={() => console.log("pressed")}
-        /> */}
       </View>
     </SafeAreaView>
   );

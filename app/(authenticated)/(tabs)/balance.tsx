@@ -1,4 +1,4 @@
-import { adjustLightness, pillarColors } from "@/constants/Colors";
+import { adjustLightness, pillarColors, PillarKey } from "@/constants/Colors";
 import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -126,8 +126,8 @@ export default function BalanceScreen() {
               width: "100%",
             }}
           >
-            <TimelineTile pillar={1} durationInMinutes={60 * 8} />
-            <TimelineTile pillar={2} durationInMinutes={60 * 11} />
+            <TimelineTile pillar={"mindfulness"} durationInMinutes={60 * 8} />
+            <TimelineTile pillar={"sports"} durationInMinutes={60 * 11} />
           </View>
           <View
             style={{
@@ -137,8 +137,8 @@ export default function BalanceScreen() {
               flexDirection: "row",
             }}
           >
-            <TimelineTile pillar={3} durationInMinutes={60 * 20} />
-            <TimelineTile pillar={4} durationInMinutes={60 * 9} />
+            <TimelineTile pillar={"connections"} durationInMinutes={60 * 20} />
+            <TimelineTile pillar={"skills"} durationInMinutes={60 * 9} />
           </View>
         </View>
       </View>
@@ -147,7 +147,7 @@ export default function BalanceScreen() {
 }
 
 interface timelineTilePorps {
-  pillar: number;
+  pillar: PillarKey;
   durationInMinutes: number;
   onPress?: () => void;
 }
@@ -163,7 +163,7 @@ const TimelineTile = ({
       <TouchableNativeFeedback onPress={onPress}>
         <View
           style={{
-            backgroundColor: pillarDetails.color + "33",
+            backgroundColor: adjustLightness(pillarDetails.color, 28), // pillarDetails.color + "33",
             height: 96,
             padding: 8,
             borderRadius: 16,
@@ -177,7 +177,7 @@ const TimelineTile = ({
             style={[
               globStyles.bodyLarge,
               {
-                color: adjustLightness(pillarDetails.color, -100),
+                color: adjustLightness(pillarDetails.color, -40),
               },
             ]}
           >
@@ -192,7 +192,7 @@ const TimelineTile = ({
               style={[
                 globStyles.h3,
                 {
-                  color: adjustLightness(pillarDetails.color, -100),
+                  color: adjustLightness(pillarDetails.color, -40),
                 },
               ]}
             >
