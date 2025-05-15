@@ -1,59 +1,89 @@
-import { pillarColors } from "@/constants/Colors";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { adjustLightness, pillarColors } from "@/constants/Colors";
+import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   VictoryAxis,
   VictoryChart,
   VictoryHistogram,
-  VictoryLabel,
-  VictoryLine,
-  VictoryPie,
   VictoryStack,
   VictoryVoronoiContainer,
 } from "victory-native";
 const globStyles = require("../../../globalStyles");
 import _ from "lodash";
+import { useState } from "react";
+import { ViSelect } from "@/components/ViSelect";
+import { Rect } from "react-native-svg";
 
-const startDate = new Date("2020-01-01T00:00:00.000Z");
-const endDate = new Date("2020-01-07T11:59:59.000Z");
+const today = new Date();
+const rawDow = today.getDay(); // 0–6
+const isoDow = rawDow === 0 ? 7 : rawDow; // 1–7
+// how many days to subtract
+const daysSinceMonday = isoDow - 1;
 
+// year, month (0–11), day-of-month
+const prevMonday = new Date(
+  today.getFullYear(),
+  today.getMonth(),
+  today.getDate() - daysSinceMonday
+);
+// zero out hours/mins/secs/ms
+prevMonday.setHours(0, 0, 0, 0);
+
+const oneWeekLater = new Date(prevMonday.getTime() + 7 * 24 * 60 * 60 * 1000);
+oneWeekLater.setHours(23, 59, 0, 0);
+
+console.log(today, prevMonday, oneWeekLater);
 // Convert object to array of entries for random access
 const pillarsArray = Object.values(pillarColors); // [{ title, color }, ...]
 
-const listeningData = Array.from({ length: 100 }, () => {
-  const randomDate = new Date(_.random(startDate.getTime(), endDate.getTime()));
+const pillarData = [];
+for (let i = 0; i < 100; i++) {
+  const randomDate = new Date(
+    _.random(prevMonday.getTime(), oneWeekLater.getTime())
+  );
   const randomPillar = _.sample(pillarsArray)!; // get random pillar
 
-  return {
+  pillarData.push({
     date: randomDate,
     day: randomDate.toISOString().split("T")[0], // format as YYYY-MM-DD
     pillar: randomPillar.title,
-  };
-});
+  });
+}
 
 // Example: Group by day, then by pillar for stacked bar histogram
 // const groupByDate = _.groupBy(listeningData, "day");
 
-const groupedData = _.groupBy(listeningData, ({ pillar }) => pillar);
-
+const groupedData = _.groupBy(pillarData, ({ pillar }) => pillar);
 console.log("Dates:", Object.entries(groupedData).length);
-const genres = ["pop", "rap", "hip-hop", "r&b", "indie", "alternative"];
 
-const L = [];
-for (let i = 0; i < 100; i++) {
-  L.push({
-    day: new Date(_.random(startDate.getTime(), endDate.getTime())),
-    genre: genres[_.random(0, genres.length - 1)],
-  });
-}
+type TimespanOption = "day" | "week" | "month" | "year";
+const timespanOptions: { label: string; value: TimespanOption }[] = [
+  { label: "Day", value: "day" },
+  { label: "Week", value: "week" },
+  { label: "Month", value: "month" },
+  { label: "Year", value: "year" },
+];
 
-const G = _.groupBy(L, ({ genre }) => genre);
-console.log("Mine:", groupedData);
-console.log("G:", G);
 export default function BalanceScreen() {
+  const [selectedTimespan, setSelectedTimespan] =
+    useState<TimespanOption>("week");
+
   return (
     <SafeAreaView>
       <View style={styles.Container}>
+        <View
+          style={{
+            paddingTop: 8,
+          }}
+        >
+          <ViSelect
+            variant="secondary"
+            selectedValue={selectedTimespan}
+            onValueChange={(itemValue) => setSelectedTimespan(itemValue)}
+            options={timespanOptions}
+          />
+        </View>
+
         <VictoryChart
           scale={{ x: "time" }}
           containerComponent={
@@ -71,16 +101,19 @@ export default function BalanceScreen() {
             colorScale={pillarsArray.map((p) => p.color)} // Use colors in order of pillarsArray
           >
             {Object.entries(groupedData).map(([key, dataGroup]) => {
-              console.log("Datagroup:", dataGroup);
               return (
                 <VictoryHistogram
                   data={dataGroup as any}
                   key={key}
                   x="date"
+                  bins={7} // ← force ~7 bins
                   binSpacing={8}
+                  cornerRadius={6}
                   style={{
                     data: {
-                      strokeWidth: 0,
+                      borderRadius: 16,
+
+                      strokeWidth: 1,
                     },
                   }}
                 />
@@ -93,6 +126,8 @@ export default function BalanceScreen() {
               date.toLocaleString("default", { weekday: "narrow" })
             }
           />
+
+          <VictoryAxis dependentAxis /* label="# Activities per pillar" */ />
         </VictoryChart>
         {/* <VictoryPie
           innerRadius={50}
@@ -126,11 +161,34 @@ export default function BalanceScreen() {
         /> */}
 
         <Text style={globStyles.h2}>Your activities</Text>
-        <View>
-          <TimelineTile pillar={1} duration={60 * 8} />
-          <TimelineTile pillar={2} duration={60 * 11} />
-          <TimelineTile pillar={3} duration={60 * 20} />
-          <TimelineTile pillar={4} duration={60 * 9} />
+        <View
+          style={{
+            gap: 16,
+            paddingTop: 8,
+            width: "100%",
+          }}
+        >
+          <View
+            style={{
+              gap: 16,
+              flexDirection: "row",
+              width: "100%",
+            }}
+          >
+            <TimelineTile pillar={1} durationInMinutes={60 * 8} />
+            <TimelineTile pillar={2} durationInMinutes={60 * 11} />
+          </View>
+          <View
+            style={{
+              gap: 16,
+
+              width: "100%",
+              flexDirection: "row",
+            }}
+          >
+            <TimelineTile pillar={3} durationInMinutes={60 * 20} />
+            <TimelineTile pillar={4} durationInMinutes={60 * 9} />
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -139,37 +197,60 @@ export default function BalanceScreen() {
 
 interface timelineTilePorps {
   pillar: number;
-  duration: number;
-
+  durationInMinutes: number;
   onPress?: () => void;
 }
-const TimelineTile = ({ pillar, duration, onPress }: timelineTilePorps) => {
+const TimelineTile = ({
+  pillar,
+  durationInMinutes,
+  onPress,
+}: timelineTilePorps) => {
   const pillarDetails = pillarColors[pillar];
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        width: "100%",
-        flexDirection: "row",
-        gap: 8,
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingBlock: 16,
-      }}
-    >
-      <View
-        style={{
-          backgroundColor: pillarDetails.color,
-          flexDirection: "row",
-          gap: 8,
-          alignItems: "center",
-        }}
-      >
-        <Text style={globStyles.bodyLarge}>{pillarDetails.title}</Text>
-        <Text style={globStyles.h3}>{duration}</Text>
-      </View>
-    </Pressable>
+    <View style={styles.buttonContainer}>
+      <TouchableNativeFeedback onPress={onPress}>
+        <View
+          style={{
+            backgroundColor: pillarDetails.color + "33",
+            height: 96,
+            padding: 8,
+            borderRadius: 16,
+            justifyContent: "space-between",
+            borderColor: pillarDetails.color,
+            borderWidth: 2,
+            width: "100%",
+          }}
+        >
+          <Text
+            style={[
+              globStyles.bodyLarge,
+              {
+                color: adjustLightness(pillarDetails.color, -100),
+              },
+            ]}
+          >
+            {pillarDetails.title}
+          </Text>
+          <View
+            style={{
+              marginStart: "auto",
+            }}
+          >
+            <Text
+              style={[
+                globStyles.h3,
+                {
+                  color: adjustLightness(pillarDetails.color, -100),
+                },
+              ]}
+            >
+              {durationInMinutes / 60}h
+            </Text>
+          </View>
+        </View>
+      </TouchableNativeFeedback>
+    </View>
   );
 };
 
@@ -180,5 +261,11 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "flex-start",
     gap: 8,
+  },
+  buttonContainer: {
+    width: "100%",
+    flex: 1,
+    borderRadius: 16,
+    overflow: "hidden",
   },
 });
