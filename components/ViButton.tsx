@@ -81,6 +81,7 @@ export function ViButton({
 const styles = StyleSheet.create({
   container: {
     flex: 1, // shrink if needed
+    maxHeight: 56, // ensure  we dont grow vertically!
     width: "100%", // expand as much as possible
     borderRadius: 16,
     overflow: "hidden",
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const lightStyles = StyleSheet.create({
+export const lightStyles = StyleSheet.create({
   primary: { backgroundColor: "#98cdac" },
   secondary: { backgroundColor: "#7eace7" },
   danger: { backgroundColor: "#ffa2a2" },
