@@ -1,8 +1,4 @@
 import { IconWeight } from "./../node_modules/phosphor-react-native/src/lib/index";
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
 
 const tintColorLight = "#62626a";
 
@@ -24,15 +20,31 @@ export const pillarColors: Record<number, { title: string; color: string }> = {
     color: "#76bee7",
   },
   2: {
-    title: "Physical Activity",
+    title: "Sports",
     color: "#4caf50",
   },
   3: {
-    title: "Skillset Optimization",
+    title: "Connection",
+
     color: "#ff9800",
   },
   4: {
-    title: "Social Connection",
+    title: "Skills",
+
     color: "#9c27b0",
   },
 };
+
+export function adjustLightness(color: string, amount: number) {
+  return (
+    "#" +
+    color
+      .replace(/^#/, "")
+      .replace(/../g, (color) =>
+        (
+          "0" +
+          Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)
+        ).substr(-2)
+      )
+  );
+}
