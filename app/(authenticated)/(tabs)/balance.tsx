@@ -6,13 +6,11 @@ import {
   VictoryChart,
   VictoryHistogram,
   VictoryStack,
-  VictoryVoronoiContainer,
 } from "victory-native";
 const globStyles = require("../../../globalStyles");
 import _ from "lodash";
 import { useState } from "react";
 import { ViSelect } from "@/components/ViSelect";
-import { Rect } from "react-native-svg";
 
 const today = new Date();
 const rawDow = today.getDay(); // 0–6
@@ -50,9 +48,6 @@ for (let i = 0; i < 100; i++) {
   });
 }
 
-// Example: Group by day, then by pillar for stacked bar histogram
-// const groupByDate = _.groupBy(listeningData, "day");
-
 const groupedData = _.groupBy(pillarData, ({ pillar }) => pillar);
 console.log("Dates:", Object.entries(groupedData).length);
 
@@ -83,20 +78,7 @@ export default function BalanceScreen() {
             options={timespanOptions}
           />
         </View>
-
-        <VictoryChart
-          scale={{ x: "time" }}
-          containerComponent={
-            <VictoryVoronoiContainer
-              style={{}}
-              /*  labels={({ datum }) =>
-                datum.y > 0
-                  ? `${datum.y} ${datum.binnedData[0].genre} songs`
-                  : null
-              } */
-            />
-          }
-        >
+        <VictoryChart scale={{ x: "time" }}>
           <VictoryStack
             colorScale={pillarsArray.map((p) => p.color)} // Use colors in order of pillarsArray
           >
@@ -129,37 +111,6 @@ export default function BalanceScreen() {
 
           <VictoryAxis dependentAxis /* label="# Activities per pillar" */ />
         </VictoryChart>
-        {/* <VictoryPie
-          innerRadius={50}
-          cornerRadius={12}
-          padAngle={2}
-          data={[
-            { x: "Sports", y: 30 },
-            { x: "Mindfullness", y: 35 },
-            { x: "Connections", y: 25 },
-            { x: "Skills", y: 10 },
-          ]}
-          width={375}
-          height={375}
-          style={{
-            data: {
-              fill: ({ index }) => {
-                const numIndex = Number(index) + 1;
-
-                // Optional: validate it's a valid key (1–4)
-                if (!(numIndex in pillarColors)) {
-                  return "#000";
-                }
-
-                return pillarColors[numIndex].color;
-              },
-            },
-            labels: {
-              display: "none",
-            },
-          }}
-        /> */}
-
         <Text style={globStyles.h2}>Your activities</Text>
         <View
           style={{
