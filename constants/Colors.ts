@@ -17,3 +17,22 @@ export const Colors = {
     tabIconSelected: tintColorLight,
   },
 };
+
+export const pillarColors: Record<number, { title: string; color: string }> = {
+  1: {
+    title: "Mindfulness",
+    color: "#76bee7",
+  },
+  2: {
+    title: "Physical Activity",
+    color: "#4caf50",
+  },
+  3: {
+    title: "Skillset Optimization",
+    color: "#ff9800",
+  },
+  4: {
+    title: "Social Connection",
+    color: "#9c27b0",
+  },
+};
