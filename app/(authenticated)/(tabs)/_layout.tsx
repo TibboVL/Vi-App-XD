@@ -1,17 +1,17 @@
-import { router, Tabs, usePathname, useRouter, useSegments } from "expo-router";
-import React from "react";
+import { Tabs, useSegments } from "expo-router";
+import React, { useMemo } from "react";
 import { Platform, StyleSheet, View } from "react-native";
-
 import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { Calendar, Compass, Scales, Smiley, User } from "phosphor-react-native";
-import Animated from "react-native-reanimated";
 
 export default function TabLayout() {
-  const pathname = useSegments();
-  // console.log(pathname);
-  // console.log(pathname.length > 3);
+  const segments = useSegments(); // console.log(pathname);
+
+  const isRootTab = useMemo(() => {
+    return segments.length <= 3; // ["(authenticated)", "(tabs)", "HERE"] hide navbar on anything beyond these
+  }, [segments]);
 
   return (
     <Tabs
@@ -19,11 +19,9 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors["light"].tint,
         headerShown: false,
         tabBarButton: HapticTab,
-
         tabBarItemStyle: {
           marginBlock: 12,
         },
-
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
@@ -31,15 +29,14 @@ export default function TabLayout() {
             position: "absolute",
             height: 80,
             backgroundColor: "#f1f5f9",
-            display: pathname.length > 3 ? "none" : "flex",
+            display: isRootTab ? "flex" : "none",
           },
           android: {
             height: 80,
             backgroundColor: "#f1f5f9",
             paddingInline: 12,
-            display: pathname.length > 3 ? "none" : "flex",
+            display: isRootTab ? "flex" : "none",
           },
-          default: {},
         }),
       }}
     >
@@ -48,85 +45,56 @@ export default function TabLayout() {
         name="discover"
         options={{
           title: "Discover",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={{
-                ...styles.NavIcon,
-                backgroundColor: focused ? "#e0e0eb" : "#f1f5f9",
-              }}
-            >
-              <Compass color={color} weight={focused ? "fill" : "regular"} />
-            </View>
-          ),
+          tabBarIcon: renderIcon(Compass),
         }}
       />
       <Tabs.Screen
         name="planning"
         options={{
           title: "Planning",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={{
-                ...styles.NavIcon,
-                backgroundColor: focused ? "#e0e0eb" : "#f1f5f9",
-              }}
-            >
-              <Calendar color={color} weight={focused ? "fill" : "regular"} />
-            </View>
-          ),
+          tabBarIcon: renderIcon(Calendar),
         }}
       />
       <Tabs.Screen
         name="mood"
         options={{
           title: "Mood",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={{
-                ...styles.NavIcon,
-                backgroundColor: focused ? "#e0e0eb" : "#f1f5f9",
-              }}
-            >
-              <Smiley color={color} weight={focused ? "fill" : "regular"} />
-            </View>
-          ),
+          tabBarIcon: renderIcon(Smiley),
         }}
       />
       <Tabs.Screen
         name="balance"
         options={{
           title: "Balance",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={{
-                ...styles.NavIcon,
-                backgroundColor: focused ? "#e0e0eb" : "#f1f5f9",
-              }}
-            >
-              <Scales color={color} weight={focused ? "fill" : "regular"} />
-            </View>
-          ),
+          tabBarIcon: renderIcon(Scales),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color, focused }) => (
-            <View
-              style={{
-                ...styles.NavIcon,
-                backgroundColor: focused ? "#e0e0eb" : "#f1f5f9",
-              }}
-            >
-              <User color={color} weight={focused ? "fill" : "regular"} />
-            </View>
-          ),
+          tabBarIcon: renderIcon(User),
         }}
       />
     </Tabs>
   );
 }
+interface navButtonProps {
+  color: string;
+  focused: boolean;
+}
+const renderIcon = (IconComponent: any) => {
+  return ({ color, focused }: navButtonProps) => (
+    <View
+      style={[
+        styles.NavIcon,
+        { backgroundColor: focused ? "#e0e0eb" : "#f1f5f9" },
+      ]}
+    >
+      <IconComponent color={color} weight={focused ? "fill" : "regular"} />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   NavIcon: {
