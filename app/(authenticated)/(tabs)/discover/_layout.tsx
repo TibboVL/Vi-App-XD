@@ -12,6 +12,10 @@ export default function DiscoverStackLayout() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen
+          name="activities"
+          options={{ headerShown: true, headerTitle: "More activities" }}
+        />
+        <Stack.Screen
           name="[activityId]"
           options={{ headerShown: true, headerTitle: glob.title?.toString() }}
         />

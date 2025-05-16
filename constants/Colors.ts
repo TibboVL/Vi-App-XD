@@ -13,26 +13,6 @@ export const Colors = {
     tabIconSelected: tintColorLight,
   },
 };
-export const pillarColors = {
-  mindfulness: {
-    title: "Mindfulness",
-    color: "#5bc0eb",
-  },
-  sports: {
-    title: "Sports",
-    color: "#58d68d",
-  },
-  connections: {
-    title: "Connection",
-    color: "#ffa552",
-  },
-  skills: {
-    title: "Skills",
-    color: "#a66dd4",
-  },
-};
-
-export type PillarKey = keyof typeof pillarColors;
 
 function hexToHSL(hex: string) {
   // Remove "#" if present

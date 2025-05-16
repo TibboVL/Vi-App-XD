@@ -1,4 +1,4 @@
-import { adjustLightness, pillarColors, PillarKey } from "@/constants/Colors";
+import { adjustLightness } from "@/constants/Colors";
 import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -11,6 +11,7 @@ const globStyles = require("../../../globalStyles");
 import _ from "lodash";
 import { useState } from "react";
 import { ViSelect } from "@/components/ViSelect";
+import { getPillarInfo, PillarKey, Pillars } from "@/types/activity";
 
 const today = new Date();
 const rawDow = today.getDay(); // 0–6
@@ -32,7 +33,7 @@ oneWeekLater.setHours(23, 59, 0, 0);
 
 console.log(today, prevMonday, oneWeekLater);
 // Convert object to array of entries for random access
-const pillarsArray = Object.values(pillarColors); // [{ title, color }, ...]
+const pillarsArray = Object.values(Pillars); // [{ title, color }, ...]
 
 const pillarData = [];
 for (let i = 0; i < 100; i++) {
@@ -127,7 +128,7 @@ export default function BalanceScreen() {
             }}
           >
             <TimelineTile pillar={"mindfulness"} durationInMinutes={60 * 8} />
-            <TimelineTile pillar={"sports"} durationInMinutes={60 * 11} />
+            <TimelineTile pillar={"sport"} durationInMinutes={60 * 11} />
           </View>
           <View
             style={{
@@ -137,7 +138,7 @@ export default function BalanceScreen() {
               flexDirection: "row",
             }}
           >
-            <TimelineTile pillar={"connections"} durationInMinutes={60 * 20} />
+            <TimelineTile pillar={"social"} durationInMinutes={60 * 20} />
             <TimelineTile pillar={"skills"} durationInMinutes={60 * 9} />
           </View>
         </View>
@@ -156,7 +157,7 @@ const TimelineTile = ({
   durationInMinutes,
   onPress,
 }: timelineTilePorps) => {
-  const pillarDetails = pillarColors[pillar];
+  const pillarDetails = getPillarInfo(pillar);
 
   return (
     <View style={styles.buttonContainer}>

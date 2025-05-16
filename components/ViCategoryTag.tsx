@@ -1,4 +1,5 @@
-import { adjustLightness, pillarColors, PillarKey } from "@/constants/Colors";
+import { getPillarInfo, PillarKey } from "@/types/activity";
+import { adjustLightness } from "@/constants/Colors";
 import React from "react";
 import { Text, View, StyleSheet } from "react-native";
 
@@ -10,8 +11,9 @@ export interface TagProps {
 }
 
 export function Tag({ label, pillar }: TagProps) {
-  const color = pillarColors[pillar].color;
-  return (
+  const color = getPillarInfo(pillar)?.color;
+
+  return color ? (
     <View style={[styles.tag, { backgroundColor: adjustLightness(color, 20) }]}>
       <Text
         style={[globStyles.bodySmall, { color: adjustLightness(color, -30) }]}
@@ -19,6 +21,8 @@ export function Tag({ label, pillar }: TagProps) {
         {label}
       </Text>
     </View>
+  ) : (
+    <Text>Color not found</Text>
   );
 }
 
