@@ -6,8 +6,13 @@ export type Activity = {
   currency: string;
   estimatedCost: number;
   isGroupActivity: boolean;
-  category: string;
-  pillar: PillarKey;
+  categories: Category[];
+  debugUITId: string;
+};
+
+export type Category = {
+  name: string;
+  pillar: string;
 };
 
 export enum EnergyLevel {
@@ -22,7 +27,7 @@ export const Pillars = {
     title: "Mindfulness",
     color: "#5bc0eb",
   },
-  sport: {
+  physical: {
     title: "Sport",
     color: "#58d68d",
   },

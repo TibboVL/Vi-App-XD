@@ -1,6 +1,11 @@
 import { ViButton } from "@/components/ViButton";
 import { ViInput } from "@/components/ViInput";
-import { useGlobalSearchParams, useLocalSearchParams } from "expo-router";
+import {
+  ExternalPathString,
+  Link,
+  useGlobalSearchParams,
+  useLocalSearchParams,
+} from "expo-router";
 import {
   BellRinging,
   CaretRight,
@@ -23,6 +28,7 @@ import {
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SvgProps } from "react-native-svg";
+import * as Clipboard from "expo-clipboard";
 const globStyles = require("../../../../globalStyles");
 
 export default function ActivityDetailsScreen() {
@@ -63,7 +69,7 @@ export default function ActivityDetailsScreen() {
                   fontWeight: "900",
                 }}
               >
-                #{local.activityId} -{" "}
+                #{local.activityId} -
               </Text>
               <Text
                 style={{
@@ -73,6 +79,21 @@ export default function ActivityDetailsScreen() {
                 {local.title}
               </Text>
             </View>
+            {local.debugUITId ? (
+              <ViButton
+                title="COPY DEBUG URL"
+                type="light"
+                variant="danger"
+                onPress={async () =>
+                  await Clipboard.setStringAsync(local.debugUITId.toString())
+                }
+              />
+            ) : (
+              /*    <Link href={local.debugUITId as ExternalPathString}>
+                  DEBUG URL - {local.debugUITId}
+                </Link> */
+              <Text>Hardcoded activity</Text>
+            )}
           </View>
         </ScrollView>
         <View style={[styles.BottomContainer]}>

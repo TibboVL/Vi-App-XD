@@ -55,8 +55,9 @@ const keywordIconMap: Record<string, React.FC<any>> = {
 };
 export function getIconByActivity(activity: Activity): React.FC<any> {
   // 1. Keyword search in name (case-insensitive, safe)
-  const name = activity?.name?.toLowerCase() ?? "";
-
+  const name =
+    typeof activity?.name === "string" ? activity.name.toLowerCase() : "";
+  //console.log("Activity.name:", activity.name);
   for (const keyword in keywordIconMap) {
     if (name.includes(keyword)) {
       return keywordIconMap[pluralize.singular(keyword)];
@@ -64,33 +65,37 @@ export function getIconByActivity(activity: Activity): React.FC<any> {
   }
 
   // 2. Optional: search in category/tags (uncomment if using tags)
-  if (Array.isArray(activity?.category)) {
-    for (const tag of activity.category) {
-      const icon = keywordIconMap[pluralize.singular(tag.toLowerCase())];
+  if (Array.isArray(activity?.categories)) {
+    for (const tag of activity.categories) {
+      const icon = keywordIconMap[pluralize.singular(tag.name.toLowerCase())];
       if (icon) return icon;
     }
   }
 
   // 3. Fallback to pillar-based logic
-  const pillar = Pillars?.[activity.pillar];
+  if (activity.categories[0].pillar != null) {
+    const pillar =
+      Pillars[activity.categories[0].pillar.toLowerCase() as PillarKey];
 
-  switch (pillar) {
-    case Pillars.social:
-      return Users;
-    case Pillars.mindfulness:
-      return PersonSimpleTaiChi;
-    case Pillars.skills:
-      return Brain;
-    case Pillars.sport:
-      return PersonSimpleRun;
-    default:
-      if (__DEV__) {
-        console.warn(
-          `Unrecognized activity fallback:`,
-          activity,
-          pluralize.singular(activity.category)
-        );
-      }
-      return User; // Final default
+    switch (pillar) {
+      case Pillars.social:
+        return Users;
+      case Pillars.mindfulness:
+        return PersonSimpleTaiChi;
+      case Pillars.skills:
+        return Brain;
+      case Pillars.physical:
+        return PersonSimpleRun;
+      default:
+        if (__DEV__) {
+          console.warn(
+            `Unrecognized activity fallback:`,
+            activity
+            /* pluralize.singular(activity?.categories) */
+          );
+        }
+        return User; // Final default
+    }
   }
+  return User; // Final default
 }

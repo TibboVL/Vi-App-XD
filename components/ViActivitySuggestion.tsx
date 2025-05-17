@@ -23,13 +23,13 @@ export function ViActivitySuggestion({ activity }: { activity: Activity }) {
   // later we replace this with an ID from the DB so we can pass the activity between screens
   const {
     name,
-    category,
-    pillar,
+    categories,
     energyRequired,
     estimatedDurationMinutes,
     estimatedCost,
     isGroupActivity,
     activityId,
+    debugUITId,
   } = activity;
 
   const energyLevelIcon = () => {
@@ -48,7 +48,7 @@ export function ViActivitySuggestion({ activity }: { activity: Activity }) {
   };
 
   const energyLevelLabel = Object.entries(EnergyLevel).find(
-    ([, value]) => value.toLowerCase() === energyRequired.toLowerCase()
+    ([, value]) => value?.toLowerCase() === energyRequired?.toLowerCase()
   )?.[0];
 
   const { hours, minutes } = minutesToHoursMinutes(estimatedDurationMinutes);
@@ -61,23 +61,33 @@ export function ViActivitySuggestion({ activity }: { activity: Activity }) {
         onPress={() =>
           router.push({
             pathname: "/discover/[activityId]",
-            params: { activityId, title: name },
+            params: { activityId, title: name, debugUITId: debugUITId },
           })
         }
       >
         <View style={styles.card}>
           <View style={styles.header}>
             <Icon size={32} />
-            <Text style={globStyles.bodyLarge}>{name}</Text>
+            <Text
+              style={[globStyles.bodyLarge, { flexShrink: 1 }]}
+              numberOfLines={2}
+            >
+              {name}
+            </Text>
           </View>
 
-          {pillar && (
+          {categories.length > 0 ? (
             <View style={styles.tagsContainer}>
-              <Tag
-                label={category}
-                pillar={pillar.toLowerCase() as PillarKey}
-              />
+              {categories.map((category) => (
+                <Tag
+                  key={category.name}
+                  label={category.name}
+                  pillar={category.pillar?.toLowerCase() as PillarKey}
+                />
+              ))}
             </View>
+          ) : (
+            <Text>"Pillar not found"</Text>
           )}
 
           <View style={styles.details}>
@@ -148,6 +158,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 2,
     alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
   },
   tagsContainer: {
     marginTop: 8,
