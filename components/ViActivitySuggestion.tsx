@@ -23,8 +23,7 @@ export function ViActivitySuggestion({ activity }: { activity: Activity }) {
   // later we replace this with an ID from the DB so we can pass the activity between screens
   const {
     name,
-    category,
-    pillar,
+    categories,
     energyRequired,
     estimatedDurationMinutes,
     estimatedCost,
@@ -76,12 +75,15 @@ export function ViActivitySuggestion({ activity }: { activity: Activity }) {
             </Text>
           </View>
 
-          {pillar && pillar.length > 0 ? (
+          {categories.length > 0 ? (
             <View style={styles.tagsContainer}>
-              <Tag
-                label={category}
-                pillar={pillar?.toLowerCase() as PillarKey}
-              />
+              {categories.map((category) => (
+                <Tag
+                  key={category.name}
+                  label={category.name}
+                  pillar={category.pillar?.toLowerCase() as PillarKey}
+                />
+              ))}
             </View>
           ) : (
             <Text>"Pillar not found"</Text>

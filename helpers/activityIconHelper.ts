@@ -65,12 +65,10 @@ export function getIconByActivity(activity: Activity): React.FC<any> {
   }
 
   // 2. Optional: search in category/tags (uncomment if using tags)
-  if (Array.isArray(activity?.category)) {
-    for (const tag of activity.category) {
-      if (typeof tag === "string") {
-        const icon = keywordIconMap[pluralize.singular(tag.toLowerCase())];
-        if (icon) return icon;
-      }
+  if (Array.isArray(activity?.categories)) {
+    for (const tag of activity.categories) {
+      const icon = keywordIconMap[pluralize.singular(tag.name.toLowerCase())];
+      if (icon) return icon;
     }
   }
 
@@ -85,14 +83,14 @@ export function getIconByActivity(activity: Activity): React.FC<any> {
         return PersonSimpleTaiChi;
       case Pillars.skills:
         return Brain;
-      case Pillars.sport:
+      case Pillars.physical:
         return PersonSimpleRun;
       default:
         if (__DEV__) {
           console.warn(
             `Unrecognized activity fallback:`,
-            activity,
-            pluralize.singular(activity?.category)
+            activity
+            /* pluralize.singular(activity?.categories) */
           );
         }
         return User; // Final default
