@@ -63,7 +63,7 @@ export default function ActivityDetailsScreen() {
                   fontWeight: "900",
                 }}
               >
-                #{local.activityId} -{" "}
+                #{local.activityId} -
               </Text>
               <Text
                 style={{

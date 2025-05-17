@@ -1,5 +1,6 @@
 import { Stack, useGlobalSearchParams, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { Text } from "react-native";
 import "react-native-reanimated";
 
 SplashScreen.preventAutoHideAsync();

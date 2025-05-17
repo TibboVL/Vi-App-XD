@@ -1,6 +1,13 @@
 import { ViButton } from "@/components/ViButton";
 import { ViActivitySuggestion } from "@/components/ViActivitySuggestion";
-import { StyleSheet, View, Text, ToastAndroid, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  ToastAndroid,
+  ScrollView,
+  FlatList,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { act, useEffect, useState } from "react";
 import Constants from "expo-constants";
@@ -14,7 +21,6 @@ import {
   Pillars,
 } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
-const globStyles = require("../../../../globalStyles");
 
 export default function ActivitiesScreen() {
   const { getCredentials } = useAuth0();
@@ -27,6 +33,7 @@ export default function ActivitiesScreen() {
       setLoading(true);
       const creds = await getCredentials();
       const accessToken = creds?.accessToken;
+      console.log(accessToken);
 
       if (!accessToken) {
         console.warn("No access token available");
@@ -46,7 +53,7 @@ export default function ActivitiesScreen() {
       });
 
       if (!response.ok) {
-        console.warn("Failed to fetch activities:", response.statusText);
+        console.warn("Failed to fetch activities:", response);
         ToastAndroid.show(
           `Failed to load activities: ${response.status}`,
           ToastAndroid.SHORT
@@ -73,50 +80,79 @@ export default function ActivitiesScreen() {
   }, []);
 
   return (
-    <SafeAreaView>
-      <View
-        style={{
-          height: "100%",
-          display: "flex",
-        }}
-      >
-        <ScrollView contentContainerStyle={styles.Container}>
+    <SafeAreaView
+      style={{ flex: 1, paddingTop: 0 }}
+      edges={["left", "right", "bottom"]}
+    >
+      {loading ? (
+        <View
+          style={{
+            height: "100%",
+            width: "100%",
+            flex: 1,
+            alignContent: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Viloader vitoMessage="Vito is looking for more activities..." />
+        </View>
+      ) : (
+        <View
+          style={{
+            width: "100%",
+            height: "100%",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <View
             style={{
-              flexDirection: "column",
-              width: "100%",
-              height: "90%",
-              gap: 8,
+              paddingInline: 16,
+              paddingBlock: 16,
             }}
           >
-            <View>
-              <Text>Implement filters here</Text>
-            </View>
-
-            {loading ? (
-              <Viloader vitoMessage="Vito is looking for more activities..." />
-            ) : (
-              activityList.map((activity) => {
-                return (
-                  <ViActivitySuggestion
-                    key={activity.activityId}
-                    activity={activity}
-                  />
-                );
-              })
-            )}
+            <Text>Implement filters here</Text>
           </View>
-        </ScrollView>
-      </View>
+          <FlatList
+            data={activityList}
+            keyExtractor={(item) => item.activityId.toString()}
+            style={styles.Container}
+            contentContainerStyle={{
+              gap: 8,
+            }}
+            renderItem={({ item }) => <ViActivitySuggestion activity={item} />}
+            ListEmptyComponent={
+              <>
+                <Text>Something went wrong!</Text>
+              </>
+            }
+          />
+          {/* <ScrollView contentContainerStyle={styles.Container}>
+            {activityList.map((activity) => {
+              return (
+                <ViActivitySuggestion
+                  key={activity.activityId}
+                  activity={activity}
+                />
+              );
+            })}
+          </ScrollView> */}
+        </View>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   Container: {
+    width: "100%",
+    height: "100%",
+    gap: 8,
+    marginBlock: 0,
     paddingInline: 16,
     flexDirection: "column",
-    alignItems: "flex-start",
-    gap: 8,
+    /*     alignItems: "flex-start",
+     */
   },
 });
