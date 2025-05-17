@@ -57,7 +57,7 @@ export function getIconByActivity(activity: Activity): React.FC<any> {
   // 1. Keyword search in name (case-insensitive, safe)
   const name =
     typeof activity?.name === "string" ? activity.name.toLowerCase() : "";
-  console.log("Activity.name:", activity.name);
+  //console.log("Activity.name:", activity.name);
   for (const keyword in keywordIconMap) {
     if (name.includes(keyword)) {
       return keywordIconMap[pluralize.singular(keyword)];
@@ -73,8 +73,9 @@ export function getIconByActivity(activity: Activity): React.FC<any> {
   }
 
   // 3. Fallback to pillar-based logic
-  if (activity.pillar != null) {
-    const pillar = Pillars?.[activity.pillar];
+  if (activity.categories[0].pillar != null) {
+    const pillar =
+      Pillars[activity.categories[0].pillar.toLowerCase() as PillarKey];
 
     switch (pillar) {
       case Pillars.social:

@@ -29,6 +29,7 @@ export function ViActivitySuggestion({ activity }: { activity: Activity }) {
     estimatedCost,
     isGroupActivity,
     activityId,
+    debugUITId,
   } = activity;
 
   const energyLevelIcon = () => {
@@ -60,7 +61,7 @@ export function ViActivitySuggestion({ activity }: { activity: Activity }) {
         onPress={() =>
           router.push({
             pathname: "/discover/[activityId]",
-            params: { activityId, title: name },
+            params: { activityId, title: name, debugUITId: debugUITId },
           })
         }
       >

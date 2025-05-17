@@ -7,7 +7,7 @@ export type Activity = {
   estimatedCost: number;
   isGroupActivity: boolean;
   categories: Category[];
-  pillar: PillarKey;
+  debugUITId: string;
 };
 
 export type Category = {
