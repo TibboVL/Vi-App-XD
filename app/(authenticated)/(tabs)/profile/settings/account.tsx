@@ -1,5 +1,6 @@
 import { ViButton } from "@/components/ViButton";
 import { ViInput } from "@/components/ViInput";
+import { router } from "expo-router";
 import {
   BellRinging,
   CaretRight,
@@ -82,6 +83,14 @@ export default function SettingsScreen() {
             <Text style={globStyles.h3}>Account removal </Text>
             <ViButton title="Disable account" variant="danger" type="outline" />
             <ViButton title="Delete account" variant="danger" type="light" />
+            <ViButton
+              title="Force restart onboarding (DEBUG)"
+              variant="danger"
+              type="light"
+              onPress={() => {
+                router.push("/(authenticated)/onboarding");
+              }}
+            />
           </View>
         </ScrollView>
         <View style={[styles.BottomContainer]}>

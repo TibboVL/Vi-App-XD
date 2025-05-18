@@ -128,7 +128,7 @@ export default function BalanceScreen() {
             }}
           >
             <TimelineTile pillar={"mindfulness"} durationInMinutes={60 * 8} />
-            <TimelineTile pillar={"sport"} durationInMinutes={60 * 11} />
+            <TimelineTile pillar={"physical"} durationInMinutes={60 * 11} />
           </View>
           <View
             style={{

@@ -30,7 +30,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/Vi-SplashIcon.png",
-          "imageWidth": 200,
+          "imageWidth": 300,
           "resizeMode": "contain",
           "backgroundColor": "#fbfbfe"
         }
@@ -39,6 +39,12 @@
         "react-native-auth0",
         {
           "domain": "vi-auth.eu.auth0.com"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Vi to use your location."
         }
       ]
     ],
