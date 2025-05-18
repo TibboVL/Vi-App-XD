@@ -82,6 +82,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1, // shrink if needed
     maxHeight: 56, // ensure  we dont grow vertically!
+    minHeight: 56,
     width: "100%", // expand as much as possible
     borderRadius: 16,
     overflow: "hidden",

@@ -12,10 +12,15 @@ export default ({ config }) => {
   // Load env variables manually
   const env = dotenv.config({ path: resolve(__dirname, envFile) }).parsed;
 
+  // run a
+  // db reverse tcp:3100 tcp:3100
+  // to forward port to backend on the device
+  const isPhysicalDevice = true;
+
   return {
     ...config,
     extra: {
-      apiUrl: env.API_URL,
+      apiUrl: isPhysicalDevice ? env.API_URL_PHYSICAL : env.API_URL,
     },
   };
 };

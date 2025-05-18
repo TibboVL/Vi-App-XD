@@ -16,117 +16,127 @@ import { router } from "expo-router";
 import { Activity, EnergyLevel, PillarKey } from "@/types/activity";
 import { minutesToHoursMinutes } from "@/helpers/dateTimeHelpers";
 import { getIconByActivity } from "@/helpers/activityIconHelper";
+import { memo, useCallback, useMemo } from "react";
 
 const globStyles = require("../globalStyles");
 
-export function ViActivitySuggestion({ activity }: { activity: Activity }) {
-  // later we replace this with an ID from the DB so we can pass the activity between screens
-  const {
-    name,
-    categories,
-    energyRequired,
-    estimatedDurationMinutes,
-    estimatedCost,
-    isGroupActivity,
-    activityId,
-    debugUITId,
-  } = activity;
+export const ViActivitySuggestion = memo(
+  ({ activity }: { activity: Activity }) => {
+    // later we replace this with an ID from the DB so we can pass the activity between screens
+    const {
+      name,
+      categories,
+      energyRequired,
+      estimatedDurationMinutes,
+      estimatedCost,
+      isGroupActivity,
+      activityId,
+      debugUITId,
+    } = activity;
 
-  const energyLevelIcon = () => {
-    switch (energyRequired.toLowerCase()) {
-      case EnergyLevel.Low:
-        return <BatteryLow size={16} />;
-      case EnergyLevel.Medium:
-        return <BatteryMedium size={16} />;
-      case EnergyLevel.High:
-        return <BatteryHigh size={16} />;
-      case EnergyLevel.VeryHigh:
-        return <BatteryFull size={16} />;
-      default:
-        return <BatteryLow size={16} />;
-    }
-  };
+    // memoize for performance
+    const energyLevelIcon = useMemo(() => {
+      switch (energyRequired.toLowerCase()) {
+        case EnergyLevel.Low:
+          return <BatteryLow size={16} />;
+        case EnergyLevel.Medium:
+          return <BatteryMedium size={16} />;
+        case EnergyLevel.High:
+          return <BatteryHigh size={16} />;
+        case EnergyLevel.VeryHigh:
+          return <BatteryFull size={16} />;
+        default:
+          return <BatteryLow size={16} />;
+      }
+    }, [energyRequired]);
 
-  const energyLevelLabel = Object.entries(EnergyLevel).find(
-    ([, value]) => value?.toLowerCase() === energyRequired?.toLowerCase()
-  )?.[0];
+    const energyLevelLabel = useMemo(() => {
+      return (
+        Object.entries(EnergyLevel).find(
+          ([, value]) => value?.toLowerCase() === energyRequired?.toLowerCase()
+        )?.[0] ?? ""
+      );
+    }, [energyRequired]);
 
-  const { hours, minutes } = minutesToHoursMinutes(estimatedDurationMinutes);
+    const { hours, minutes } = useMemo(() => {
+      return minutesToHoursMinutes(estimatedDurationMinutes);
+    }, [estimatedDurationMinutes]);
 
-  const Icon = getIconByActivity(activity);
+    const Icon = useMemo(() => getIconByActivity(activity), [activity]);
 
-  return (
-    <View style={styles.wrapper}>
-      <TouchableNativeFeedback
-        onPress={() =>
-          router.push({
-            pathname: "/discover/[activityId]",
-            params: { activityId, title: name, debugUITId: debugUITId },
-          })
-        }
-      >
-        <View style={styles.card}>
-          <View style={styles.header}>
-            <Icon size={32} />
-            <Text
-              style={[globStyles.bodyLarge, { flexShrink: 1 }]}
-              numberOfLines={2}
-            >
-              {name}
-            </Text>
+    const handlePress = useCallback(() => {
+      router.push({
+        pathname: "/discover/[activityId]",
+        params: { activityId, title: name, debugUITId },
+      });
+    }, [activityId, name, debugUITId]);
+
+    return (
+      <View style={styles.wrapper}>
+        <TouchableNativeFeedback onPress={handlePress}>
+          <View style={styles.card}>
+            <View style={styles.header}>
+              <Icon size={32} />
+              <Text
+                style={[globStyles.bodyLarge, { flexShrink: 1 }]}
+                numberOfLines={2}
+              >
+                {name}
+              </Text>
+            </View>
+
+            {categories.length > 0 ? (
+              <View style={styles.tagsContainer}>
+                {categories.map((category) => (
+                  <Tag
+                    key={category.name}
+                    label={category.name}
+                    pillar={category.pillar?.toLowerCase() as PillarKey}
+                  />
+                ))}
+              </View>
+            ) : (
+              <Text>"Pillar not found"</Text>
+            )}
+
+            <View style={styles.details}>
+              <View style={styles.detail}>
+                {energyLevelIcon}
+                <Text style={globStyles.bodySmall}>{energyLevelLabel}</Text>
+              </View>
+
+              <View style={styles.detail}>
+                <Clock size={16} />
+                <Text style={globStyles.bodySmall}>
+                  {(hours !== 0 ? `${hours}h ` : "") + `${minutes}m`}
+                </Text>
+              </View>
+
+              <View style={styles.detail}>
+                <CurrencyEur size={16} />
+                <Text style={globStyles.bodySmall}>
+                  {estimatedCost > 0 ? estimatedCost.toString() : "free"}
+                </Text>
+              </View>
+
+              <View style={styles.detail}>
+                <MapPin size={16} />
+                <Text style={globStyles.bodySmall}>5 km</Text>
+              </View>
+
+              <View style={styles.detail}>
+                <Users size={16} />
+                <Text style={globStyles.bodySmall}>
+                  {isGroupActivity ? "with friends" : "alone"}
+                </Text>
+              </View>
+            </View>
           </View>
-
-          {categories.length > 0 ? (
-            <View style={styles.tagsContainer}>
-              {categories.map((category) => (
-                <Tag
-                  key={category.name}
-                  label={category.name}
-                  pillar={category.pillar?.toLowerCase() as PillarKey}
-                />
-              ))}
-            </View>
-          ) : (
-            <Text>"Pillar not found"</Text>
-          )}
-
-          <View style={styles.details}>
-            <View style={styles.detail}>
-              {energyLevelIcon()}
-              <Text style={globStyles.bodySmall}>{energyLevelLabel}</Text>
-            </View>
-
-            <View style={styles.detail}>
-              <Clock size={16} />
-              <Text style={globStyles.bodySmall}>
-                {(hours !== 0 ? `${hours}h ` : "") + `${minutes}m`}
-              </Text>
-            </View>
-
-            <View style={styles.detail}>
-              <CurrencyEur size={16} />
-              <Text style={globStyles.bodySmall}>
-                {estimatedCost > 0 ? estimatedCost.toString() : "free"}
-              </Text>
-            </View>
-
-            <View style={styles.detail}>
-              <MapPin size={16} />
-              <Text style={globStyles.bodySmall}>5 km</Text>
-            </View>
-
-            <View style={styles.detail}>
-              <Users size={16} />
-              <Text style={globStyles.bodySmall}>
-                {isGroupActivity ? "with friends" : "alone"}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </TouchableNativeFeedback>
-    </View>
-  );
-}
+        </TouchableNativeFeedback>
+      </View>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   wrapper: {

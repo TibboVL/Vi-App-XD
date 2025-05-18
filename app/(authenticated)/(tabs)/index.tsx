@@ -11,7 +11,7 @@ export default function Index() {
   else isFirstOpen = false;
 
   return isFirstOpen ? (
-    <Redirect href={"/(authenticated)/onboarding/privacy"} /> // todo: implement onboarding
+    <Redirect href={"/(authenticated)/onboarding"} /> // todo: implement onboarding
   ) : (
     <Redirect href={"/(authenticated)/(tabs)/discover"} />
   );
