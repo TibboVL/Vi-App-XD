@@ -1,9 +1,9 @@
+import { textStyles } from "@/globalStyles";
 import { Link } from "expo-router";
 import { Gear } from "phosphor-react-native";
 import { View, Text, StyleSheet, Image } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
-const globStyles = require("../../../../globalStyles");
 
 export default function ProfileScreen() {
   const { user } = useAuth0();
@@ -17,6 +17,7 @@ export default function ProfileScreen() {
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
+            paddingBlock: 8,
           }}
         >
           <View
@@ -38,7 +39,7 @@ export default function ProfileScreen() {
             />
             <Text
               style={[
-                globStyles.h3,
+                textStyles.h3,
                 { textTransform: "capitalize", width: "100%" },
               ]}
             >
@@ -47,7 +48,16 @@ export default function ProfileScreen() {
           </View>
 
           <Link href={"/(authenticated)/(tabs)/profile/settings"}>
-            <Gear />
+            <View
+              style={{
+                height: 44,
+                width: 44,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Gear size={32} style={{}} />
+            </View>
           </Link>
         </View>
       </View>

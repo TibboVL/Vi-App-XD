@@ -1,20 +1,9 @@
-import {
-  Button,
-  Pressable,
-  TouchableNativeFeedback,
-  StyleSheet,
-  Text,
-  ViewStyle,
-  View,
-  TextInput,
-} from "react-native";
+import { StyleSheet, Text, ViewStyle, View, TextInput } from "react-native";
 
 const buttonVariants = ["primary", "secondary", "danger"] as const;
 type ButtonVariant = (typeof buttonVariants)[number];
 const buttonTypes = ["light", "outline", "text-only"] as const;
 type ButtonTypes = (typeof buttonTypes)[number];
-
-const globStyles = require("../globalStyles");
 
 interface ViInputProps {
   variant?: ButtonVariant;

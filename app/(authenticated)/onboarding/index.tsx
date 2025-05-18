@@ -1,9 +1,9 @@
 import { ViButton } from "@/components/ViButton";
+import { textStyles } from "@/globalStyles";
 import { router } from "expo-router";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Circle, ClipPath, Defs, G, Path, Rect } from "react-native-svg";
-const globStyles = require("../../../globalStyles");
 
 export default function OnboardingPrivacyScreen() {
   return (
@@ -16,7 +16,7 @@ export default function OnboardingPrivacyScreen() {
             paddingBottom: 64,
           }}
         >
-          <Text style={[globStyles.h3, { textAlign: "center" }]}>
+          <Text style={[textStyles.h3, { textAlign: "center" }]}>
             We value your privacy. Your personal data is stored securely and
             used only to tailor your experience.
           </Text>

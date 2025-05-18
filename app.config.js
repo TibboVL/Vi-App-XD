@@ -15,7 +15,7 @@ export default ({ config }) => {
   // run a
   // db reverse tcp:3100 tcp:3100
   // to forward port to backend on the device
-  const isPhysicalDevice = true;
+  const isPhysicalDevice = false;
 
   return {
     ...config,

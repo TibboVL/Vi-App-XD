@@ -21,6 +21,7 @@ import {
   Pillars,
 } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
+import { safeAreaEdges, safeAreaStyles } from "@/globalStyles";
 
 export default function ActivitiesScreen() {
   const { getCredentials } = useAuth0();
@@ -63,7 +64,7 @@ export default function ActivitiesScreen() {
 
       const data = await response.json();
       setActivityList(data.data as Activity[]);
-      console.log(data.data);
+      //console.log(data.data);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching activities:", error);
@@ -80,10 +81,7 @@ export default function ActivitiesScreen() {
   }, []);
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, paddingTop: 0 }}
-      edges={["left", "right", "bottom"]}
-    >
+    <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       {loading ? (
         <View
           style={{
@@ -104,12 +102,14 @@ export default function ActivitiesScreen() {
             flex: 1,
             display: "flex",
             flexDirection: "column",
+            gap: 8,
           }}
         >
           <View
             style={{
               paddingInline: 16,
-              paddingBlock: 16,
+              /*               paddingBlock: 16,
+               */
             }}
           >
             <Text>Implement filters here</Text>

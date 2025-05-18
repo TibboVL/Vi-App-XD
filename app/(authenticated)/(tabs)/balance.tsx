@@ -7,7 +7,7 @@ import {
   VictoryHistogram,
   VictoryStack,
 } from "victory-native";
-const globStyles = require("../../../globalStyles");
+import { textStyles } from "@/globalStyles";
 import _ from "lodash";
 import { useState } from "react";
 import { ViSelect } from "@/components/ViSelect";
@@ -112,7 +112,7 @@ export default function BalanceScreen() {
 
           <VictoryAxis dependentAxis /* label="# Activities per pillar" */ />
         </VictoryChart>
-        <Text style={globStyles.h2}>Your activities</Text>
+        <Text style={textStyles.h2}>Your activities</Text>
         <View
           style={{
             gap: 16,
@@ -176,7 +176,7 @@ const TimelineTile = ({
         >
           <Text
             style={[
-              globStyles.bodyLarge,
+              textStyles.bodyLarge,
               {
                 color: adjustLightness(pillarDetails.color, -40),
               },
@@ -191,7 +191,7 @@ const TimelineTile = ({
           >
             <Text
               style={[
-                globStyles.h3,
+                textStyles.h3,
                 {
                   color: adjustLightness(pillarDetails.color, -40),
                 },

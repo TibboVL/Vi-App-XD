@@ -1,13 +1,23 @@
 import { ViButton } from "@/components/ViButton";
-import { ViActivitySuggestion } from "@/components/ViActivitySuggestion";
-import { StyleSheet, View, Text, ToastAndroid, ScrollView } from "react-native";
+import { StyleSheet, View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, router } from "expo-router";
-import { EnergyLevel } from "@/types/activity";
-
-const globStyles = require("../../../../globalStyles");
+import { router } from "expo-router";
+import { getReverseGeocodedLocation } from "@/helpers/locationHelper";
+import { useEffect, useState } from "react";
+import { LocationGeocodedAddress } from "expo-location";
+import { safeAreaEdges, safeAreaStyles, textStyles } from "@/globalStyles";
 
 export default function DiscoverScreen() {
+  const [address, setAddress] = useState<LocationGeocodedAddress>();
+  const [dateTime, setDateTime] = useState(new Date());
+
+  useEffect(() => {
+    async function getAddress() {
+      const addresses = await getReverseGeocodedLocation();
+      setAddress(addresses[0]);
+    }
+    getAddress();
+  });
   return (
     <SafeAreaView>
       <View
@@ -27,7 +37,7 @@ export default function DiscoverScreen() {
           >
             <Text
               style={[
-                globStyles.h3,
+                textStyles.h3,
                 {
                   textAlign: "center",
                   paddingBlock: 8,
@@ -36,6 +46,17 @@ export default function DiscoverScreen() {
             >
               Suggestions for you
             </Text>
+            <View>
+              <Text>Availible information for personalization (DEBUG)</Text>
+              <Text>
+                Location: {address?.city} - {address?.postalCode}
+              </Text>
+              <Text>
+                Time&Date: {dateTime.getHours()}:{dateTime.getMinutes()} -{" "}
+                {dateTime.getUTCDate()}/{dateTime.getMonth() + 1}
+              </Text>
+              <Text>Weather: TODO</Text>
+            </View>
             {/*  <ViActivitySuggestion
               title="Go on a hike with the CMU Hiking Club"
               tags={[

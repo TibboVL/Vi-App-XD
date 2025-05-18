@@ -1,6 +1,5 @@
+import { textStyles } from "@/globalStyles";
 import {
-  Button,
-  Pressable,
   TouchableNativeFeedback,
   StyleSheet,
   Text,
@@ -12,8 +11,6 @@ const buttonVariants = ["primary", "secondary", "danger"] as const;
 type ButtonVariant = (typeof buttonVariants)[number];
 const buttonTypes = ["light", "outline", "text-only"] as const;
 type ButtonTypes = (typeof buttonTypes)[number];
-
-const globStyles = require("../globalStyles");
 
 interface ViButtonProps {
   variant?: ButtonVariant;
@@ -62,7 +59,7 @@ export function ViButton({
               {
                 textTransform: "capitalize",
               },
-              globStyles.CTA,
+              textStyles.CTA,
               variant === "primary"
                 ? styles.textPrimary
                 : variant === "secondary"

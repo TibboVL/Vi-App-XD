@@ -1,12 +1,11 @@
-import { StyleSheet, ViewStyle, View } from "react-native";
+import { StyleSheet, ViewStyle } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useState } from "react";
-import { ArrowUp, CaretDown, CaretUp } from "phosphor-react-native";
+import { CaretDown, CaretUp } from "phosphor-react-native";
+import { textStyles } from "@/globalStyles";
 
 const Variants = ["primary", "secondary", "danger"] as const;
 type Variant = (typeof Variants)[number];
-
-const globStyles = require("../globalStyles");
 
 interface ViButtonProps {
   variant?: Variant;
@@ -51,7 +50,7 @@ export function ViSelect({
         style,
       ]}
       textStyle={[
-        globStyles.CTA,
+        textStyles.CTA,
         variant === "primary"
           ? styles.textPrimary
           : variant === "secondary"
@@ -59,7 +58,7 @@ export function ViSelect({
           : styles.textDanger,
       ]}
       labelStyle={
-        (globStyles.CTA,
+        (textStyles.CTA,
         variant === "primary"
           ? styles.textPrimary
           : variant === "secondary"

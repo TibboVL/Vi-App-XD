@@ -1,12 +1,10 @@
-import { StyleSheet, View, Text, Button, Image } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useAuth0 } from "react-native-auth0";
-import { lightStyles, ViButton } from "@/components/ViButton";
+import { ViButton } from "@/components/ViButton";
 import ViSVGLogo from "@/components/ViSVGLogo";
-import { Rect } from "react-native-svg";
 import { ViDivider } from "@/components/ViDivider";
-const globStyles = require("../globalStyles");
 
 export default function WelcomeScreen() {
   const { authorize, clearSession, user, error, getCredentials } = useAuth0();

@@ -1,8 +1,9 @@
+import { headerStyles } from "@/globalStyles";
 import { Stack } from "expo-router";
 
 export default function StackLayout() {
   return (
-    <Stack>
+    <Stack screenOptions={headerStyles}>
       <Stack.Screen
         name="index"
         options={{
