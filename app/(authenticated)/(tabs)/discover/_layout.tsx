@@ -1,7 +1,7 @@
-import { Stack, useGlobalSearchParams, useSegments } from "expo-router";
+import { Stack, useGlobalSearchParams } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { Text } from "react-native";
 import "react-native-reanimated";
+import { headerStyles } from "../../../../globalStyles";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -10,7 +10,7 @@ export default function DiscoverStackLayout() {
 
   return (
     <>
-      <Stack>
+      <Stack screenOptions={headerStyles}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen
           name="activities"

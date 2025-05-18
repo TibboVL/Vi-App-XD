@@ -1,29 +1,11 @@
 import { ViButton } from "@/components/ViButton";
 import { ViInput } from "@/components/ViInput";
+import { safeAreaEdges, safeAreaStyles, textStyles } from "@/globalStyles";
 import { router } from "expo-router";
-import {
-  BellRinging,
-  CaretRight,
-  Code,
-  Gear,
-  Icon,
-  IconProps,
-  Palette,
-  ThumbsUp,
-  User,
-} from "phosphor-react-native";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TextInput,
-  ScrollView,
-} from "react-native";
+
+import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SvgProps } from "react-native-svg";
-const globStyles = require("../../../../../globalStyles");
 
 export default function SettingsScreen() {
   const { user, clearSession } = useAuth0();
@@ -37,7 +19,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       <View
         style={{
           height: "100%",
@@ -68,19 +50,19 @@ export default function SettingsScreen() {
                 }}
                 src={user ? user.picture : undefined}
               />
-              <Text style={[globStyles.h3, { textTransform: "capitalize" }]}>
+              <Text style={[textStyles.h3, { textTransform: "capitalize" }]}>
                 {user ? user.name : "NOT LOGGED IN"}
               </Text>
             </View>
             <ViInput label="Username" />
             <ViInput label="Email" />
-            <Text style={globStyles.h3}>Password & Authentication </Text>
+            <Text style={textStyles.h3}>Password & Authentication </Text>
             <ViButton
               title="Change password"
               variant="primary"
               type="outline"
             />
-            <Text style={globStyles.h3}>Account removal </Text>
+            <Text style={textStyles.h3}>Account removal </Text>
             <ViButton title="Disable account" variant="danger" type="outline" />
             <ViButton title="Delete account" variant="danger" type="light" />
             <ViButton

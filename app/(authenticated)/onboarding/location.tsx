@@ -1,11 +1,15 @@
 import { ViButton } from "@/components/ViButton";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Dimensions, ToastAndroid } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Circle, G, Path, Rect } from "react-native-svg";
 import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
-const globStyles = require("../../../globalStyles");
+import {
+  getLocation,
+  getReverseGeocodedLocation,
+} from "@/helpers/locationHelper";
+import { textStyles } from "@/globalStyles";
 
 export default function OnboardingLocationScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
@@ -19,33 +23,24 @@ export default function OnboardingLocationScreen() {
   async function getCurrentLocation() {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
-      setErrorMsg("Permission to access location was denied");
-      return;
+      ToastAndroid.showWithGravity(
+        "Permission to access location was denied - open app settings to enable it manually",
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER
+      );
+      /*       setErrorMsg("Permission to access location was denied");
+       */ return;
     }
-
-    let location = await Location.getCurrentPositionAsync({});
-    setLocation(location);
+    setLocation(await getLocation());
   }
 
   useEffect(() => {
-    async function getReverseGeocodedLocation() {
-      if (location == null) {
-        await getCurrentLocation();
+    if (location) {
+      async function getAddress() {
+        setReverseGeocodedLocation(await getReverseGeocodedLocation());
       }
-      // extract latitude & longitude
-      const coords = {
-        latitude: location!.coords.latitude,
-        longitude: location!.coords.longitude,
-      };
-      try {
-        const geocoded = await Location.reverseGeocodeAsync(coords);
-        setReverseGeocodedLocation(geocoded);
-      } catch (err) {
-        setErrorMsg("Reverse geocoding failed");
-        console.error(err);
-      }
+      getAddress();
     }
-    getReverseGeocodedLocation();
   }, [location]);
 
   let text = "Waiting...";
@@ -73,11 +68,11 @@ export default function OnboardingLocationScreen() {
             gap: 64,
           }}
         >
-          <Text style={[globStyles.h3, { textAlign: "center" }]}>
+          <Text style={[textStyles.h3, { textAlign: "center" }]}>
             Personalized for where you are
           </Text>
           <VitoLocation />
-          <Text style={[globStyles.bodyLarge, { textAlign: "center" }]}>
+          <Text style={[textStyles.bodyLarge, { textAlign: "center" }]}>
             We suggest activities that match your location, like outdoor walks
             or local weather-friendly options.
           </Text>

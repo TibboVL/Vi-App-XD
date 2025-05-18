@@ -1,7 +1,7 @@
 "use strict";
 import { StyleSheet } from "react-native";
 
-module.exports = StyleSheet.create({
+export const textStyles = StyleSheet.create({
   h1: {
     fontFamily: "AnekMalayalam",
     fontWeight: "bold",
@@ -38,3 +38,17 @@ module.exports = StyleSheet.create({
     fontSize: 12,
   },
 });
+
+export const headerStyles = {
+  headerShadowVisible: false,
+  headerStyle: {
+    backgroundColor: "#f2f2f2",
+  },
+  headerTitleStyle: textStyles.h3,
+};
+
+export const safeAreaStyles = {
+  flex: 1,
+  paddingTop: 0,
+};
+export const safeAreaEdges = ["left", "right", "bottom"] as const;

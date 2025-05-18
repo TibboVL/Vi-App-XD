@@ -1,35 +1,10 @@
 import { ViButton } from "@/components/ViButton";
-import { ViInput } from "@/components/ViInput";
-import {
-  ExternalPathString,
-  Link,
-  useGlobalSearchParams,
-  useLocalSearchParams,
-} from "expo-router";
-import {
-  BellRinging,
-  CaretRight,
-  Code,
-  Gear,
-  Icon,
-  IconProps,
-  Palette,
-  ThumbsUp,
-  User,
-} from "phosphor-react-native";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TextInput,
-  ScrollView,
-} from "react-native";
-import { useAuth0 } from "react-native-auth0";
+import { useGlobalSearchParams, useLocalSearchParams } from "expo-router";
+
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SvgProps } from "react-native-svg";
 import * as Clipboard from "expo-clipboard";
-const globStyles = require("../../../../globalStyles");
+import { safeAreaEdges, safeAreaStyles } from "@/globalStyles";
 
 export default function ActivityDetailsScreen() {
   const glob = useGlobalSearchParams();
@@ -42,7 +17,7 @@ export default function ActivityDetailsScreen() {
     glob.activityId
   );
   return (
-    <SafeAreaView>
+    <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       <View
         style={{
           height: "100%",

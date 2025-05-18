@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import { router } from "expo-router";
-const globStyles = require("../../../globalStyles");
+import { textStyles } from "@/globalStyles";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -70,7 +70,7 @@ export default function OnboardingNotificationsScreen() {
             gap: 64,
           }}
         >
-          <Text style={[globStyles.h3, { textAlign: "center" }]}>
+          <Text style={[textStyles.h3, { textAlign: "center" }]}>
             One last thing
           </Text>
           <View
@@ -84,7 +84,7 @@ export default function OnboardingNotificationsScreen() {
             <VitoLookDown />
             <NotificiationSVG />
           </View>
-          <Text style={[globStyles.bodyLarge, { textAlign: "center" }]}>
+          <Text style={[textStyles.bodyLarge, { textAlign: "center" }]}>
             To help you stay motivated and on track, we’d love to send you
             gentle reminders.
           </Text>

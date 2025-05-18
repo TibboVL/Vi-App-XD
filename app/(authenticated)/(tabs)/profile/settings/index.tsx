@@ -1,3 +1,4 @@
+import { safeAreaEdges, safeAreaStyles, textStyles } from "@/globalStyles";
 import { router } from "expo-router";
 import {
   BellRinging,
@@ -13,14 +14,12 @@ import {
 import { View, Text, StyleSheet, Image, Pressable } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SvgProps } from "react-native-svg";
-const globStyles = require("../../../../../globalStyles");
 
 export default function SettingsScreen() {
   const { user } = useAuth0();
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ flex: 1 }}>
       <View style={[styles.Container]}>
         <View
           style={{
@@ -39,7 +38,7 @@ export default function SettingsScreen() {
             }}
             src={user ? user.picture : undefined}
           />
-          <Text style={[globStyles.h3, { textTransform: "capitalize" }]}>
+          <Text style={[textStyles.h3, { textTransform: "capitalize" }]}>
             {user ? user.name : "NOT LOGGED IN"}
           </Text>
         </View>
@@ -96,7 +95,7 @@ const SettingsTile = ({ title, icon: Icon, onPress }: settingsTilePorps) => {
         }}
       >
         <Icon />
-        <Text style={globStyles.bodyLarge}>{title}</Text>
+        <Text style={textStyles.bodyLarge}>{title}</Text>
       </View>
       <CaretRight />
     </Pressable>
@@ -105,9 +104,11 @@ const SettingsTile = ({ title, icon: Icon, onPress }: settingsTilePorps) => {
 
 const styles = StyleSheet.create({
   Container: {
+    flex: 1,
     paddingInline: 16,
     flexDirection: "column",
     alignItems: "flex-start",
+    justifyContent: "center",
     gap: 8,
   },
 });

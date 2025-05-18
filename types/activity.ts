@@ -8,6 +8,8 @@ export type Activity = {
   isGroupActivity: boolean;
   categories: Category[];
   debugUITId: string;
+  lat: number | null;
+  lon: number | null;
 };
 
 export type Category = {

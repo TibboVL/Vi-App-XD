@@ -14,19 +14,25 @@ import * as NavigationBar from "expo-navigation-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 import { useAuth0, Auth0Provider } from "react-native-auth0";
+import { headerStyles } from "@/globalStyles";
 SplashScreen.preventAutoHideAsync();
 
 export default function PorfileStackLayout() {
   return (
     <>
-      <Stack>
+      <Stack screenOptions={headerStyles}>
         <Stack.Screen
           name="index"
           options={{
             title: "Settings",
           }}
         />
-        <Stack.Screen name="account" />
+        <Stack.Screen
+          name="account"
+          options={{
+            title: "Account",
+          }}
+        />
       </Stack>
     </>
   );
