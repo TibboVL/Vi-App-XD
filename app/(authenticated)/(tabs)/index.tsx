@@ -1,5 +1,5 @@
-import { Redirect, useLocalSearchParams } from "expo-router";
-
+import { Redirect, SplashScreen, useLocalSearchParams } from "expo-router";
+SplashScreen.preventAutoHideAsync();
 export default function Index() {
   let isFirstOpen = null;
 

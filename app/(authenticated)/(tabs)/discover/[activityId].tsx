@@ -307,8 +307,12 @@ export default function ActivityDetailsScreen() {
             )}
           </ScrollView>
           <View style={[styles.BottomContainer]}>
-            <ViButton title="Google more" variant="primary" type="outline" />
-            <ViButton title="Add to agenda" variant="primary" type="light" />
+            <View style={styles.BottomContainerButton}>
+              <ViButton title="Google more" variant="primary" type="outline" />
+            </View>
+            <View style={styles.BottomContainerButton}>
+              <ViButton title="Add to agenda" variant="primary" type="light" />
+            </View>
           </View>
         </>
       ) : (
@@ -391,9 +395,9 @@ const ContactInfoBox = ({ Icon, link, value, styles }: contactBoxInfo) => {
 
 const styles = StyleSheet.create({
   Container: {
+    flex: 1,
     paddingInline: 16,
     flexDirection: "column",
-    // alignItems: "flex-start",
     gap: 15,
   },
   BottomContainer: {
@@ -412,4 +416,5 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: 4,
   },
+  BottomContainerButton: { flex: 1 },
 });

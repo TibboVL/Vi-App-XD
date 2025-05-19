@@ -52,7 +52,8 @@
     "expo-clipboard": "~7.0.1",
     "expo-location": "~18.0.10",
     "expo-notifications": "~0.29.14",
-    "expo-device": "~7.0.3"
+    "expo-device": "~7.0.3",
+    "@gorhom/bottom-sheet": "^5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
