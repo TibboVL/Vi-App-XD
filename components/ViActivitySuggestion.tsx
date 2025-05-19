@@ -9,6 +9,7 @@ import {
   MapPin,
   Users,
   BatteryFull,
+  User,
 } from "phosphor-react-native";
 
 import { Tag } from "./ViCategoryTag";
@@ -125,7 +126,7 @@ export const ViActivitySuggestion = memo(
                 ))}
               </View>
             ) : (
-              <Text>"Pillar not found"</Text>
+              <Text>No categories - this shouldnt happen!</Text>
             )}
 
             <View style={styles.details}>
@@ -137,26 +138,30 @@ export const ViActivitySuggestion = memo(
               <View style={styles.detail}>
                 <Clock size={16} />
                 <Text style={textStyles.bodySmall}>
-                  {(hours !== 0 ? `${hours}h ` : "") + `${minutes}m`}
+                  {estimatedDurationMinutes > 0
+                    ? (hours !== 0 ? `${hours}h ` : "") + `${minutes}m`
+                    : "N/A"}
                 </Text>
               </View>
 
               <View style={styles.detail}>
                 <CurrencyEur size={16} />
                 <Text style={textStyles.bodySmall}>
-                  {estimatedCost > 0 ? estimatedCost.toString() : "free"}
+                  {estimatedCost > 0 ? estimatedCost.toString() : "Free"}
                 </Text>
               </View>
 
               <View style={styles.detail}>
                 <MapPin size={16} />
-                <Text style={textStyles.bodySmall}>{distance ?? "??"} km</Text>
+                <Text style={textStyles.bodySmall}>
+                  {distance ? `${distance}km` : "Any"}
+                </Text>
               </View>
 
               <View style={styles.detail}>
-                <Users size={16} />
+                {isGroupActivity ? <Users size={16} /> : <User size={16} />}
                 <Text style={textStyles.bodySmall}>
-                  {isGroupActivity ? "with friends" : "alone"}
+                  {isGroupActivity ? "Group" : "Alone"}
                 </Text>
               </View>
             </View>
@@ -198,10 +203,10 @@ const styles = StyleSheet.create({
     gap: 2,
     alignItems: "center",
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start",
   },
   tagsContainer: {
-    marginTop: 8,
+    marginTop: 4,
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 4,

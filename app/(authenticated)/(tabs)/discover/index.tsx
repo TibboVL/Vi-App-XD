@@ -1,11 +1,12 @@
 import { ViButton } from "@/components/ViButton";
 import { StyleSheet, View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, SplashScreen } from "expo-router";
 import { getReverseGeocodedLocation } from "@/helpers/locationHelper";
 import { useEffect, useState } from "react";
 import { LocationGeocodedAddress } from "expo-location";
-import { safeAreaEdges, safeAreaStyles, textStyles } from "@/globalStyles";
+import { textStyles } from "@/globalStyles";
+SplashScreen.preventAutoHideAsync();
 
 export default function DiscoverScreen() {
   const [address, setAddress] = useState<LocationGeocodedAddress>();

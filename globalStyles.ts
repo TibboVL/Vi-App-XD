@@ -54,6 +54,10 @@ export const TextColors = {
   },
 };
 
+export const BackgroundColors = {
+  background: "#f2f2f2",
+};
+
 export const headerStyles = {
   headerShadowVisible: false,
   headerStyle: {
