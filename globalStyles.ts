@@ -19,6 +19,12 @@ export const textStyles = StyleSheet.create({
 
     fontSize: 24,
   },
+  h4: {
+    fontFamily: "AnekMalayalam",
+    fontWeight: "medium",
+
+    fontSize: 20,
+  },
   bodyLarge: {
     fontFamily: "AnekMalayalam",
     fontWeight: "regular",
@@ -38,6 +44,15 @@ export const textStyles = StyleSheet.create({
     fontSize: 12,
   },
 });
+
+export const TextColors = {
+  primary: {
+    color: "#2a2a2a",
+  },
+  muted: {
+    color: "#626262",
+  },
+};
 
 export const headerStyles = {
   headerShadowVisible: false,

@@ -108,8 +108,6 @@ export default function ActivitiesScreen() {
           <View
             style={{
               paddingInline: 16,
-              /*               paddingBlock: 16,
-               */
             }}
           >
             <Text>Implement filters here</Text>
@@ -122,22 +120,8 @@ export default function ActivitiesScreen() {
               gap: 8,
             }}
             renderItem={({ item }) => <ViActivitySuggestion activity={item} />}
-            ListEmptyComponent={
-              <>
-                <Text>Something went wrong!</Text>
-              </>
-            }
+            ListEmptyComponent={<Text>Something went wrong!</Text>}
           />
-          {/* <ScrollView contentContainerStyle={styles.Container}>
-            {activityList.map((activity) => {
-              return (
-                <ViActivitySuggestion
-                  key={activity.activityId}
-                  activity={activity}
-                />
-              );
-            })}
-          </ScrollView> */}
         </View>
       )}
     </SafeAreaView>
@@ -152,7 +136,5 @@ const styles = StyleSheet.create({
     marginBlock: 0,
     paddingInline: 16,
     flexDirection: "column",
-    /*     alignItems: "flex-start",
-     */
   },
 });
