@@ -17,10 +17,8 @@ import { router } from "expo-router";
 import { Activity, EnergyLevel, PillarKey } from "@/types/activity";
 import { minutesToHoursMinutes } from "@/helpers/dateTimeHelpers";
 import { getIconByActivity } from "@/helpers/activityIconHelper";
-import { act, memo, useCallback, useEffect, useMemo, useState } from "react";
-import { getDistanceFromLatLonInKm } from "@/helpers/distanceHelper";
+import { memo, useCallback, useMemo } from "react";
 import { textStyles } from "@/globalStyles";
-import { getLocation } from "@/helpers/locationHelper";
 
 export const ViActivitySuggestion = memo(
   ({ activity }: { activity: Activity }) => {
@@ -34,9 +32,10 @@ export const ViActivitySuggestion = memo(
       isGroupActivity,
       activityId,
       debugUITId,
+      distance,
     } = activity;
 
-    const [distance, setDistance] = useState<number | null>(null);
+    //const [distance, setDistance] = useState<number | null>(null);
 
     // memoize for performance
     const energyLevelIcon = useMemo(() => {
@@ -67,32 +66,6 @@ export const ViActivitySuggestion = memo(
     }, [estimatedDurationMinutes]);
 
     const Icon = useMemo(() => getIconByActivity(activity), [activity]);
-
-    useEffect(() => {
-      async function fetchLocation() {
-        const res = await getLocation();
-        const location = {
-          lon: res.coords.longitude,
-          lat: res.coords.latitude,
-        };
-
-        if (location && activity.lon && activity.lat) {
-          const distance = Math.floor(
-            getDistanceFromLatLonInKm(
-              activity.lon,
-              activity.lat,
-              location?.lon,
-              location?.lat
-            )
-          );
-          setDistance(distance);
-          //console.log(distance);
-        }
-        //console.log(location, activity.lon, activity.lat);
-      }
-
-      fetchLocation();
-    }, [activity]);
 
     const handlePress = useCallback(() => {
       router.push({

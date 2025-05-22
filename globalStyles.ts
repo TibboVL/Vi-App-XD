@@ -56,6 +56,9 @@ export const TextColors = {
 
 export const BackgroundColors = {
   background: "#f2f2f2",
+  primary: { backgroundColor: "#98cdac" },
+  secondary: { backgroundColor: "#7eace7" },
+  danger: { backgroundColor: "#ffa2a2" },
 };
 
 export const headerStyles = {
