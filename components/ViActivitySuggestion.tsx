@@ -34,9 +34,10 @@ export const ViActivitySuggestion = memo(
       isGroupActivity,
       activityId,
       debugUITId,
+      distance,
     } = activity;
 
-    const [distance, setDistance] = useState<number | null>(null);
+    //const [distance, setDistance] = useState<number | null>(null);
 
     // memoize for performance
     const energyLevelIcon = useMemo(() => {
@@ -68,7 +69,7 @@ export const ViActivitySuggestion = memo(
 
     const Icon = useMemo(() => getIconByActivity(activity), [activity]);
 
-    useEffect(() => {
+    /*  useEffect(() => {
       async function fetchLocation() {
         const res = await getLocation();
         const location = {
@@ -76,23 +77,23 @@ export const ViActivitySuggestion = memo(
           lat: res.coords.latitude,
         };
 
-        if (location && activity.lon && activity.lat) {
-          const distance = Math.floor(
-            getDistanceFromLatLonInKm(
-              activity.lon,
-              activity.lat,
-              location?.lon,
-              location?.lat
-            )
-          );
-          setDistance(distance);
-          //console.log(distance);
-        }
+        // if (location && activity.lon && activity.lat) {
+        //   const distance = Math.floor(
+        //     getDistanceFromLatLonInKm(
+        //       activity.lon,
+        //       activity.lat,
+        //       location?.lon,
+        //       location?.lat
+        //     )
+        //   );
+        //   setDistance(distance);
+        //   //console.log(distance);
+        // }
         //console.log(location, activity.lon, activity.lat);
       }
 
       fetchLocation();
-    }, [activity]);
+    }, [activity]); */
 
     const handlePress = useCallback(() => {
       router.push({

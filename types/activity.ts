@@ -10,6 +10,7 @@ export type Activity = {
   debugUITId: string;
   lat: number | null;
   lon: number | null;
+  distance: number;
 };
 export type ActivityDetails = {
   activityId: number;
