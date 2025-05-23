@@ -12,7 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Constants from "expo-constants";
 import { useAuth0 } from "react-native-auth0";
-import { Activity, EnergyLevel } from "@/types/activity";
+import { Activity, EnergyLevel, Pillars } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import {
   BackgroundColors,
@@ -72,18 +72,15 @@ export default function ActivitiesScreen() {
         console.warn("Location not found!!");
         return;
       }
-      const response = await fetch(
-        `${API_URL}/activities?d=1
-        &lon=${userLocation?.coords.longitude.toString()}
-        &lat=${userLocation?.coords.latitude.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const query = `${API_URL}/activities?d=1&lon=${userLocation?.coords.longitude.toString()}&lat=${userLocation?.coords.latitude.toString()}`;
+      console.log(query);
+      const response = await fetch(query, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
       if (!response.ok) {
         console.warn("Failed to fetch activities:", response);
@@ -180,10 +177,12 @@ export default function ActivitiesScreen() {
           <BottomSheetModal
             ref={bottomModalSheetRef}
             onChange={handleSheetChanges}
-            backgroundStyle={{
-              backgroundColor: BackgroundColors.background,
-              boxShadow: "-10px -10px 10px rgba(0,0,0,0.1)",
-            }}
+            backgroundStyle={[
+              BackgroundColors.background,
+              {
+                boxShadow: "-10px -10px 10px rgba(0,0,0,0.1)",
+              },
+            ]}
             enableContentPanningGesture={false} // Prevents modal drag from content
           >
             <FilterPanel handleCloseSheet={() => handleCloseSheet()} />
@@ -194,13 +193,6 @@ export default function ActivitiesScreen() {
   );
 }
 
-const viPijlers = [
-  { label: "Any", value: "" },
-  { label: "Social", value: "social" },
-  { label: "Skills", value: "skills" },
-  { label: "Physical", value: "physical" },
-  { label: "Mindfulness", value: "mindfulness" },
-];
 interface filterPanelProps {
   handleCloseSheet: () => void;
 }
@@ -208,6 +200,14 @@ const FilterPanel = ({ handleCloseSheet }: filterPanelProps) => {
   const [selectedPijler, setSelectedPijler] = useState("");
   const [distance, setDistance] = useState(50);
   const [energyLevels, setEnergyLevels] = useState<EnergyLevel[]>([]);
+
+  const viPijlers = [
+    { label: "Any", value: "" },
+    ...Object.entries(Pillars).map(([key, value]) => ({
+      label: key,
+      value: value.title,
+    })),
+  ];
 
   return (
     <BottomSheetView
@@ -240,6 +240,7 @@ const FilterPanel = ({ handleCloseSheet }: filterPanelProps) => {
           {Object.entries(EnergyLevel).map(([key, value]) => {
             return (
               <View
+                key={key}
                 style={{
                   flex: 1,
                 }}
