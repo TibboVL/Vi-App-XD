@@ -7,7 +7,7 @@ export type CompactUserActivityListItem = {
   activityTitle: string;
   plannedStart: string | null; // ISO 8601 string
   plannedEnd: string | null; // ISO 8601 string
-
+  markedCompletedAt: string | null; // ISO 8601 string
   categories: Category[];
 };
 
