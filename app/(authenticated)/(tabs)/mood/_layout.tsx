@@ -3,6 +3,7 @@ import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import { headerStyles } from "../../../../globalStyles";
 import { Funnel } from "phosphor-react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function MoodStackLayout() {
   const glob = useGlobalSearchParams();
