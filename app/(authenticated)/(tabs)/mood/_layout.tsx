@@ -26,6 +26,13 @@ export default function MoodStackLayout() {
             headerTitle: "How's your energy level?",
           }}
         />
+        <Stack.Screen
+          name="activityReview"
+          options={{
+            headerShown: true,
+            headerTitle: "Let’s Reflect",
+          }}
+        />
       </Stack>
     </>
   );

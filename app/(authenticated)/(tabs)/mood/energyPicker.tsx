@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Defs, LinearGradient, Stop } from "react-native-svg";
 import { textStyles } from "../../../../globalStyles";
 import { ViWave } from "@/components/ViWave";
+import { router } from "expo-router";
 
 export default function EnergyPickerScreen() {
   const [batteryContainerHeight, setBatteryContainerHeight] = useState(500);
@@ -244,11 +245,11 @@ export default function EnergyPickerScreen() {
           title="Continue"
           variant="primary"
           type="light"
-          /*  onPress={() => {
+          onPress={() => {
             router.push({
-              pathname: "/mood/energyPicker",
-              });
-              }} */
+              pathname: "/mood/activityReview",
+            });
+          }}
         />
       </View>
     </View>
