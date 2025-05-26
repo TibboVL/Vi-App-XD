@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MoodScreen() {
   function handleStartCheckin() {
+    // if (router.canDismiss()) router.dismissAll();
     router.push("/mood/moodPicker");
   }
   return (
