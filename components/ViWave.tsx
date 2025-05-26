@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { LayoutChangeEvent, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { LayoutChangeEvent, StyleSheet, View } from "react-native";
 import Animated, {
+  cancelAnimation,
   Easing,
   interpolateColor,
   SharedValue,
@@ -23,32 +24,39 @@ type WaveColors = {
 type WaveProps = {
   baseAmplitude?: number;
   baseFrequency?: number;
-  speed?: number;
   colors?: WaveColors;
   fillPercent: SharedValue<number>;
 };
+
+const STEPS = 25;
+const COLOR_INPUT = [0, 0.25, 0.5, 0.75, 1];
+
 export function ViWave({
   baseAmplitude = 20,
   baseFrequency = 2,
-  speed = 3000,
   colors,
   fillPercent, // ⬅ external control
 }: WaveProps) {
-  const [containerWidth, setContainerWidth] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(0);
+  const widthSV = useSharedValue(0);
+  const heightSV = useSharedValue(0);
 
   const clock = useSharedValue(0);
-  // const fillPercent = useSharedValue(0.75); // initial fill level: 15%
 
   useEffect(() => {
-    clock.value = withRepeat(
-      withTiming(1000 * 2 * Math.PI, {
-        duration: 4000 * 1000,
-        easing: Easing.linear,
-      }),
-      -1,
-      false
-    );
+    if (widthSV.value && heightSV.value) {
+      clock.value = withRepeat(
+        withTiming(1000 * 2 * Math.PI, {
+          duration: 4000 * 1000,
+          easing: Easing.linear,
+        }),
+        -1,
+        false
+      );
+    }
+    return () => {
+      cancelAnimation(clock);
+      clock.value = 0;
+    };
   }, []);
 
   // Generate multiple phase values with different offsets
@@ -66,60 +74,56 @@ export function ViWave({
     );
   });
 
-  const onLayout = (event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-    setContainerWidth(width);
-    setContainerHeight(height);
+  const onLayout = (e: LayoutChangeEvent) => {
+    widthSV.value = e.nativeEvent.layout.width;
+    heightSV.value = e.nativeEvent.layout.height;
   };
+
+  const twoPi = 2 * Math.PI;
+  const freqRatio1 = (baseFrequency * twoPi) / widthSV.value;
+  const freqRatio2 = (baseFrequency * 3.5 * twoPi) / widthSV.value;
+  const freqRatio3 = (baseFrequency * 1.5 * twoPi) / widthSV.value;
+
   const animatedProps = useAnimatedProps(() => {
-    if (containerWidth === 0 || containerHeight === 0)
-      return { d: "", fill: "" };
+    if (widthSV.value === 0 || heightSV.value === 0) return { d: "", fill: "" };
 
     const amp = amplitudeOscillation.value;
-    const steps = 30;
 
     // baseY is the vertical position (from top) based on fill level
-    const baseY = containerHeight * (1 - fillPercent.value);
-    let path = `M 0 ${baseY.toFixed(2)}`;
+    const baseY = heightSV.value * (1 - fillPercent.value);
+    const cmds = [`M 0 ${baseY.toFixed(2)}`];
 
-    for (let i = 0; i <= steps; i++) {
-      const x = (i / steps) * containerWidth;
+    for (let i = 0; i <= STEPS; i++) {
+      const x = (i / STEPS) * widthSV.value;
       const y =
         baseY +
         amp *
-          (0.5 *
-            Math.sin(
-              (baseFrequency * 2 * Math.PI * x) / containerWidth + phase1.value
-            ) +
-            0.3 *
-              Math.sin(
-                (baseFrequency * 3.5 * 2 * Math.PI * x) / containerWidth +
-                  phase2.value
-              ) +
-            0.2 *
-              Math.sin(
-                (baseFrequency * 1.5 * 2 * Math.PI * x) / containerWidth +
-                  phase3.value
-              ));
-
-      path += ` L ${x.toFixed(2)} ${y.toFixed(2)}`;
+          (0.5 * Math.sin(freqRatio1 * x + phase1.value) +
+            0.3 * Math.sin(freqRatio2 * x + phase2.value) +
+            0.2 * Math.sin(freqRatio3 * x + phase3.value));
+      cmds.push(`L ${x.toFixed(2)} ${y.toFixed(2)}`);
     }
 
-    path += ` L ${containerWidth} ${containerHeight}`;
-    path += ` L 0 ${containerHeight} Z`;
+    cmds.push(
+      `L ${widthSV.value} ${heightSV.value}`,
+      `L 0 ${heightSV.value}`,
+      `Z`
+    );
 
     // color calculations
-    const fillValue = interpolateColor(
-      fillPercent.value,
-      [0, 0.25, 0.5, 0.75, 1],
-      [colors!.low, colors!.low, colors!.medium, colors!.high, colors!.veryHigh]
-    );
-    return { d: path, fill: fillValue };
+    const fillValue = interpolateColor(fillPercent.value, COLOR_INPUT, [
+      colors!.low,
+      colors!.low,
+      colors!.medium,
+      colors!.high,
+      colors!.veryHigh,
+    ]);
+    return { d: cmds.join(" "), fill: fillValue };
   });
 
   return (
     <View style={{ flex: 1 }} onLayout={onLayout}>
-      {containerWidth > 0 && containerHeight > 0 && (
+      {widthSV.value > 0 && heightSV.value > 0 && (
         <Svg width="100%" height="100%">
           <AnimatedPath animatedProps={animatedProps} />
         </Svg>

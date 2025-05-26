@@ -41,6 +41,7 @@ export default function ActivityReviewScreen() {
     setUserActivityListItemsToBeReviewed,
   ] = useState<CompactUserActivityListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [posting, setPosting] = useState(true);
   useState<Number | null>(null);
   const [selectedReviewItemId, setSelectedReviewItemId] = useState<
     number | null
@@ -64,9 +65,7 @@ export default function ActivityReviewScreen() {
         },
       });
 
-      console.log(response);
       const data = await response.json();
-      console.log(data.data);
       setUserActivityListItemsToBeReviewed(
         data.data as CompactUserActivityListItem[]
       );
@@ -92,8 +91,48 @@ export default function ActivityReviewScreen() {
   }
   const navigation = useNavigation();
 
-  useEffect(() => {
+  async function handlePostCheckin() {
+    try {
+      setPosting(true);
+      const creds = await getCredentials();
+      const accessToken = creds?.accessToken;
+
+      const query = `${API_URL}/checkin/add`;
+      const response = await fetch(query, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          beforeMoodId: state.moodBefore,
+          afterMoodId: state.moodAfter,
+          beforeEnergy: state.energyBefore,
+          afterEnergy: state.energyAfter,
+          userActivityId: state.userActivityId,
+        }),
+      });
+
+      const data = await response.json();
+      setUserActivityListItemsToBeReviewed(
+        data.data as CompactUserActivityListItem[]
+      );
+      setPosting(false);
+    } catch (error) {
+      console.log("Failed to fetch : ", error);
+    }
     fetchUserActivityListItemsToBeReviewed();
+  }
+
+  useEffect(() => {
+    if (state.moodBefore != null) {
+      // if data is already in the context we should send it to the backend
+      handlePostCheckin();
+    } else {
+      setPosting(false);
+      fetchUserActivityListItemsToBeReviewed();
+    }
+
     const listener = navigation.addListener("beforeRemove", (e) => {
       e.preventDefault();
     });

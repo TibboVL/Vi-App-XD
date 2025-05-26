@@ -78,6 +78,25 @@ export enum EnergyLevel {
   VeryHigh = "Very high",
 }
 
+export const EnergyMappings = {
+  Low: {
+    min: 0,
+    max: 25,
+  },
+  Medium: {
+    min: 26,
+    max: 50,
+  },
+  High: {
+    min: 51,
+    max: 75,
+  },
+  VeryHigh: {
+    min: 76,
+    max: 100,
+  },
+};
+
 export const Pillars = {
   mindfulness: {
     title: "Mindfulness",

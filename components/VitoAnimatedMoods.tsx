@@ -2,6 +2,7 @@ import { useFocusEffect } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Text } from "react-native";
 import Animated, {
+  cancelAnimation,
   useAnimatedProps,
   useSharedValue,
   withTiming,
@@ -90,7 +91,6 @@ const vitoEmoteConfig: VitoEmoteConfig = {
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedEllipse = Animated.createAnimatedComponent(Ellipse);
-const AnimatedGroup = Animated.createAnimatedComponent(G);
 
 function useAnimatedTransform(
   partKey: keyof VitoPartsConfig,
@@ -119,6 +119,14 @@ function useAnimatedTransform(
       shared.opacity.value = withTiming(config.opacity);
     if (config.rotate !== undefined) shared.rotate.value = config.rotate; // static for now
     if (config.d !== undefined) shared.d.value = config.d; // you could animate with morphing lib
+
+    return () => {
+      cancelAnimation(shared.translateX);
+      cancelAnimation(shared.translateY);
+      cancelAnimation(shared.scale);
+      cancelAnimation(shared.opacity);
+      cancelAnimation(shared.d);
+    };
   }, [targetMood]);
 
   return shared;
