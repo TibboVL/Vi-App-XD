@@ -27,6 +27,12 @@ import {
 import ContextDebugView from "./checkinContextDebug";
 import { ReText } from "react-native-redash";
 
+const batteryColors = [
+  { low: "#FFA3A3", medium: "#f7cf9d", high: "#D4FF8F", veryHigh: "#A3FFE5" },
+  { low: "#FF7070", medium: "#FFBA70", high: "#C8FF70", veryHigh: "#70FFD7" },
+  { low: "#FF1F1F", medium: "#FFA340", high: "#A7DF4E", veryHigh: "#2FA785" },
+];
+
 export default function EnergyPickerScreen() {
   const state = useCheckinState();
   const dispatch = useCheckinDispatch();
@@ -114,55 +120,26 @@ export default function EnergyPickerScreen() {
       e.preventDefault();
       ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
     });
-
     return () => {
       navigation.removeListener("beforeRemove", listener);
     };
   }, []);
+
   return (
     <View
       style={{
         flex: 1,
-        // paddingBottom: insets.top * 2,
       }}
     >
-      <View
-        style={{
-          flex: 1,
-          width: "100%",
-          paddingBlock: 16 * 6,
-          paddingInline: 16,
-        }}
-      >
+      <View style={styles.Container}>
         <ContextDebugView />
-
         <ReText
           text={derivedPercentage}
           style={[textStyles.h4, { textAlign: "center" }]}
         />
-
-        <View
-          id="BatteryTop"
-          style={{
-            height: 32,
-            marginInline: 16 * 7.5,
-            borderTopRightRadius: 16 + 8,
-            borderTopLeftRadius: 16 + 8,
-            backgroundColor: "#797979",
-          }}
-        />
+        <View id="BatteryTop" style={styles.BatteryTopStyles} />
         <GestureDetector gesture={panGesture}>
-          <View
-            id="Battery"
-            style={{
-              flex: 1,
-              marginInline: 16 * 3.75,
-              borderRadius: 16 * 3,
-              overflow: "hidden",
-              boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",
-            }}
-            onLayout={onLayout}
-          >
+          <View id="Battery" style={styles.BatteryStyles} onLayout={onLayout}>
             <View
               id="BatteryScaleIndicator"
               style={[
@@ -183,7 +160,6 @@ export default function EnergyPickerScreen() {
                       flex: 1,
                       flexDirection: "row",
                       alignItems: "flex-end",
-                      height: 0,
                     }}
                   >
                     <View
@@ -191,7 +167,6 @@ export default function EnergyPickerScreen() {
                         flex: 1,
                         flexDirection: "row",
                         alignItems: "center",
-                        borderColor: "blue",
                         gap: 6,
                       }}
                     >
@@ -240,13 +215,7 @@ export default function EnergyPickerScreen() {
               <ViWave
                 baseAmplitude={15}
                 baseFrequency={1}
-                speed={3000}
-                colors={{
-                  low: "#FFA3A3",
-                  medium: "#f7cf9d",
-                  high: "#D4FF8F",
-                  veryHigh: "#A3FFE5",
-                }}
+                colors={batteryColors[0]}
                 fillPercent={fillAbove}
               />
             </View>
@@ -261,13 +230,7 @@ export default function EnergyPickerScreen() {
               <ViWave
                 baseAmplitude={11}
                 baseFrequency={0.8}
-                speed={3000}
-                colors={{
-                  low: "#FF7070",
-                  medium: "#FFBA70",
-                  high: "#C8FF70",
-                  veryHigh: "#70FFD7",
-                }}
+                colors={batteryColors[1]}
                 fillPercent={fill}
               />
             </View>
@@ -282,13 +245,7 @@ export default function EnergyPickerScreen() {
               <ViWave
                 baseAmplitude={10}
                 baseFrequency={0.2}
-                speed={3000}
-                colors={{
-                  low: "#FF1F1F",
-                  medium: "#FFA340",
-                  high: "#A7DF4E",
-                  veryHigh: "#2FA785",
-                }}
+                colors={batteryColors[2]}
                 fillPercent={fillBelow}
               />
             </View>
@@ -309,11 +266,10 @@ export default function EnergyPickerScreen() {
 
 const styles = StyleSheet.create({
   Container: {
-    display: "flex",
-    paddingInline: 16,
-    flexDirection: "column",
-    alignItems: "flex-start",
     flex: 1,
+    width: "100%",
+    paddingBlock: 16 * 6,
+    paddingInline: 16,
   },
   BottomContainer: {
     paddingBlock: 16,
@@ -332,5 +288,19 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     top: 0,
+  },
+  BatteryStyles: {
+    flex: 1,
+    marginInline: 16 * 3.75,
+    borderRadius: 16 * 3,
+    overflow: "hidden",
+    boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",
+  },
+  BatteryTopStyles: {
+    height: 32,
+    marginInline: 16 * 7.5,
+    borderTopRightRadius: 16 + 8,
+    borderTopLeftRadius: 16 + 8,
+    backgroundColor: "#797979",
   },
 });
