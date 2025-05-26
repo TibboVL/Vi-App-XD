@@ -1,15 +1,37 @@
 import { ViButton } from "@/components/ViButton";
-import { useMemo, useState } from "react";
-import { View, Text, StyleSheet, LayoutChangeEvent } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  LayoutChangeEvent,
+  ToastAndroid,
+} from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { runOnJS, useSharedValue, withTiming } from "react-native-reanimated";
+import {
+  runOnJS,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Defs, LinearGradient, Stop } from "react-native-svg";
 import { textStyles } from "../../../../globalStyles";
 import { ViWave } from "@/components/ViWave";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
+import {
+  CheckinContextAction,
+  ReviewStage,
+  useCheckinDispatch,
+  useCheckinState,
+} from "./checkinContext";
+import ContextDebugView from "./checkinContextDebug";
+import { ReText } from "react-native-redash";
 
 export default function EnergyPickerScreen() {
+  const state = useCheckinState();
+  const dispatch = useCheckinDispatch();
+  const navigation = useNavigation();
+
   const [batteryContainerHeight, setBatteryContainerHeight] = useState(500);
   const insets = useSafeAreaInsets();
 
@@ -18,8 +40,38 @@ export default function EnergyPickerScreen() {
   const fillAbove = useSharedValue(0.15 + fillLayerOffset); // 0 to 1
   const fillBelow = useSharedValue(0.15 - fillLayerOffset); // 0 to 1
 
-  //TODO: make this update faster without cuasing pan action to lag
-  const [displayedPercentage, setDisplayedPercentage] = useState("15%");
+  // const [displayedPercentage, setDisplayedPercentage] = useState(15);
+
+  const handleContinue = () => {
+    // if we are reviewing an activity and in the before state then go to the after state, dont go to the review page
+    if (state.reviewStage == ReviewStage.BEFORE) {
+      dispatch({
+        action: CheckinContextAction.SET_REVIEW_STAGE,
+        payload: ReviewStage.AFTER,
+      });
+      router.push("/mood/moodPicker");
+    } else if (state.reviewStage == ReviewStage.AFTER) {
+      // in after state of activity review, show pros and cons page now
+      router.push("/mood/prosCons");
+    } else {
+      // freestanding activity, reviewstage is null, go to review page
+      router.push("/mood/activityReview");
+    }
+    dispatch({
+      action:
+        state.reviewStage == ReviewStage.BEFORE || state.reviewStage == null
+          ? CheckinContextAction.SET_ENERGY_BEFORE
+          : CheckinContextAction.SET_ENERGY_AFTER,
+      payload: derivedPercentage.value.substring(
+        0,
+        derivedPercentage.value.length - 1
+      ),
+    });
+  };
+
+  const derivedPercentage = useDerivedValue(
+    () => Math.floor(fill.value * 100) + "%"
+  );
 
   const panGesture = useMemo(() => {
     return Gesture.Pan()
@@ -33,7 +85,6 @@ export default function EnergyPickerScreen() {
         fillBelow.value = withTiming(newFill - fillLayerOffset, {
           duration: 300,
         });
-        runOnJS(setDisplayedPercentage)(Math.floor(newFill * 100) + "%");
       })
       .onUpdate((e) => {
         let newFill = 1 - e.y / batteryContainerHeight;
@@ -52,31 +103,43 @@ export default function EnergyPickerScreen() {
         fillBelow.value = withTiming(newFill - fillLayerOffset, {
           duration: 300,
         });
-        runOnJS(setDisplayedPercentage)(Math.floor(newFill * 100) + "%");
       });
   }, []);
   const onLayout = (event: LayoutChangeEvent) => {
     setBatteryContainerHeight(event.nativeEvent.layout.height);
   };
+
+  useEffect(() => {
+    const listener = navigation.addListener("beforeRemove", (e) => {
+      e.preventDefault();
+      ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
+    });
+
+    return () => {
+      navigation.removeListener("beforeRemove", listener);
+    };
+  }, []);
   return (
     <View
-      style={[
-        styles.Container,
-        {
-          paddingBottom: insets.top, // weirdly enough i have to apply this to the bottom or the height will be too tall??
-        },
-      ]}
+      style={{
+        flex: 1,
+        // paddingBottom: insets.top * 2,
+      }}
     >
       <View
         style={{
           flex: 1,
           width: "100%",
           paddingBlock: 16 * 6,
+          paddingInline: 16,
         }}
       >
-        <Text style={[textStyles.h4, { textAlign: "center" }]}>
-          {displayedPercentage}
-        </Text>
+        <ContextDebugView />
+
+        <ReText
+          text={derivedPercentage}
+          style={[textStyles.h4, { textAlign: "center" }]}
+        />
 
         <View
           id="BatteryTop"
@@ -85,17 +148,9 @@ export default function EnergyPickerScreen() {
             marginInline: 16 * 7.5,
             borderTopRightRadius: 16 + 8,
             borderTopLeftRadius: 16 + 8,
-            boxShadow:
-              "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px, rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px,   ",
+            backgroundColor: "#797979",
           }}
-        >
-          <Defs>
-            <LinearGradient x1="0%" y1="0%" x2="50%" y2="0%">
-              <Stop offset="0" stopColor="#DDDDDD" stopOpacity="0" />
-              <Stop offset="1" stopColor="#666666" stopOpacity="1" />
-            </LinearGradient>
-          </Defs>
-        </View>
+        />
         <GestureDetector gesture={panGesture}>
           <View
             id="Battery"
@@ -245,11 +300,7 @@ export default function EnergyPickerScreen() {
           title="Continue"
           variant="primary"
           type="light"
-          onPress={() => {
-            router.push({
-              pathname: "/mood/activityReview",
-            });
-          }}
+          onPress={handleContinue}
         />
       </View>
     </View>

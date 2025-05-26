@@ -1,4 +1,3 @@
-import { ViToggleButton } from "@/components/ViToggleButton";
 import {
   BackgroundColors,
   safeAreaEdges,
@@ -6,13 +5,12 @@ import {
   TextColors,
   textStyles,
 } from "@/globalStyles";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableNativeFeedback,
-  ToastAndroid,
   FlatList,
 } from "react-native";
 import { useAuth0 } from "react-native-auth0";
@@ -21,16 +19,23 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import Constants from "expo-constants";
-import { Mood } from "@/types/mood";
-import { VitoAnimatedMoods } from "@/components/VitoAnimatedMoods";
 import { ViButton } from "@/components/ViButton";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { CompactUserActivityListItem } from "@/types/userActivityList";
 import { Tag } from "@/components/ViCategoryTag";
 import { PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
+import {
+  CheckinContextAction,
+  useCheckinDispatch,
+  useCheckinState,
+} from "./checkinContext";
+import ContextDebugView from "./checkinContextDebug";
 
 export default function ActivityReviewScreen() {
+  const state = useCheckinState();
+  const dispatch = useCheckinDispatch();
+
   const [
     userActivityListItemsToBeReviewed,
     setUserActivityListItemsToBeReviewed,
@@ -77,20 +82,30 @@ export default function ActivityReviewScreen() {
       : setSelectedReviewItemId(activityId);
   }
 
+  function handleSetContextForActivityReview(reviewing: boolean) {
+    if (router.canDismiss()) router.dismissAll();
+
+    dispatch({
+      action: CheckinContextAction.SET_USER_ACTIVITY, // automatically resets the rest
+      payload: reviewing ? selectedReviewItemId : null,
+    });
+  }
+  const navigation = useNavigation();
+
   useEffect(() => {
     fetchUserActivityListItemsToBeReviewed();
+    const listener = navigation.addListener("beforeRemove", (e) => {
+      e.preventDefault();
+    });
+
+    return () => {
+      navigation.removeListener("beforeRemove", listener);
+    };
   }, []);
 
   return (
-    <SafeAreaView
-      style={[
-        safeAreaStyles,
-        {
-          paddingBottom: useSafeAreaInsets().top, // weirdly enough i have to apply this to the bottom or the height will be too tall??
-        },
-      ]}
-      edges={safeAreaEdges}
-    >
+    <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
+      <ContextDebugView />
       <View style={[styles.Container]}>
         {!loading ? (
           <View style={{ flex: 1, width: "100%" }}>
@@ -182,6 +197,7 @@ export default function ActivityReviewScreen() {
               variant="primary"
               type="text-only"
               onPress={() => {
+                handleSetContextForActivityReview(false); // also clear when leaving
                 router.push({
                   pathname: "/mood",
                 });
@@ -195,7 +211,8 @@ export default function ActivityReviewScreen() {
               variant="primary"
               type="light"
               onPress={() => {
-                ToastAndroid.show("Not implemented", ToastAndroid.SHORT);
+                handleSetContextForActivityReview(true);
+                router.push("/mood/moodPicker");
               }}
             />
           </View>

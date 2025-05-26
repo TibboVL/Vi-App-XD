@@ -1,16 +1,26 @@
 import { ViToggleButton } from "@/components/ViToggleButton";
 import { safeAreaEdges, safeAreaStyles } from "@/globalStyles";
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ToastAndroid } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 import { Mood } from "@/types/mood";
 import { VitoAnimatedMoods } from "@/components/VitoAnimatedMoods";
 import { ViButton } from "@/components/ViButton";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
+import {
+  useCheckinDispatch,
+  useCheckinState,
+  CheckinContextAction,
+  ReviewStage,
+} from "./checkinContext";
+import ContextDebugView from "./checkinContextDebug";
 
 export default function MoodPickerScreen() {
+  const state = useCheckinState();
+  const dispatch = useCheckinDispatch();
+
   const [moods, setMoods] = useState<Mood[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPrimaryMood, setSelectedPrimaryMoodMood] =
@@ -32,6 +42,20 @@ export default function MoodPickerScreen() {
         : setSelectedSecondaryMoodMood(mood);
     }
   }
+
+  const updateChosenMoodId = () => {
+    //if (router.canDismiss()) router.dismissAll();
+
+    dispatch({
+      action:
+        // if on stage before or stage null, set before, else set after
+        state.reviewStage == ReviewStage.BEFORE || state.reviewStage == null
+          ? CheckinContextAction.SET_MOOD_BEFORE
+          : CheckinContextAction.SET_MOOD_AFTER,
+      payload: selectedSecondaryMood,
+    });
+  };
+
   async function fetchMoods() {
     try {
       setLoading(true);
@@ -54,13 +78,24 @@ export default function MoodPickerScreen() {
       console.log("Failed to fetch moods: ", error);
     }
   }
+  const navigation = useNavigation();
 
   useEffect(() => {
     fetchMoods();
+    const listener = navigation.addListener("beforeRemove", (e) => {
+      e.preventDefault();
+      ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
+    });
+
+    return () => {
+      navigation.removeListener("beforeRemove", listener);
+    };
   }, []);
 
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
+      <ContextDebugView />
+
       <View style={[styles.Container]}>
         <View
           id="ChosenPrimaryEmotion"
@@ -148,6 +183,7 @@ export default function MoodPickerScreen() {
             variant="primary"
             type="light"
             onPress={() => {
+              updateChosenMoodId();
               router.push({
                 pathname: "/mood/energyPicker",
               });
