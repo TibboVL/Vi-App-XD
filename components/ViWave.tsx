@@ -4,8 +4,10 @@ import Animated, {
   cancelAnimation,
   Easing,
   interpolateColor,
+  runOnJS,
   SharedValue,
   useAnimatedProps,
+  useAnimatedReaction,
   useDerivedValue,
   useSharedValue,
   withRepeat,
@@ -43,16 +45,16 @@ export function ViWave({
   const clock = useSharedValue(0);
 
   useEffect(() => {
-    if (widthSV.value && heightSV.value) {
-      clock.value = withRepeat(
-        withTiming(1000 * 2 * Math.PI, {
-          duration: 4000 * 1000,
-          easing: Easing.linear,
-        }),
-        -1,
-        false
-      );
-    }
+    // if (widthSV.value && heightSV.value) {
+    clock.value = withRepeat(
+      withTiming(1000 * 2 * Math.PI, {
+        duration: 4000 * 1000,
+        easing: Easing.linear,
+      }),
+      -1,
+      false
+    );
+    //}
     return () => {
       cancelAnimation(clock);
       clock.value = 0;
@@ -73,19 +75,23 @@ export function ViWave({
       3 * Math.sin(t * ((2.3 * 4) / (2 * Math.PI)) + 1)
     );
   });
+  const [layoutReady, setLayoutReady] = useState(false);
 
   const onLayout = (e: LayoutChangeEvent) => {
     widthSV.value = e.nativeEvent.layout.width;
     heightSV.value = e.nativeEvent.layout.height;
+    if (widthSV.value > 0 && heightSV.value > 0) {
+      setLayoutReady(true);
+    }
   };
-
-  const twoPi = 2 * Math.PI;
-  const freqRatio1 = (baseFrequency * twoPi) / widthSV.value;
-  const freqRatio2 = (baseFrequency * 3.5 * twoPi) / widthSV.value;
-  const freqRatio3 = (baseFrequency * 1.5 * twoPi) / widthSV.value;
 
   const animatedProps = useAnimatedProps(() => {
     if (widthSV.value === 0 || heightSV.value === 0) return { d: "", fill: "" };
+
+    const twoPi = 2 * Math.PI;
+    const freq1 = (baseFrequency * twoPi) / widthSV.value;
+    const freq2 = (baseFrequency * 3.5 * twoPi) / widthSV.value;
+    const freq3 = (baseFrequency * 1.5 * twoPi) / widthSV.value;
 
     const amp = amplitudeOscillation.value;
 
@@ -98,9 +104,9 @@ export function ViWave({
       const y =
         baseY +
         amp *
-          (0.5 * Math.sin(freqRatio1 * x + phase1.value) +
-            0.3 * Math.sin(freqRatio2 * x + phase2.value) +
-            0.2 * Math.sin(freqRatio3 * x + phase3.value));
+          (0.5 * Math.sin(freq1 * x + phase1.value) +
+            0.3 * Math.sin(freq2 * x + phase2.value) +
+            0.2 * Math.sin(freq3 * x + phase3.value));
       cmds.push(`L ${x.toFixed(2)} ${y.toFixed(2)}`);
     }
 
@@ -123,11 +129,11 @@ export function ViWave({
 
   return (
     <View style={{ flex: 1 }} onLayout={onLayout}>
-      {widthSV.value > 0 && heightSV.value > 0 && (
+      {layoutReady ? (
         <Svg width="100%" height="100%">
           <AnimatedPath animatedProps={animatedProps} />
         </Svg>
-      )}
+      ) : null}
     </View>
   );
 }

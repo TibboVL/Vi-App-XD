@@ -19,8 +19,17 @@ export default ({ config }) => {
 
   return {
     ...config,
-    extra: {
-      apiUrl: isPhysicalDevice ? env.API_URL_PHYSICAL : env.API_URL,
+    expo: {
+      owner: "tvl01",
+      ...config.expo,
+      extra: {
+        ...config.expo?.extra, // Preserve existing properties
+        apiUrl: isPhysicalDevice ? env.API_URL_PHYSICAL : env.API_URL,
+        eas: {
+          ...(config.expo?.eas || {}), // Preserve existing EAS config
+          projectId: "a29584cc-200b-449e-b916-401ca4aad869",
+        },
+      },
     },
   };
 };

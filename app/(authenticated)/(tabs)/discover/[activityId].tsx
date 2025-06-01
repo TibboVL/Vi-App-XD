@@ -1,10 +1,5 @@
 import { ViButton } from "@/components/ViButton";
-import {
-  ExternalPathString,
-  Link,
-  useGlobalSearchParams,
-  useLocalSearchParams,
-} from "expo-router";
+import { ExternalPathString, Link, useLocalSearchParams } from "expo-router";
 
 import {
   View,
@@ -12,8 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   ToastAndroid,
-  StyleProp,
-  ColorValue,
+  TouchableNativeFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
@@ -22,15 +16,17 @@ import {
   safeAreaStyles,
   textStyles,
   TextColors,
+  BackgroundColors,
 } from "@/globalStyles";
 import { useAuth0 } from "react-native-auth0";
-import { act, useEffect, useState } from "react";
-import { Activity, ActivityDetails } from "@/types/activity";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ActivityDetails, PillarKey } from "@/types/activity";
 import Constants from "expo-constants";
 import { Viloader } from "@/components/ViLoader";
 import {
   BabyCarriage,
-  BatteryLow,
+  Calendar,
+  Clock,
   CurrencyEur,
   Envelope,
   Globe,
@@ -39,22 +35,38 @@ import {
   Phone,
 } from "phosphor-react-native";
 import { adjustLightness } from "@/constants/Colors";
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { Tag } from "@/components/ViCategoryTag";
+import { EnergyIcon } from "@/components/EnergyIcon";
 
 export default function ActivityDetailsScreen() {
-  const glob = useGlobalSearchParams();
   const local = useLocalSearchParams();
-  console.log(
-    "Local:",
-    local.activityId,
-    local.title,
-    "Global:",
-    glob.activityId
-  );
 
   const { getCredentials } = useAuth0();
   const [activity, setActivity] = useState<ActivityDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const API_URL = Constants.expoConfig?.extra?.apiUrl;
+  const [descriptionExpandedState, setDescriptionExpandedState] =
+    useState<boolean>(false);
+
+  function toggleDescriptionState() {
+    setDescriptionExpandedState(!descriptionExpandedState);
+  }
+
+  const bottomModalSheetRef = useRef<BottomSheetModal>(null);
+
+  const handleOpenSheet = () => bottomModalSheetRef.current!.present();
+  const handleCloseSheet = () => bottomModalSheetRef.current!.close();
+
+  // callbacks
+  const handleSheetChanges = useCallback((index: number) => {
+    //console.log("handleSheetChanges", index);
+  }, []);
 
   const fetchActivityDetails = async () => {
     try {
@@ -128,6 +140,19 @@ export default function ActivityDetailsScreen() {
               }}
             >
               <Text style={[textStyles.h4]}>{activity.name}</Text>
+              {activity.categories?.length > 0 ? (
+                <View style={styles.tagsContainer}>
+                  {activity.categories?.map((category) => (
+                    <Tag
+                      key={category.name}
+                      label={category.name}
+                      pillar={category.pillar?.toLowerCase() as PillarKey}
+                    />
+                  ))}
+                </View>
+              ) : (
+                <Text>No categories - this shouldnt happen!</Text>
+              )}
             </View>
             <View id="CoreInformation" style={styles.Card}>
               <View
@@ -147,7 +172,13 @@ export default function ActivityDetailsScreen() {
                   }
                 />
                 <CoreInfoBox
-                  Icon={BatteryLow}
+                  Icon={() => (
+                    <EnergyIcon
+                      style={{ color: TextColors.muted.color }}
+                      energy={activity.energyRequired}
+                      size={20}
+                    />
+                  )}
                   activity={activity}
                   label="Required energy"
                   value={activity.energyRequired}
@@ -156,26 +187,38 @@ export default function ActivityDetailsScreen() {
                   Icon={BabyCarriage}
                   activity={activity}
                   label="Min age"
-                  value={`${activity.minAge} +`}
+                  value={`${activity.minAge ? activity.minAge + " +" : "N/A"}`}
                 />
               </View>
               <CoreInfoBox
                 Icon={MapPinLine}
                 activity={activity}
                 label="Location"
-                value={`${activity.locationName}`}
+                value={`${
+                  activity.locationName ? activity.locationName : "N/A"
+                }`}
               />
             </View>
-            <View id="Description" style={[styles.Card]}>
-              <Text style={[textStyles.bodyLarge, { fontWeight: "700" }]}>
-                About this event
-              </Text>
-              <Text
-                style={[textStyles.bodyLarge, TextColors.muted]}
-                numberOfLines={3}
-              >
-                {activity.description}
-              </Text>
+            <View
+              id="Description"
+              style={{
+                borderRadius: 16,
+                overflow: "hidden",
+              }}
+            >
+              <TouchableNativeFeedback onPress={() => toggleDescriptionState()}>
+                <View style={[styles.Card]}>
+                  <Text style={[textStyles.bodyLarge, { fontWeight: "700" }]}>
+                    About this event
+                  </Text>
+                  <Text
+                    style={[textStyles.bodyLarge, TextColors.muted]}
+                    numberOfLines={!descriptionExpandedState ? 3 : undefined}
+                  >
+                    {activity.description}
+                  </Text>
+                </View>
+              </TouchableNativeFeedback>
             </View>
             <View
               id="OpeningHours"
@@ -293,27 +336,57 @@ export default function ActivityDetailsScreen() {
                 ))}
               </View>
             </View>
-            {local.debugUITId ? (
-              <ViButton
-                title="COPY DEBUG URL"
-                type="light"
-                variant="danger"
-                onPress={async () =>
-                  await Clipboard.setStringAsync(local.debugUITId.toString())
-                }
-              />
-            ) : (
-              <Text>Hardcoded activity</Text>
-            )}
+            {
+              local.debugUITId ? (
+                <ViButton
+                  title="COPY DEBUG URL"
+                  type="light"
+                  variant="danger"
+                  onPress={async () =>
+                    await Clipboard.setStringAsync(local.debugUITId.toString())
+                  }
+                />
+              ) : null
+              // <Text>Hardcoded activity</Text>
+            }
           </ScrollView>
           <View style={[styles.BottomContainer]}>
             <View style={styles.BottomContainerButton}>
               <ViButton title="Google more" variant="primary" type="outline" />
             </View>
             <View style={styles.BottomContainerButton}>
-              <ViButton title="Add to agenda" variant="primary" type="light" />
+              <ViButton
+                title="Add to calendar"
+                variant="primary"
+                type="light"
+                onPress={() => handleOpenSheet()}
+              />
             </View>
           </View>
+          <BottomSheetModal
+            backdropComponent={(props) => (
+              <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+                pressBehavior="close"
+              />
+            )}
+            ref={bottomModalSheetRef}
+            onChange={handleSheetChanges}
+            backgroundStyle={[
+              BackgroundColors.background,
+              {
+                boxShadow: "-10px -10px 10px rgba(0,0,0,0.1)",
+              },
+            ]}
+            enableContentPanningGesture={false} // Prevents modal drag from content
+          >
+            <PlanningSheetView
+              handleClose={handleCloseSheet}
+              activity={activity}
+            />
+          </BottomSheetModal>
         </>
       ) : (
         <Text>No results?!</Text>
@@ -321,6 +394,252 @@ export default function ActivityDetailsScreen() {
     </SafeAreaView>
   );
 }
+interface PlanningSheetViewProps {
+  handleClose: () => void;
+  activity: ActivityDetails;
+}
+function PlanningSheetView({ handleClose, activity }: PlanningSheetViewProps) {
+  const { getCredentials } = useAuth0();
+  const API_URL = Constants.expoConfig?.extra?.apiUrl;
+  const [isStartDatePickerVisible, setStartDatePickerVisibility] =
+    useState(false);
+  const [startDatePickerMode, setStartDatePickerMode] = useState<
+    "datetime" | "date" | "time" | undefined
+  >("date");
+  const [endDatePickerMode, setEndDatePickerMode] = useState<
+    "datetime" | "date" | "time" | undefined
+  >("date");
+  const [isEndDatePickerVisible, setEndDatePickerVisibility] = useState(false);
+  const [startDateTime, setStartDateTime] = useState(new Date());
+  const [endDateTime, setEndDateTime] = useState(new Date());
+  const [posting, setPosting] = useState<boolean>(false);
+  const [status, setStatus] = useState<number | null>(null);
+
+  const handleConfirmStartDate = (date: any) => {
+    console.warn("A date has been picked: ", date);
+    if (date > endDateTime) {
+      setEndDateTime(date);
+    }
+    setStartDatePickerVisibility(false);
+    setStartDateTime(date);
+  };
+  const handleConfirmEndDate = (date: any) => {
+    console.warn("A date has been picked: ", date);
+    setEndDatePickerVisibility(false);
+    setEndDateTime(date);
+  };
+
+  async function handleAddEventToPlanner() {
+    try {
+      setPosting(true);
+      const creds = await getCredentials();
+      const accessToken = creds?.accessToken;
+
+      const response = await fetch(`${API_URL}/useractivitylist/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          activityId: activity.activityId,
+          plannedStart: startDateTime.toISOString(),
+          plannedEnd: endDateTime.toISOString(),
+        }),
+      });
+
+      setStatus(response.status);
+      if (response.status == 200) {
+        ToastAndroid.show("Event added!", ToastAndroid.SHORT);
+      }
+      setPosting(false);
+      handleClose();
+    } catch (error) {
+      console.error("Error fetching activity details:", error);
+      setPosting(false);
+    }
+  }
+
+  var dateOptions = {
+    day: "numeric",
+    weekday: "long",
+    month: "short",
+  } as Intl.DateTimeFormatOptions;
+  var timeOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+  } as Intl.DateTimeFormatOptions;
+
+  return (
+    <BottomSheetView>
+      <View
+        style={{
+          paddingBlock: 16,
+          alignItems: "center",
+          width: "100%",
+          justifyContent: "center",
+        }}
+      >
+        <Text style={textStyles.h3}>Add to my calendar</Text>
+      </View>
+
+      {posting ? (
+        <Viloader vitoMessage="Adding the event to your calendar!" />
+      ) : (
+        <View
+          style={{
+            padding: 16,
+            paddingBottom: 32,
+            gap: 4,
+          }}
+        >
+          <Text
+            style={{
+              paddingTop: 8,
+            }}
+          >
+            Start
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 8,
+              alignSelf: "center",
+              width: "100%",
+            }}
+          >
+            <IconButton
+              Icon={Calendar}
+              onPress={() => {
+                setStartDatePickerMode("date");
+                setStartDatePickerVisibility(true);
+              }}
+            >
+              {startDateTime.toLocaleDateString("en-us", dateOptions)}
+            </IconButton>
+            <IconButton
+              Icon={Clock}
+              onPress={() => {
+                setStartDatePickerMode("time");
+                setStartDatePickerVisibility(true);
+              }}
+            >
+              {startDateTime.toLocaleTimeString("nl-be", timeOptions)}
+            </IconButton>
+          </View>
+          <Text
+            style={{
+              paddingTop: 8,
+            }}
+          >
+            End
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 8,
+              alignSelf: "center",
+              width: "100%",
+            }}
+          >
+            <IconButton
+              Icon={Calendar}
+              onPress={() => {
+                setEndDatePickerMode("date");
+                setEndDatePickerVisibility(true);
+              }}
+            >
+              {endDateTime.toLocaleDateString("en-us", dateOptions)}
+            </IconButton>
+            <IconButton
+              Icon={Clock}
+              onPress={() => {
+                setEndDatePickerMode("time");
+                setEndDatePickerVisibility(true);
+              }}
+            >
+              {endDateTime.toLocaleTimeString("nl-be", timeOptions)}
+            </IconButton>
+          </View>
+          <DateTimePickerModal
+            date={startDateTime}
+            locale="en_GB"
+            is24Hour={true}
+            firstDayOfWeek={1}
+            mode={startDatePickerMode}
+            isVisible={isStartDatePickerVisible}
+            onConfirm={handleConfirmStartDate}
+            onCancel={() => setStartDatePickerVisibility(false)}
+          />
+          <DateTimePickerModal
+            date={endDateTime}
+            locale="en_GB"
+            is24Hour={true}
+            firstDayOfWeek={1}
+            mode={endDatePickerMode}
+            isVisible={isEndDatePickerVisible}
+            onConfirm={handleConfirmEndDate}
+            onCancel={() => setEndDatePickerVisibility(false)}
+          />
+        </View>
+      )}
+
+      <View style={[styles.BottomContainer]}>
+        <View style={styles.BottomContainerButton}>
+          <ViButton
+            title="Close"
+            variant="primary"
+            type="text-only"
+            enabled={posting ? false : true}
+            onPress={() => handleClose()}
+          />
+        </View>
+        <View style={styles.BottomContainerButton}>
+          <ViButton
+            title="Add "
+            variant="primary"
+            type="light"
+            enabled={posting ? false : true}
+            onPress={handleAddEventToPlanner}
+          />
+        </View>
+      </View>
+    </BottomSheetView>
+  );
+}
+
+interface IconButtonProps {
+  Icon: Icon;
+  onPress: () => void;
+  children: any;
+}
+const IconButton = ({ Icon, onPress, children }: IconButtonProps) => {
+  return (
+    <View
+      style={{
+        flex: 1,
+        borderRadius: 16,
+        overflow: "hidden",
+      }}
+    >
+      <TouchableNativeFeedback onPress={onPress}>
+        <View
+          style={[
+            styles.Card,
+            {
+              flexDirection: "row",
+              gap: 8,
+              alignItems: "center",
+            },
+          ]}
+        >
+          <Icon />
+          <Text>{children}</Text>
+        </View>
+      </TouchableNativeFeedback>
+    </View>
+  );
+};
 interface infoBoxProps {
   activity: ActivityDetails;
   Icon: Icon;
@@ -417,4 +736,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   BottomContainerButton: { flex: 1 },
+  tagsContainer: {
+    marginTop: 4,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+  },
 });

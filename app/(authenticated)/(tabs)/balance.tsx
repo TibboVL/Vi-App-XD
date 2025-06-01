@@ -31,7 +31,6 @@ prevMonday.setHours(0, 0, 0, 0);
 const oneWeekLater = new Date(prevMonday.getTime() + 7 * 24 * 60 * 60 * 1000);
 oneWeekLater.setHours(23, 59, 0, 0);
 
-console.log(today, prevMonday, oneWeekLater);
 // Convert object to array of entries for random access
 const pillarsArray = Object.values(Pillars); // [{ title, color }, ...]
 
@@ -50,7 +49,6 @@ for (let i = 0; i < 100; i++) {
 }
 
 const groupedData = _.groupBy(pillarData, ({ pillar }) => pillar);
-console.log("Dates:", Object.entries(groupedData).length);
 
 type TimespanOption = "day" | "week" | "month" | "year";
 const timespanOptions: { label: string; value: TimespanOption }[] = [

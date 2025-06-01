@@ -1,24 +1,17 @@
-import {
-  BackgroundColors,
-  safeAreaEdges,
-  safeAreaStyles,
-  textStyles,
-} from "@/globalStyles";
+import { BackgroundColors, textStyles } from "@/globalStyles";
 import { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  SectionBase,
-  DefaultSectionT,
   TouchableNativeFeedback,
   ToastAndroid,
+  InteractionManager,
 } from "react-native";
 import {
   AgendaList,
   CalendarProvider,
   ExpandableCalendar,
-  Timeline,
 } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
@@ -27,11 +20,12 @@ import {
   CompactUserActivityListDayContainer,
   CompactUserActivityListItem,
 } from "@/types/userActivityList";
-import { ViButton } from "@/components/ViButton";
 import { CaretLeft, CaretRight } from "phosphor-react-native";
 import { Tag } from "@/components/ViCategoryTag";
 import { PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
+import { useIsFocused } from "@react-navigation/native";
+import { adjustLightness } from "@/constants/Colors";
 
 export default function PlanningScreen() {
   const API_URL = Constants.expoConfig?.extra?.apiUrl;
@@ -49,9 +43,7 @@ export default function PlanningScreen() {
     setLoading(true);
     const creds = await getCredentials();
     if (!creds) return;
-    console.log(creds.accessToken);
     const query = `${API_URL}/useractivitylist/`;
-    console.log(query);
     const response = await fetch(query, {
       method: "GET",
       headers: {
@@ -66,9 +58,22 @@ export default function PlanningScreen() {
     setUserActivityListContainers(data);
     setLoading(false);
   }
+
+  const isFocused = useIsFocused();
   useEffect(() => {
-    fetchUserActivityListItems();
-  }, []);
+    let task = null;
+    if (isFocused) {
+      task = InteractionManager.runAfterInteractions(() => {
+        fetchUserActivityListItems();
+      });
+    }
+
+    return () => {
+      if (task) {
+        task.cancel();
+      }
+    };
+  }, [isFocused]);
 
   return (
     <View
@@ -165,13 +170,6 @@ export default function PlanningScreen() {
               )}
             </CalendarProvider>
           </View>
-          {/*  <ViButton
-            title="Force refresh (debug)"
-            onPress={() => {
-              setUserActivityListContainers([]);
-              fetchUserActivityListItems();
-            }}
-          /> */}
         </View>
       </SafeAreaView>
     </View>
@@ -260,9 +258,29 @@ const SectionHeader = (date: any) => {
     <View
       style={[
         BackgroundColors.background,
-        { paddingInline: 16, paddingBlock: 8 },
+        {
+          paddingInline: 16,
+          paddingBlock: 8,
+          flexDirection: "row",
+          gap: 4,
+          alignItems: "center",
+        },
       ]}
     >
+      <View
+        id="TodayIndicator"
+        style={{
+          display: today ? "flex" : "none",
+          height: 12,
+          width: 12,
+          top: 1,
+          borderRadius: 999,
+          backgroundColor: adjustLightness(
+            BackgroundColors.primary.backgroundColor,
+            -20
+          ),
+        }}
+      />
       <Text style={textStyles.bodySmall}>
         {today ? "Today, " : null}
         {weekday} {day} {month}

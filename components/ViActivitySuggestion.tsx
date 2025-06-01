@@ -18,7 +18,8 @@ import { Activity, EnergyLevel, PillarKey } from "@/types/activity";
 import { minutesToHoursMinutes } from "@/helpers/dateTimeHelpers";
 import { getIconByActivity } from "@/helpers/activityIconHelper";
 import { memo, useCallback, useMemo } from "react";
-import { textStyles } from "@/globalStyles";
+import { TextColors, textStyles } from "@/globalStyles";
+import { EnergyIcon } from "./EnergyIcon";
 
 export const ViActivitySuggestion = memo(
   ({ activity }: { activity: Activity }) => {
@@ -34,24 +35,6 @@ export const ViActivitySuggestion = memo(
       debugUITId,
       distance,
     } = activity;
-
-    //const [distance, setDistance] = useState<number | null>(null);
-
-    // memoize for performance
-    const energyLevelIcon = useMemo(() => {
-      switch (energyRequired.toLowerCase()) {
-        case EnergyLevel.Low:
-          return <BatteryLow size={16} />;
-        case EnergyLevel.Medium:
-          return <BatteryMedium size={16} />;
-        case EnergyLevel.High:
-          return <BatteryHigh size={16} />;
-        case EnergyLevel.VeryHigh:
-          return <BatteryFull size={16} />;
-        default:
-          return <BatteryLow size={16} />;
-      }
-    }, [energyRequired]);
 
     const energyLevelLabel = useMemo(() => {
       return (
@@ -104,12 +87,12 @@ export const ViActivitySuggestion = memo(
 
             <View style={styles.details}>
               <View style={styles.detail}>
-                {energyLevelIcon}
+                <EnergyIcon energy={energyRequired} size={20} />
                 <Text style={textStyles.bodySmall}>{energyLevelLabel}</Text>
               </View>
 
               <View style={styles.detail}>
-                <Clock size={16} />
+                <Clock size={20} />
                 <Text style={textStyles.bodySmall}>
                   {estimatedDurationMinutes > 0
                     ? (hours !== 0 ? `${hours}h ` : "") + `${minutes}m`
@@ -118,21 +101,21 @@ export const ViActivitySuggestion = memo(
               </View>
 
               <View style={styles.detail}>
-                <CurrencyEur size={16} />
+                <CurrencyEur size={20} />
                 <Text style={textStyles.bodySmall}>
                   {estimatedCost > 0 ? estimatedCost.toString() : "Free"}
                 </Text>
               </View>
 
               <View style={styles.detail}>
-                <MapPin size={16} />
+                <MapPin size={20} />
                 <Text style={textStyles.bodySmall}>
                   {distance ? `${distance}km` : "Any"}
                 </Text>
               </View>
 
               <View style={styles.detail}>
-                {isGroupActivity ? <Users size={16} /> : <User size={16} />}
+                {isGroupActivity ? <Users size={20} /> : <User size={20} />}
                 <Text style={textStyles.bodySmall}>
                   {isGroupActivity ? "Group" : "Alone"}
                 </Text>
@@ -173,10 +156,11 @@ const styles = StyleSheet.create({
   detail: {
     marginBottom: 4,
     flexDirection: "row",
-    gap: 2,
+    gap: 4,
     alignItems: "center",
     flex: 1,
     justifyContent: "flex-start",
+    color: TextColors.muted.color,
   },
   tagsContainer: {
     marginTop: 4,

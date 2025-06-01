@@ -9,7 +9,7 @@ import {
   TouchableNativeFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Constants from "expo-constants";
 import { useAuth0 } from "react-native-auth0";
 import { Activity, EnergyLevel, Pillars } from "@/types/activity";
@@ -21,14 +21,14 @@ import {
   textStyles,
 } from "@/globalStyles";
 import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps,
   BottomSheetHandle,
   BottomSheetModal,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { useNavigation } from "expo-router";
 import { Funnel } from "phosphor-react-native";
-import { BottomSheetModalRef } from "@gorhom/bottom-sheet/lib/typescript/components/bottomSheetModalProvider/types";
-import DropDownPicker from "react-native-dropdown-picker";
 import { ViSelect } from "@/components/ViSelect";
 import { ViSlider } from "@/components/ViSlider";
 import { ViToggleButton } from "@/components/ViToggleButton";
@@ -49,7 +49,7 @@ export default function ActivitiesScreen() {
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
-    console.log("handleSheetChanges", index);
+    //console.log("handleSheetChanges", index);
   }, []);
 
   const fetchActivities = async () => {
@@ -174,7 +174,16 @@ export default function ActivitiesScreen() {
             renderItem={({ item }) => <ViActivitySuggestion activity={item} />}
             ListEmptyComponent={<Text>Something went wrong!</Text>}
           />
+
           <BottomSheetModal
+            backdropComponent={(props) => (
+              <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+                pressBehavior="close"
+              />
+            )}
             ref={bottomModalSheetRef}
             onChange={handleSheetChanges}
             backgroundStyle={[
@@ -309,7 +318,6 @@ const FilterPanel = ({ handleCloseSheet }: filterPanelProps) => {
     </BottomSheetView>
   );
 };
-
 const styles = StyleSheet.create({
   Container: {
     width: "100%",
