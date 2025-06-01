@@ -30,7 +30,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/Vi-SplashIcon.png",
-          "imageWidth": 300,
+          "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#fbfbfe"
         }
@@ -50,6 +50,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "a29584cc-200b-449e-b916-401ca4aad869"
+      }
     }
   }
 }

@@ -7,7 +7,7 @@ import {
 } from "@/globalStyles";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, InteractionManager } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
@@ -89,7 +89,15 @@ export default function MoodScreen() {
   }
 
   useEffect(() => {
-    fetchMoods();
+    const task = InteractionManager.runAfterInteractions(() => {
+      fetchMoods();
+    });
+
+    return () => {
+      if (task) {
+        task.cancel();
+      }
+    };
   }, []);
   useEffect(() => {
     if (lastKnownValidCheckin?.validAtDate) {
@@ -186,7 +194,7 @@ export default function MoodScreen() {
             position: "absolute",
             flex: 1,
             //backgroundColor: "red",
-            bottom: 64 + 16,
+            bottom: 64 + 16 + 64,
             left: 0,
             right: 0,
           }}
@@ -244,7 +252,18 @@ export default function MoodScreen() {
             </View>
           )}
         </View>
-        <View>
+        <View
+          style={{
+            gap: 8,
+          }}
+        >
+          <ViButton
+            type="text-only"
+            title="Review activities"
+            onPress={() => {
+              router.push("/mood/activityReview");
+            }}
+          />
           <ViButton
             title={
               daysAgo == 0 ? "Update todays check-in" : "Start daily check-in"

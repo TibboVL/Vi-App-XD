@@ -1,12 +1,11 @@
 import { ViToggleButton } from "@/components/ViToggleButton";
 import { safeAreaEdges, safeAreaStyles } from "@/globalStyles";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ToastAndroid } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 import { Mood } from "@/types/mood";
-import { VitoAnimatedMoods } from "@/components/VitoAnimatedMoods";
 import { ViButton } from "@/components/ViButton";
 import { router, useNavigation } from "expo-router";
 import {
@@ -16,6 +15,11 @@ import {
   ReviewStage,
 } from "./checkinContext";
 import ContextDebugView from "./checkinContextDebug";
+import {
+  VitoAnimatedMoodHandles,
+  VitoAnimatedMoods,
+  VitoEmoteConfig,
+} from "@/components/VitoAnimatedMoods";
 
 export default function MoodPickerScreen() {
   const state = useCheckinState();
@@ -30,16 +34,25 @@ export default function MoodPickerScreen() {
   const { getCredentials } = useAuth0();
   const API_URL = Constants.expoConfig?.extra?.apiUrl;
 
-  function toggleMood(stage: "primary" | "secondary", mood: number) {
+  const emoteManagerRef = useRef<VitoAnimatedMoodHandles>();
+
+  function toggleMood(stage: "primary" | "secondary", mood: Mood) {
+    console.log(mood);
     if (stage == "primary") {
-      selectedPrimaryMood == mood
-        ? setSelectedPrimaryMoodMood(null)
-        : setSelectedPrimaryMoodMood(mood);
+      if (selectedPrimaryMood == mood.moodId) {
+        setSelectedPrimaryMoodMood(null);
+      } else {
+        setSelectedPrimaryMoodMood(mood.moodId);
+        emoteManagerRef.current?.setMood(
+          mood.label.toLowerCase() as keyof VitoEmoteConfig
+        );
+      }
+
       setSelectedSecondaryMoodMood(null);
     } else {
-      selectedSecondaryMood == mood
+      selectedSecondaryMood == mood.moodId
         ? setSelectedSecondaryMoodMood(null)
-        : setSelectedSecondaryMoodMood(mood);
+        : setSelectedSecondaryMoodMood(mood.moodId);
     }
   }
 
@@ -114,7 +127,7 @@ export default function MoodPickerScreen() {
                 <ViToggleButton
                   title={primaryMood.label}
                   state={selectedPrimaryMood == primaryMood.moodId}
-                  onPress={() => toggleMood("primary", primaryMood.moodId)}
+                  onPress={() => toggleMood("primary", primaryMood)}
                 />
               </View>
             ))}
@@ -128,7 +141,7 @@ export default function MoodPickerScreen() {
             justifyContent: "center",
           }}
         >
-          <VitoAnimatedMoods />
+          <VitoAnimatedMoods ref={emoteManagerRef} />
         </View>
         <View
           id="PrimaryMoods"
@@ -145,7 +158,7 @@ export default function MoodPickerScreen() {
                   <ViToggleButton
                     title={primaryMood.label}
                     state={selectedPrimaryMood == primaryMood.moodId}
-                    onPress={() => toggleMood("primary", primaryMood.moodId)}
+                    onPress={() => toggleMood("primary", primaryMood)}
                   />
                 </View>
               );
@@ -166,14 +179,13 @@ export default function MoodPickerScreen() {
                   <ViToggleButton
                     title={secondaryMood.label}
                     state={selectedSecondaryMood == secondaryMood.moodId}
-                    onPress={() =>
-                      toggleMood("secondary", secondaryMood.moodId)
-                    }
+                    onPress={() => toggleMood("secondary", secondaryMood)}
                   />
                 </View>
               );
             })}
         </View>
+
         <View id="BottomButtonContainer" style={[styles.BottomContainer]}>
           <ViButton
             style={{

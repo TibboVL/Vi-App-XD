@@ -14,8 +14,15 @@ import {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { textStyles } from "../../../../globalStyles";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import {
+  safeAreaEdges,
+  safeAreaStyles,
+  textStyles,
+} from "../../../../globalStyles";
 import { ViWave } from "@/components/ViWave";
 import { router, useNavigation } from "expo-router";
 import {
@@ -126,141 +133,144 @@ export default function EnergyPickerScreen() {
   }, []);
 
   return (
-    <View
-      style={{
-        flex: 1,
-      }}
-    >
-      <View style={styles.Container}>
-        <ContextDebugView />
-        <ReText
-          text={derivedPercentage}
-          style={[textStyles.h4, { textAlign: "center" }]}
-        />
-        <View id="BatteryTop" style={styles.BatteryTopStyles} />
-        <GestureDetector gesture={panGesture}>
-          <View id="Battery" style={styles.BatteryStyles} onLayout={onLayout}>
-            <View
-              id="BatteryScaleIndicator"
-              style={[
-                styles.WaveContainerStyles,
-                {
-                  justifyContent: "space-between",
-                  zIndex: 12,
-                },
-              ]}
-            >
-              {Array.from({ length: 10 }, (_, i) => i * 10)
-                .reverse()
-                .map((indicator) => (
-                  <View
-                    key={indicator}
-                    style={{
-                      opacity: indicator == 0 ? 0 : 1,
-                      flex: 1,
-                      flexDirection: "row",
-                      alignItems: "flex-end",
-                    }}
-                  >
+    <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
+      <View
+        style={{
+          flex: 1,
+          paddingBottom: insets.top,
+        }}
+      >
+        <View style={styles.Container}>
+          <ContextDebugView />
+          <ReText
+            text={derivedPercentage}
+            style={[textStyles.h4, { textAlign: "center" }]}
+          />
+          <View id="BatteryTop" style={styles.BatteryTopStyles} />
+          <GestureDetector gesture={panGesture}>
+            <View id="Battery" style={styles.BatteryStyles} onLayout={onLayout}>
+              <View
+                id="BatteryScaleIndicator"
+                style={[
+                  styles.WaveContainerStyles,
+                  {
+                    justifyContent: "space-between",
+                    zIndex: 12,
+                  },
+                ]}
+              >
+                {Array.from({ length: 10 }, (_, i) => i * 10)
+                  .reverse()
+                  .map((indicator) => (
                     <View
+                      key={indicator}
                       style={{
+                        opacity: indicator == 0 ? 0 : 1,
                         flex: 1,
                         flexDirection: "row",
-                        alignItems: "center",
-                        gap: 6,
+                        alignItems: "flex-end",
                       }}
                     >
                       <View
                         style={{
-                          backgroundColor: "rgba(0,0,0,0.3)",
-                          width: 16,
-                          height: 1,
+                          flex: 1,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 6,
                         }}
-                      />
-                      <Text
-                        style={[
-                          textStyles.bodyLarge,
-                          {
-                            position: "absolute",
-                            left: 16 + 8,
-                          },
-                        ]}
                       >
-                        {indicator}
-                      </Text>
+                        <View
+                          style={{
+                            backgroundColor: "rgba(0,0,0,0.3)",
+                            width: 16,
+                            height: 1,
+                          }}
+                        />
+                        <Text
+                          style={[
+                            textStyles.bodyLarge,
+                            {
+                              position: "absolute",
+                              left: 16 + 8,
+                            },
+                          ]}
+                        >
+                          {indicator}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                ))}
-            </View>
-            <View
-              id="Shadow"
-              style={[
-                styles.WaveContainerStyles,
-                {
-                  borderRadius: 16 * 3,
-                  zIndex: 50,
-                  boxShadow:
-                    "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px, rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px",
-                },
-              ]}
-            />
-            <View
-              style={[
-                styles.WaveContainerStyles,
-                {
-                  zIndex: 0,
-                },
-              ]}
-            >
-              <ViWave
-                baseAmplitude={15}
-                baseFrequency={1}
-                colors={batteryColors[0]}
-                fillPercent={fillAbove}
+                  ))}
+              </View>
+              <View
+                id="Shadow"
+                style={[
+                  styles.WaveContainerStyles,
+                  {
+                    borderRadius: 16 * 3,
+                    zIndex: 50,
+                    boxShadow:
+                      "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px, rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px",
+                  },
+                ]}
               />
+              <View
+                style={[
+                  styles.WaveContainerStyles,
+                  {
+                    zIndex: 0,
+                  },
+                ]}
+              >
+                <ViWave
+                  baseAmplitude={15}
+                  baseFrequency={1}
+                  colors={batteryColors[0]}
+                  fillPercent={fillAbove}
+                />
+              </View>
+              <View
+                style={[
+                  styles.WaveContainerStyles,
+                  {
+                    zIndex: 5,
+                  },
+                ]}
+              >
+                <ViWave
+                  baseAmplitude={11}
+                  baseFrequency={0.8}
+                  colors={batteryColors[1]}
+                  fillPercent={fill}
+                />
+              </View>
+              <View
+                style={[
+                  styles.WaveContainerStyles,
+                  {
+                    zIndex: 10,
+                  },
+                ]}
+              >
+                <ViWave
+                  baseAmplitude={10}
+                  baseFrequency={0.2}
+                  colors={batteryColors[2]}
+                  fillPercent={fillBelow}
+                />
+              </View>
             </View>
-            <View
-              style={[
-                styles.WaveContainerStyles,
-                {
-                  zIndex: 5,
-                },
-              ]}
-            >
-              <ViWave
-                baseAmplitude={11}
-                baseFrequency={0.8}
-                colors={batteryColors[1]}
-                fillPercent={fill}
-              />
-            </View>
-            <View
-              style={[
-                styles.WaveContainerStyles,
-                {
-                  zIndex: 10,
-                },
-              ]}
-            >
-              <ViWave
-                baseAmplitude={10}
-                baseFrequency={0.2}
-                colors={batteryColors[2]}
-                fillPercent={fillBelow}
-              />
-            </View>
-          </View>
-        </GestureDetector>
+          </GestureDetector>
+        </View>
+        <View id="BottomButtonContainer" style={[styles.BottomContainer]}>
+          <ViButton
+            title="Continue"
+            variant="primary"
+            type="light"
+            onPress={handleContinue}
+          />
+        </View>
       </View>
-      <View id="BottomButtonContainer" style={[styles.BottomContainer]}>
-        <ViButton
-          title="Continue"
-          variant="primary"
-          type="light"
-          onPress={handleContinue}
-        />
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

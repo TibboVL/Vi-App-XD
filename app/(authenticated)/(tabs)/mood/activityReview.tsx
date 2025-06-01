@@ -125,7 +125,7 @@ export default function ActivityReviewScreen() {
   }
 
   useEffect(() => {
-    if (state.moodBefore != null) {
+    if (state.moodBefore != null && state.energyBefore != null) {
       // if data is already in the context we should send it to the backend
       handlePostCheckin();
     } else {
