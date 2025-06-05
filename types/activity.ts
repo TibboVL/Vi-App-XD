@@ -12,6 +12,24 @@ export type Activity = {
   lon: number | null;
   distance: number;
 };
+
+export type ActivitySuggestion = {
+  suggestedActivityGroupId: number;
+  userId: number;
+  basedOnCheckinId: number;
+  amountActivitiesConsidered: null;
+  model: string;
+  created_at: string | null;
+  suggestedActivityId: number;
+  activityId: number;
+  confidence: number;
+  reasoning: string;
+  dismissedAt: string | null;
+  overwriteEnergyRequired: EnergyLevel;
+  overwriteIsGroupActivity: boolean;
+  updated_at: string | null;
+  activity: Activity;
+};
 export type ActivityDetails = {
   activityId: number;
   name: string;

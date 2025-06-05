@@ -167,7 +167,7 @@ export default function ActivitiesScreen() {
           <FlatList
             data={activityList}
             keyExtractor={(item) => item.activityId.toString()}
-            style={styles.Container}
+            style={styles.FlatListStyles}
             contentContainerStyle={{
               gap: 8,
             }}
@@ -319,7 +319,7 @@ const FilterPanel = ({ handleCloseSheet }: filterPanelProps) => {
   );
 };
 const styles = StyleSheet.create({
-  Container: {
+  FlatListStyles: {
     width: "100%",
     height: "100%",
     gap: 8,

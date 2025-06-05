@@ -1,24 +1,84 @@
 import { ViButton } from "@/components/ViButton";
-import { StyleSheet, View, Text, ScrollView } from "react-native";
+import { StyleSheet, View, Text, ScrollView, ToastAndroid } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, SplashScreen } from "expo-router";
-import { getReverseGeocodedLocation } from "@/helpers/locationHelper";
+import {
+  getLocation,
+  getReverseGeocodedLocation,
+} from "@/helpers/locationHelper";
 import { useEffect, useState } from "react";
-import { LocationGeocodedAddress } from "expo-location";
-import { textStyles } from "@/globalStyles";
+import { LocationGeocodedAddress, LocationObject } from "expo-location";
+import { TextColors, textStyles } from "@/globalStyles";
+import Constants from "expo-constants";
+import { useAuth0 } from "react-native-auth0";
+import { ActivitySuggestion } from "@/types/activity";
+import { FlatList } from "react-native-gesture-handler";
+import { ViActivitySuggestion } from "@/components/ViActivitySuggestion";
+import { Viloader } from "@/components/ViLoader";
+import { timeDifference } from "@/helpers/dateTimeHelpers";
 SplashScreen.preventAutoHideAsync();
 
 export default function DiscoverScreen() {
-  const [address, setAddress] = useState<LocationGeocodedAddress>();
-  const [dateTime, setDateTime] = useState(new Date());
+  const { getCredentials } = useAuth0();
+  const API_URL = Constants.expoConfig?.extra?.apiUrl;
+  const [loading, setLoading] = useState<boolean>(false);
+  const [userLocation, setUserLocation] = useState<LocationObject | null>(null);
+  const [activitySuggestionList, setActivitySuggestionList] = useState<
+    ActivitySuggestion[]
+  >([]);
+
+  const fetchExistingSuggestions = async () => {
+    try {
+      setLoading(true);
+      const creds = await getCredentials();
+      const accessToken = creds?.accessToken;
+
+      console.log(userLocation);
+      if (!userLocation?.coords.longitude || !userLocation?.coords.latitude) {
+        console.warn("Location not found!!");
+        return;
+      }
+      const query = `${API_URL}/activitySuggestions?d=1&lon=${userLocation?.coords.longitude.toString()}&lat=${userLocation?.coords.latitude.toString()}`;
+      console.log(query);
+      const response = await fetch(query, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.warn("Failed to fetch:", response);
+        ToastAndroid.show(
+          `Failed to load: ${response.status}`,
+          ToastAndroid.SHORT
+        );
+        return;
+      }
+
+      const data = await response.json();
+      setActivitySuggestionList(data.data as ActivitySuggestion[]);
+      //console.log(data.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching:", error);
+      ToastAndroid.show("Network error while fetching", ToastAndroid.SHORT);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function getAddress() {
-      const addresses = await getReverseGeocodedLocation();
-      setAddress(addresses[0]);
+    async function fetchLocation() {
+      const res = await getLocation();
+      setUserLocation(res); // triggers the effect below
     }
-    getAddress();
+    fetchLocation();
   });
+
+  useEffect(() => {
+    fetchExistingSuggestions();
+  }, [userLocation]);
   return (
     <SafeAreaView>
       <View
@@ -27,87 +87,88 @@ export default function DiscoverScreen() {
           display: "flex",
         }}
       >
-        <ScrollView contentContainerStyle={styles.Container}>
+        {loading ? (
           <View
             style={{
-              flexDirection: "column",
+              height: "100%",
               width: "100%",
-              height: "90%",
-              gap: 8,
+              flex: 1,
+              alignContent: "center",
+              justifyContent: "center",
             }}
           >
-            <Text
-              style={[
-                textStyles.h3,
-                {
-                  textAlign: "center",
-                  paddingBlock: 8,
-                },
-              ]}
-            >
-              Suggestions for you
-            </Text>
-            <View>
-              <Text>Availible information for personalization (DEBUG)</Text>
-              <Text>
-                Location: {address?.city} - {address?.postalCode}
-              </Text>
-              <Text>
-                Time&Date: {dateTime.getHours()}:{dateTime.getMinutes()} -{" "}
-                {dateTime.getUTCDate()}/{dateTime.getMonth() + 1}
-              </Text>
-              <Text>Weather: TODO</Text>
-            </View>
-            {/*  <ViActivitySuggestion
-              title="Go on a hike with the CMU Hiking Club"
-              tags={[
-                { label: "Walking", pillar: "sports" },
-                { label: "Mindfulness", pillar: "mindfulness" },
-              ]}
-              energylevel={EnergyLevel.High}
-              duration="30m"
-              cost="20"
-              distance="5 km"
-              shareable={true}
-              activityType="hiking"
-            />
-            <ViActivitySuggestion
-              title="Swimming event at the local pool"
-              tags={[
-                { label: "Swimming", pillar: "sports" },
-                { label: "Socializing", pillar: "connections" },
-              ]}
-              energylevel={EnergyLevel.Medium}
-              duration="60m"
-              cost="10"
-              distance="<1 km"
-              shareable={true}
-              activityType="swimming"
-            />
-            <ViActivitySuggestion
-              title="Join the CMU Coding Club"
-              tags={[
-                { label: "Coding", pillar: "skills" },
-                { label: "Socializing", pillar: "connections" },
-              ]}
-              energylevel={EnergyLevel.Low}
-              duration="90m"
-              cost="Free"
-              distance="<1 km"
-              shareable={true}
-              activityType="coding"
-            /> */}
+            <Viloader vitoMessage="Vito is gathering your reccomendation" />
           </View>
-        </ScrollView>
+        ) : (
+          <View
+            style={{
+              width: "100%",
+              height: "100%",
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <View>
+              {activitySuggestionList?.length > 0 ? (
+                <Text
+                  style={[
+                    TextColors.muted,
+                    {
+                      textAlign: "center",
+                    },
+                  ]}
+                >
+                  Last updated{" "}
+                  <Text
+                    style={{
+                      fontWeight: 700,
+                    }}
+                  >
+                    {activitySuggestionList[0]?.created_at
+                      ? timeDifference(
+                          new Date(activitySuggestionList[0]?.created_at)
+                        )
+                      : "N/A"}
+                  </Text>
+                </Text>
+              ) : null}
+            </View>
+            <FlatList
+              data={activitySuggestionList}
+              keyExtractor={(item) => item.activityId.toString()}
+              style={styles.FlatListStyles}
+              contentContainerStyle={{
+                gap: 8,
+              }}
+              renderItem={({ item }) => (
+                <ViActivitySuggestion
+                  activity={item.activity}
+                  activitySuggestion={item}
+                />
+              )}
+              ListEmptyComponent={<Text>Something went wrong!</Text>}
+            />
+          </View>
+        )}
+
         <View style={[styles.BottomContainer]}>
           <ViButton
-            title="Explore More Activities"
+            title="See Non-Personalized Activities"
             variant="primary"
             type="light"
             onPress={() => {
               router.push({
                 pathname: "/discover/activities",
               });
+            }}
+          />
+          <ViButton
+            title="force refetch"
+            variant="danger"
+            type="light"
+            onPress={() => {
+              fetchExistingSuggestions();
             }}
           />
         </View>
@@ -123,10 +184,19 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 8,
   },
+
+  FlatListStyles: {
+    width: "100%",
+    height: "100%",
+    gap: 8,
+    marginBlock: 0,
+    paddingInline: 16,
+    flexDirection: "column",
+  },
   BottomContainer: {
     paddingBlock: 16,
     paddingInline: 16,
-    flexDirection: "row",
+    flexDirection: "column",
     width: "100%",
     display: "flex",
     gap: 8,

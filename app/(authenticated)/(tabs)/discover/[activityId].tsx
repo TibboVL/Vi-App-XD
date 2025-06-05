@@ -1,5 +1,10 @@
 import { ViButton } from "@/components/ViButton";
-import { ExternalPathString, Link, useLocalSearchParams } from "expo-router";
+import {
+  ExternalPathString,
+  Link,
+  useGlobalSearchParams,
+  useLocalSearchParams,
+} from "expo-router";
 
 import {
   View,
@@ -43,8 +48,10 @@ import {
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Tag } from "@/components/ViCategoryTag";
 import { EnergyIcon } from "@/components/EnergyIcon";
+import { useRoute } from "@react-navigation/native";
+import { useSearchParams } from "expo-router/build/hooks";
 
-export default function ActivityDetailsScreen() {
+export default function ActivityDetailsScreen({ route }: any) {
   const local = useLocalSearchParams();
 
   const { getCredentials } = useAuth0();
@@ -67,7 +74,10 @@ export default function ActivityDetailsScreen() {
   const handleSheetChanges = useCallback((index: number) => {
     //console.log("handleSheetChanges", index);
   }, []);
-
+  /*   const { suggestedActivityId } = route.params as {
+    suggestedActivityId: number | null;
+  };
+ */
   const fetchActivityDetails = async () => {
     try {
       setLoading(true);
@@ -108,8 +118,8 @@ export default function ActivityDetailsScreen() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
+    // console.log(local, global);
     fetchActivityDetails();
   }, [local.activityId]);
   return (
@@ -385,6 +395,7 @@ export default function ActivityDetailsScreen() {
             <PlanningSheetView
               handleClose={handleCloseSheet}
               activity={activity}
+              suggestedActivityId={local.suggestedActivityId}
             />
           </BottomSheetModal>
         </>
@@ -397,8 +408,13 @@ export default function ActivityDetailsScreen() {
 interface PlanningSheetViewProps {
   handleClose: () => void;
   activity: ActivityDetails;
+  suggestedActivityId?: any;
 }
-function PlanningSheetView({ handleClose, activity }: PlanningSheetViewProps) {
+function PlanningSheetView({
+  handleClose,
+  activity,
+  suggestedActivityId,
+}: PlanningSheetViewProps) {
   const { getCredentials } = useAuth0();
   const API_URL = Constants.expoConfig?.extra?.apiUrl;
   const [isStartDatePickerVisible, setStartDatePickerVisibility] =
@@ -445,6 +461,7 @@ function PlanningSheetView({ handleClose, activity }: PlanningSheetViewProps) {
           activityId: activity.activityId,
           plannedStart: startDateTime.toISOString(),
           plannedEnd: endDateTime.toISOString(),
+          suggestedActivityId: suggestedActivityId,
         }),
       });
 
