@@ -14,7 +14,12 @@ import {
 
 import { Tag } from "./ViCategoryTag";
 import { router } from "expo-router";
-import { Activity, EnergyLevel, PillarKey } from "@/types/activity";
+import {
+  Activity,
+  ActivitySuggestion,
+  EnergyLevel,
+  PillarKey,
+} from "@/types/activity";
 import { minutesToHoursMinutes } from "@/helpers/dateTimeHelpers";
 import { getIconByActivity } from "@/helpers/activityIconHelper";
 import { memo, useCallback, useMemo } from "react";
@@ -22,7 +27,13 @@ import { TextColors, textStyles } from "@/globalStyles";
 import { EnergyIcon } from "./EnergyIcon";
 
 export const ViActivitySuggestion = memo(
-  ({ activity }: { activity: Activity }) => {
+  ({
+    activity,
+    activitySuggestion,
+  }: {
+    activity: Activity;
+    activitySuggestion?: ActivitySuggestion;
+  }) => {
     // later we replace this with an ID from the DB so we can pass the activity between screens
     const {
       name,
@@ -35,6 +46,10 @@ export const ViActivitySuggestion = memo(
       debugUITId,
       distance,
     } = activity;
+    if (activitySuggestion) {
+      activity.energyRequired = activitySuggestion?.overwriteEnergyRequired;
+      activity.isGroupActivity = activitySuggestion?.overwriteIsGroupActivity;
+    }
 
     const energyLevelLabel = useMemo(() => {
       return (
@@ -53,7 +68,11 @@ export const ViActivitySuggestion = memo(
     const handlePress = useCallback(() => {
       router.push({
         pathname: "/discover/[activityId]",
-        params: { activityId, title: name, debugUITId },
+        params: {
+          activityId,
+          title: name,
+          suggestedActivityId: activitySuggestion?.suggestedActivityId ?? "H",
+        },
       });
     }, [activityId, name, debugUITId]);
 
