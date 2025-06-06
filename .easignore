@@ -1,0 +1,20 @@
+# Node modules (EAS installs fresh, so no need to upload)
+node_modules/
+
+# Git data
+.git/
+.gitignore
+
+# Local configs & caches
+.expo/
+.expo-shared/
+.vscode/
+.idea/
+*.log
+*.tmp
+
+# Build folders (local builds)
+android/
+ios/
+build/
+dist/

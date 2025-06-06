@@ -2,6 +2,7 @@ import { Stack, Redirect, SplashScreen } from "expo-router";
 import { View, Text, Image } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Constants from "expo-constants";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {

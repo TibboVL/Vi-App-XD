@@ -22,6 +22,14 @@ export default ({ config }) => {
     expo: {
       owner: "tvl01",
       ...config.expo,
+      android: {
+        ...config.expo?.android,
+        package: "com.balance.vi", // Make sure this is explicitly set here
+      },
+      ios: {
+        ...config.expo?.ios,
+        bundleIdentifier: "com.balance.vi", // Explicitly set this too
+      },
       extra: {
         ...config.expo?.extra, // Preserve existing properties
         apiUrl: isPhysicalDevice ? env.API_URL_PHYSICAL : env.API_URL,
