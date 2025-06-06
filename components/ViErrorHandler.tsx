@@ -9,9 +9,7 @@ import { ViCustomError } from "@/hooks/apiClient";
 interface VitoErrorProps {
   error: ViCustomError;
   loading: boolean;
-  refetch: (
-    options?: RefetchOptions
-  ) => Promise<QueryObserverResult<any, Error>>;
+  refetch: () => Promise<any>;
 }
 const VitoError = ({ error, loading, refetch }: VitoErrorProps) => (
   <ScrollView

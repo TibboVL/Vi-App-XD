@@ -22,7 +22,6 @@ export default function DiscoverStackLayout() {
         />
         <Stack.Screen
           name="[activityId]"
-          // options={{ headerShown: true, headerTitle: glob.title?.toString() }}
           options={{ headerShown: true, headerTitle: "Event details" }}
         />
       </Stack>

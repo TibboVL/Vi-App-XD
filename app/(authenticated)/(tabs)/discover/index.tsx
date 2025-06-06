@@ -1,5 +1,12 @@
 import { ViButton } from "@/components/ViButton";
-import { StyleSheet, View, Text, ScrollView, ToastAndroid } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  ToastAndroid,
+  RefreshControl,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, SplashScreen } from "expo-router";
 import {
@@ -16,57 +23,24 @@ import { FlatList } from "react-native-gesture-handler";
 import { ViActivitySuggestion } from "@/components/ViActivitySuggestion";
 import { Viloader } from "@/components/ViLoader";
 import { timeDifference } from "@/helpers/dateTimeHelpers";
+import { useGetSuggestedActivities } from "@/hooks/useSuggestedActivities";
+import { isError } from "lodash";
+import VitoError from "@/components/ViErrorHandler";
 SplashScreen.preventAutoHideAsync();
 
 export default function DiscoverScreen() {
-  const { getCredentials } = useAuth0();
-  const API_URL = Constants.expoConfig?.extra?.apiUrl;
-  const [loading, setLoading] = useState<boolean>(false);
   const [userLocation, setUserLocation] = useState<LocationObject | null>(null);
-  const [activitySuggestionList, setActivitySuggestionList] = useState<
-    ActivitySuggestion[]
-  >([]);
 
-  const fetchExistingSuggestions = async () => {
-    try {
-      setLoading(true);
-      const creds = await getCredentials();
-      const accessToken = creds?.accessToken;
-
-      console.log(userLocation);
-      if (!userLocation?.coords.longitude || !userLocation?.coords.latitude) {
-        console.warn("Location not found!!");
-        return;
-      }
-      const query = `${API_URL}/activitySuggestions?d=1&lon=${userLocation?.coords.longitude.toString()}&lat=${userLocation?.coords.latitude.toString()}`;
-      console.log(query);
-      const response = await fetch(query, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        console.warn("Failed to fetch:", response);
-        ToastAndroid.show(
-          `Failed to load: ${response.status}`,
-          ToastAndroid.SHORT
-        );
-        return;
-      }
-
-      const data = await response.json();
-      setActivitySuggestionList(data.data as ActivitySuggestion[]);
-      //console.log(data.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching:", error);
-      ToastAndroid.show("Network error while fetching", ToastAndroid.SHORT);
-      setLoading(false);
-    }
-  };
+  const {
+    isLoading,
+    data: activitySuggestionList,
+    error,
+    refetch,
+  } = useGetSuggestedActivities({
+    enabled: userLocation?.coords != undefined,
+    lon: userLocation?.coords.longitude,
+    lat: userLocation?.coords.latitude,
+  });
 
   useEffect(() => {
     async function fetchLocation() {
@@ -76,9 +50,6 @@ export default function DiscoverScreen() {
     fetchLocation();
   });
 
-  useEffect(() => {
-    fetchExistingSuggestions();
-  }, [userLocation]);
   return (
     <SafeAreaView>
       <View
@@ -87,7 +58,7 @@ export default function DiscoverScreen() {
           display: "flex",
         }}
       >
-        {loading ? (
+        {isLoading ? (
           <View
             style={{
               height: "100%",
@@ -99,7 +70,11 @@ export default function DiscoverScreen() {
           >
             <Viloader vitoMessage="Vito is gathering your reccomendation" />
           </View>
-        ) : (
+        ) : null}
+        {error ? (
+          <VitoError error={error} loading={isLoading} refetch={refetch} />
+        ) : null}
+        {!isLoading && !error && activitySuggestionList ? (
           <View
             style={{
               width: "100%",
@@ -135,8 +110,11 @@ export default function DiscoverScreen() {
               ) : null}
             </View>
             <FlatList
+              refreshControl={
+                <RefreshControl refreshing={isLoading} onRefresh={refetch} />
+              }
               data={activitySuggestionList}
-              keyExtractor={(item) => item.activityId.toString()}
+              keyExtractor={(item) => item.activityId?.toString()}
               style={styles.FlatListStyles}
               contentContainerStyle={{
                 gap: 8,
@@ -150,7 +128,7 @@ export default function DiscoverScreen() {
               ListEmptyComponent={<Text>Something went wrong!</Text>}
             />
           </View>
-        )}
+        ) : null}
 
         <View style={[styles.BottomContainer]}>
           <ViButton
@@ -167,9 +145,7 @@ export default function DiscoverScreen() {
             title="force refetch"
             variant="danger"
             type="light"
-            onPress={() => {
-              fetchExistingSuggestions();
-            }}
+            onPress={refetch}
           />
         </View>
       </View>

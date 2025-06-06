@@ -73,6 +73,7 @@ export enum Weekday {
 }
 
 export type Category = {
+  activityCategoryId: number;
   name: string;
   pillar: string;
 };

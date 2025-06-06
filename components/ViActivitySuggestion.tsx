@@ -90,13 +90,13 @@ export const ViActivitySuggestion = memo(
               </Text>
             </View>
 
-            {categories.length > 0 ? (
+            {categories?.length > 0 ? (
               <View style={styles.tagsContainer}>
-                {categories.map((category) => (
+                {categories?.map((category) => (
                   <Tag
-                    key={category.name}
-                    label={category.name}
-                    pillar={category.pillar?.toLowerCase() as PillarKey}
+                    key={category?.name}
+                    label={category?.name}
+                    pillar={category?.pillar?.toLowerCase() as PillarKey}
                   />
                 ))}
               </View>
@@ -122,7 +122,7 @@ export const ViActivitySuggestion = memo(
               <View style={styles.detail}>
                 <CurrencyEur size={20} />
                 <Text style={textStyles.bodySmall}>
-                  {estimatedCost > 0 ? estimatedCost.toString() : "Free"}
+                  {estimatedCost > 0 ? estimatedCost?.toString() : "Free"}
                 </Text>
               </View>
 

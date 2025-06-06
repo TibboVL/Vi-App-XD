@@ -20,13 +20,17 @@ import { Tag } from "@/components/ViCategoryTag";
 import { PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import { adjustLightness } from "@/constants/Colors";
-import { useUserActivityList } from "@/hooks/useUserActivityList";
-import VitoError from "@/components/ViErrorHandler";
+import { useGetUserActivityList } from "@/hooks/useUserActivityList";
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];
   const [activeDate, setActiveDate] = useState(today);
-  const { data, isLoading, error, refetch } = useUserActivityList();
+
+  const {
+    isLoading,
+    data: userActivityListContainers,
+    refetch,
+  } = useGetUserActivityList();
 
   return (
     <View
@@ -91,26 +95,8 @@ export default function PlanningScreen() {
                   pointerEvents="none" // make sure it doesn't block touches
                 />
               </View>
-              {isLoading ? (
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Viloader vitoMessage="Vito is stitching together your schedule!" />
-                </View>
-              ) : null}
-              {error ? (
-                <VitoError
-                  error={error}
-                  loading={isLoading}
-                  refetch={refetch}
-                />
-              ) : null}
-              {!isLoading && !error && data ? (
-                data.length < 1 ? (
+              {!isLoading && userActivityListContainers ? (
+                userActivityListContainers.length < 1 ? (
                   <View
                     style={{
                       flex: 1,
@@ -129,12 +115,22 @@ export default function PlanningScreen() {
                       />
                     }
                     renderSectionHeader={SectionHeader}
-                    sections={data}
+                    sections={userActivityListContainers}
                     renderItem={AgendaItem}
                     style={{ flex: 1, height: "100%", width: "100%" }}
                   />
                 )
-              ) : null}
+              ) : (
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Viloader vitoMessage="Vito is stitching together your schedule!" />
+                </View>
+              )}
             </CalendarProvider>
           </View>
         </View>
