@@ -12,6 +12,7 @@ import { Viloader } from "@/components/ViLoader";
 import { timeDifference } from "@/helpers/dateTimeHelpers";
 import { useGetSuggestedActivities } from "@/hooks/useSuggestedActivities";
 import VitoError from "@/components/ViErrorHandler";
+import Constants from "expo-constants";
 SplashScreen.preventAutoHideAsync();
 
 export default function DiscoverScreen() {
@@ -44,6 +45,20 @@ export default function DiscoverScreen() {
           display: "flex",
         }}
       >
+        {/* <Text
+          style={{
+            textAlign: "center",
+          }}
+        >
+          ENV:{process.env.NODE_ENV}
+        </Text>
+        <Text
+          style={{
+            textAlign: "center",
+          }}
+        >
+          APIURL{Constants.expoConfig?.extra?.apiUrl}
+        </Text> */}
         {isLoading ? (
           <View
             style={{
@@ -76,6 +91,7 @@ export default function DiscoverScreen() {
                   style={[
                     TextColors.muted,
                     {
+                      paddingBlock: 8,
                       textAlign: "center",
                     },
                   ]}
@@ -115,7 +131,6 @@ export default function DiscoverScreen() {
             />
           </View>
         ) : null}
-
         <View style={[styles.BottomContainer]}>
           <ViButton
             title="See Non-Personalized Activities"

@@ -1,50 +1,54 @@
-# Welcome to your Expo app 👋
+# Vi Frontend Application
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Welcome to the Vi frontend repository! This React Native application requires native modules and therefore cannot run in Expo Go.
 
-## Get started
+## 🚀 Getting Started
 
-1. Install dependencies
+### Prerequisites
 
+- Node.js (v18+ recommended)
+- npm (v9+)
+- Android Studio with SDK configured
+- Java Development Kit (JDK 17)
+
+### Environment Setup
+
+1. Clone this repository
+2. Create these environment files in the project root:
+   - `.env.development`
+   - `.env.production` (corrected from ".end.production")
+3. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Start the app
+## 🔧 Development
 
-   ```bash
-    npx expo start
+### Running the app
+
+Due to dependencies requiring native modules, we cannot use Expo Go. Instead run:
+`npm run android`
+
+## 📦 Creating Test Builds (APK)
+
+To avoid long EAS build times, generate APKs locally using Gradle:
+
+### Production APK Build
+
+1. Set production environment (Windows PowerShell):
+
+   ```powershell
+   $env:NODE_ENV="production
    ```
 
-In the output, you'll find options to open the app in a
+   For macOS/Linux:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   export NODE_ENV=production
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+2. Build the APK:
+   `cd android`
+   `./gradlew assembleRelease`
+3. Find the APK:
+   `android/app/build/outputs/apk/release/app-release.apk`
