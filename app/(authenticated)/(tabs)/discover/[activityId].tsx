@@ -2,6 +2,7 @@ import { ViButton } from "@/components/ViButton";
 import {
   ExternalPathString,
   Link,
+  router,
   useGlobalSearchParams,
   useLocalSearchParams,
 } from "expo-router";
@@ -50,6 +51,7 @@ import { Tag } from "@/components/ViCategoryTag";
 import { EnergyIcon } from "@/components/EnergyIcon";
 import { useRoute } from "@react-navigation/native";
 import { useSearchParams } from "expo-router/build/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ActivityDetailsScreen({ route }: any) {
   const local = useLocalSearchParams();
@@ -444,6 +446,7 @@ function PlanningSheetView({
     setEndDatePickerVisibility(false);
     setEndDateTime(date);
   };
+  const queryClient = useQueryClient();
 
   async function handleAddEventToPlanner() {
     try {
@@ -471,6 +474,10 @@ function PlanningSheetView({
       }
       setPosting(false);
       handleClose();
+      queryClient.invalidateQueries({ queryKey: ["user-activity-list"] });
+      router.replace({
+        pathname: "/planning",
+      });
     } catch (error) {
       console.error("Error fetching activity details:", error);
       setPosting(false);

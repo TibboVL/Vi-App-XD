@@ -71,7 +71,7 @@ export const ViActivitySuggestion = memo(
         params: {
           activityId,
           title: name,
-          suggestedActivityId: activitySuggestion?.suggestedActivityId ?? "H",
+          suggestedActivityId: activitySuggestion?.suggestedActivityId ?? null,
         },
       });
     }, [activityId, name, debugUITId]);
