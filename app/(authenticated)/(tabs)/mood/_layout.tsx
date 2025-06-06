@@ -17,7 +17,10 @@ export default function MoodStackLayout() {
 
   return (
     <Stack screenOptions={headerStyles}>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="index"
+        options={{ headerShown: false, freezeOnBlur: true }}
+      />
       <Stack.Screen
         name="moodPicker"
         options={{
@@ -30,6 +33,7 @@ export default function MoodStackLayout() {
               : "How did you feel afterwards?",
 
           headerBackVisible: false,
+          freezeOnBlur: true,
         }}
       />
       <Stack.Screen

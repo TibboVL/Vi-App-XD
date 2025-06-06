@@ -4,6 +4,7 @@ import {
   CompactUserActivityListDayContainer,
   CompactUserActivityListItem,
 } from "@/types/userActivityList";
+import { Checkin } from "@/types/checkin";
 
 export const useGetUserActivityList = ({
   enabled = true,
@@ -91,7 +92,7 @@ export const usePostUserActivityListItemReview = () => {
       userActivityId: number | null;
     }) => {
       const result = await api<{
-        data: CompactUserActivityListItem;
+        data: Checkin;
       }>(`/checkin/add`, {
         method: "POST",
         body: JSON.stringify({
