@@ -1,12 +1,12 @@
 import { BackgroundColors, textStyles } from "@/globalStyles";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableNativeFeedback,
   ToastAndroid,
-  InteractionManager,
+  RefreshControl,
 } from "react-native";
 import {
   AgendaList,
@@ -14,66 +14,20 @@ import {
   ExpandableCalendar,
 } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Constants from "expo-constants";
-import { useAuth0 } from "react-native-auth0";
-import {
-  CompactUserActivityListDayContainer,
-  CompactUserActivityListItem,
-} from "@/types/userActivityList";
+import { CompactUserActivityListItem } from "@/types/userActivityList";
 import { CaretLeft, CaretRight } from "phosphor-react-native";
 import { Tag } from "@/components/ViCategoryTag";
 import { PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
-import { useIsFocused } from "@react-navigation/native";
 import { adjustLightness } from "@/constants/Colors";
+import { useUserActivityList } from "@/hooks/useUserActivityList";
+import { useQueryClient } from "@tanstack/react-query";
+import VitoError from "@/components/ViErrorHandler";
 
 export default function PlanningScreen() {
-  const API_URL = Constants.expoConfig?.extra?.apiUrl;
-  const { getCredentials } = useAuth0();
-
   const today = new Date().toISOString().split("T")[0];
   const [activeDate, setActiveDate] = useState(today);
-  const [loading, setLoading] = useState(true);
-  const [userActivityListContainers, setUserActivityListContainers] = useState<
-    CompactUserActivityListDayContainer[]
-  >([]);
-
-  // TODO, make this get only like a month or 2-3 worth of data and fetch more depending on date change or so
-  async function fetchUserActivityListItems() {
-    setLoading(true);
-    const creds = await getCredentials();
-    if (!creds) return;
-    const query = `${API_URL}/useractivitylist/`;
-    const response = await fetch(query, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${creds.accessToken}`,
-      },
-    });
-
-    const data = (await response.json())
-      .data as CompactUserActivityListDayContainer[];
-
-    setUserActivityListContainers(data);
-    setLoading(false);
-  }
-
-  const isFocused = useIsFocused();
-  useEffect(() => {
-    let task = null;
-    if (isFocused) {
-      task = InteractionManager.runAfterInteractions(() => {
-        fetchUserActivityListItems();
-      });
-    }
-
-    return () => {
-      if (task) {
-        task.cancel();
-      }
-    };
-  }, [isFocused]);
+  const { data, isLoading, error, refetch } = useUserActivityList();
 
   return (
     <View
@@ -138,8 +92,26 @@ export default function PlanningScreen() {
                   pointerEvents="none" // make sure it doesn't block touches
                 />
               </View>
-              {!loading ? (
-                userActivityListContainers.length < 1 ? (
+              {isLoading ? (
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Viloader vitoMessage="Vito is stitching together your schedule!" />
+                </View>
+              ) : null}
+              {error ? (
+                <VitoError
+                  error={error}
+                  loading={isLoading}
+                  refetch={refetch}
+                />
+              ) : null}
+              {!isLoading && !error && data ? (
+                data.length < 1 ? (
                   <View
                     style={{
                       flex: 1,
@@ -151,23 +123,19 @@ export default function PlanningScreen() {
                   </View>
                 ) : (
                   <AgendaList
+                    refreshControl={
+                      <RefreshControl
+                        refreshing={isLoading}
+                        onRefresh={refetch}
+                      />
+                    }
                     renderSectionHeader={SectionHeader}
-                    sections={userActivityListContainers}
+                    sections={data}
                     renderItem={AgendaItem}
                     style={{ flex: 1, height: "100%", width: "100%" }}
                   />
                 )
-              ) : (
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Viloader vitoMessage="Vito is stitching together your schedule!" />
-                </View>
-              )}
+              ) : null}
             </CalendarProvider>
           </View>
         </View>
