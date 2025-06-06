@@ -2,7 +2,7 @@ import { ViButton } from "@/components/ViButton";
 import {
   ExternalPathString,
   Link,
-  useGlobalSearchParams,
+  router,
   useLocalSearchParams,
 } from "expo-router";
 
@@ -11,7 +11,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  ToastAndroid,
   TouchableNativeFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,10 +22,8 @@ import {
   TextColors,
   BackgroundColors,
 } from "@/globalStyles";
-import { useAuth0 } from "react-native-auth0";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { ActivityDetails, PillarKey } from "@/types/activity";
-import Constants from "expo-constants";
 import { Viloader } from "@/components/ViLoader";
 import {
   BabyCarriage,
@@ -48,16 +45,13 @@ import {
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Tag } from "@/components/ViCategoryTag";
 import { EnergyIcon } from "@/components/EnergyIcon";
-import { useRoute } from "@react-navigation/native";
-import { useSearchParams } from "expo-router/build/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import VitoError from "@/components/ViErrorHandler";
+import { useGetActivityDetails } from "@/hooks/useActivityDetails";
+import { usePostUserActivityList } from "@/hooks/useUserActivityList";
 
-export default function ActivityDetailsScreen({ route }: any) {
+export default function ActivityDetailsScreen() {
   const local = useLocalSearchParams();
-
-  const { getCredentials } = useAuth0();
-  const [activity, setActivity] = useState<ActivityDetails | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const API_URL = Constants.expoConfig?.extra?.apiUrl;
   const [descriptionExpandedState, setDescriptionExpandedState] =
     useState<boolean>(false);
 
@@ -70,61 +64,18 @@ export default function ActivityDetailsScreen({ route }: any) {
   const handleOpenSheet = () => bottomModalSheetRef.current!.present();
   const handleCloseSheet = () => bottomModalSheetRef.current!.close();
 
-  // callbacks
-  const handleSheetChanges = useCallback((index: number) => {
-    //console.log("handleSheetChanges", index);
-  }, []);
-  /*   const { suggestedActivityId } = route.params as {
-    suggestedActivityId: number | null;
-  };
- */
-  const fetchActivityDetails = async () => {
-    try {
-      setLoading(true);
-      const creds = await getCredentials();
-      const accessToken = creds?.accessToken;
-      console.log(accessToken);
+  const {
+    isLoading,
+    data: activity,
+    error,
+    refetch,
+  } = useGetActivityDetails({
+    activityId: local.activityId as string,
+  });
 
-      const response = await fetch(
-        `${API_URL}/activities/${local.activityId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        console.warn("Failed to fetch activity details:", response);
-        ToastAndroid.show(
-          `Failed to load activity details: ${response.status}`,
-          ToastAndroid.SHORT
-        );
-        return;
-      }
-
-      const data = await response.json();
-      setActivity(data.data as ActivityDetails);
-      //console.log(data.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching activity details:", error);
-      ToastAndroid.show(
-        "Network error while fetching activity details",
-        ToastAndroid.SHORT
-      );
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    // console.log(local, global);
-    fetchActivityDetails();
-  }, [local.activityId]);
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
-      {loading ? (
+      {isLoading ? (
         <View
           style={{
             height: "100%",
@@ -136,7 +87,13 @@ export default function ActivityDetailsScreen({ route }: any) {
         >
           <Viloader vitoMessage="Vito is looking gathering more details..." />
         </View>
-      ) : activity ? (
+      ) : null}
+
+      {error ? (
+        <VitoError error={error} loading={isLoading} refetch={refetch} />
+      ) : null}
+
+      {!isLoading && !error && activity ? (
         <>
           <ScrollView
             style={[styles.Container]}
@@ -154,7 +111,7 @@ export default function ActivityDetailsScreen({ route }: any) {
                 <View style={styles.tagsContainer}>
                   {activity.categories?.map((category) => (
                     <Tag
-                      key={category.name}
+                      key={category.activityCategoryId}
                       label={category.name}
                       pillar={category.pillar?.toLowerCase() as PillarKey}
                     />
@@ -237,7 +194,7 @@ export default function ActivityDetailsScreen({ route }: any) {
                 {
                   display:
                     activity.openingHoursStructured &&
-                    activity.openingHoursStructured.length > 0
+                    activity.openingHoursStructured?.length > 0
                       ? "flex"
                       : "none",
                 },
@@ -262,10 +219,11 @@ export default function ActivityDetailsScreen({ route }: any) {
                       ),
                       justifyContent: "space-between",
                       paddingBlock: 4,
-                      borderBottomWidth:
-                        index == activity.openingHoursStructured!.length - 1
+                      borderBottomWidth: activity.openingHoursStructured
+                        ? index == activity.openingHoursStructured.length - 1
                           ? 0
-                          : 1,
+                          : 1
+                        : 0,
                     }}
                   >
                     <Text>
@@ -339,26 +297,16 @@ export default function ActivityDetailsScreen({ route }: any) {
                     link={url as ExternalPathString}
                     value={url}
                     styles={{
-                      borderBottomWidth:
-                        index == activity.contactURLs!.length - 1 ? 0 : 1,
+                      borderBottomWidth: activity.contactURLs
+                        ? index == activity.contactURLs.length - 1
+                          ? 0
+                          : 1
+                        : 0,
                     }}
                   />
                 ))}
               </View>
             </View>
-            {
-              local.debugUITId ? (
-                <ViButton
-                  title="COPY DEBUG URL"
-                  type="light"
-                  variant="danger"
-                  onPress={async () =>
-                    await Clipboard.setStringAsync(local.debugUITId.toString())
-                  }
-                />
-              ) : null
-              // <Text>Hardcoded activity</Text>
-            }
           </ScrollView>
           <View style={[styles.BottomContainer]}>
             <View style={styles.BottomContainerButton}>
@@ -383,7 +331,6 @@ export default function ActivityDetailsScreen({ route }: any) {
               />
             )}
             ref={bottomModalSheetRef}
-            onChange={handleSheetChanges}
             backgroundStyle={[
               BackgroundColors.background,
               {
@@ -399,9 +346,7 @@ export default function ActivityDetailsScreen({ route }: any) {
             />
           </BottomSheetModal>
         </>
-      ) : (
-        <Text>No results?!</Text>
-      )}
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -415,8 +360,6 @@ function PlanningSheetView({
   activity,
   suggestedActivityId,
 }: PlanningSheetViewProps) {
-  const { getCredentials } = useAuth0();
-  const API_URL = Constants.expoConfig?.extra?.apiUrl;
   const [isStartDatePickerVisible, setStartDatePickerVisibility] =
     useState(false);
   const [startDatePickerMode, setStartDatePickerMode] = useState<
@@ -428,8 +371,6 @@ function PlanningSheetView({
   const [isEndDatePickerVisible, setEndDatePickerVisibility] = useState(false);
   const [startDateTime, setStartDateTime] = useState(new Date());
   const [endDateTime, setEndDateTime] = useState(new Date());
-  const [posting, setPosting] = useState<boolean>(false);
-  const [status, setStatus] = useState<number | null>(null);
 
   const handleConfirmStartDate = (date: any) => {
     console.warn("A date has been picked: ", date);
@@ -445,36 +386,26 @@ function PlanningSheetView({
     setEndDateTime(date);
   };
 
+  const { mutate, isPending, error } = usePostUserActivityList();
+  const queryClient = useQueryClient();
   async function handleAddEventToPlanner() {
-    try {
-      setPosting(true);
-      const creds = await getCredentials();
-      const accessToken = creds?.accessToken;
-
-      const response = await fetch(`${API_URL}/useractivitylist/add`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
+    mutate(
+      {
+        activityId: activity.activityId,
+        plannedStart: startDateTime,
+        plannedEnd: endDateTime,
+        suggestedActivityId: suggestedActivityId,
+      },
+      {
+        onSuccess: (data) => {
+          handleClose();
+          queryClient.invalidateQueries({ queryKey: ["user-activity-list"] });
+          router.replace({
+            pathname: "/planning",
+          });
         },
-        body: JSON.stringify({
-          activityId: activity.activityId,
-          plannedStart: startDateTime.toISOString(),
-          plannedEnd: endDateTime.toISOString(),
-          suggestedActivityId: suggestedActivityId,
-        }),
-      });
-
-      setStatus(response.status);
-      if (response.status == 200) {
-        ToastAndroid.show("Event added!", ToastAndroid.SHORT);
       }
-      setPosting(false);
-      handleClose();
-    } catch (error) {
-      console.error("Error fetching activity details:", error);
-      setPosting(false);
-    }
+    );
   }
 
   var dateOptions = {
@@ -499,8 +430,15 @@ function PlanningSheetView({
       >
         <Text style={textStyles.h3}>Add to my calendar</Text>
       </View>
+      {error ? (
+        <VitoError
+          error={error}
+          loading={isPending}
+          refetch={handleAddEventToPlanner}
+        />
+      ) : null}
 
-      {posting ? (
+      {isPending ? (
         <Viloader vitoMessage="Adding the event to your calendar!" />
       ) : (
         <View
@@ -607,7 +545,7 @@ function PlanningSheetView({
             title="Close"
             variant="primary"
             type="text-only"
-            enabled={posting ? false : true}
+            enabled={isPending ? false : true}
             onPress={() => handleClose()}
           />
         </View>
@@ -616,8 +554,8 @@ function PlanningSheetView({
             title="Add "
             variant="primary"
             type="light"
-            enabled={posting ? false : true}
-            onPress={handleAddEventToPlanner}
+            enabled={isPending ? false : true}
+            onPress={() => handleAddEventToPlanner()}
           />
         </View>
       </View>

@@ -4,15 +4,12 @@ import {
   StyleSheet,
   View,
   Text,
-  ToastAndroid,
   FlatList,
   TouchableNativeFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Constants from "expo-constants";
-import { useAuth0 } from "react-native-auth0";
-import { Activity, EnergyLevel, Pillars } from "@/types/activity";
+import { useEffect, useRef, useState } from "react";
+import { EnergyLevel, Pillars } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import {
   BackgroundColors,
@@ -20,10 +17,8 @@ import {
   safeAreaStyles,
   textStyles,
 } from "@/globalStyles";
-import BottomSheet, {
+import {
   BottomSheetBackdrop,
-  BottomSheetBackdropProps,
-  BottomSheetHandle,
   BottomSheetModal,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
@@ -34,76 +29,23 @@ import { ViSlider } from "@/components/ViSlider";
 import { ViToggleButton } from "@/components/ViToggleButton";
 import { getLocation } from "@/helpers/locationHelper";
 import { LocationObject } from "expo-location";
+import VitoError from "@/components/ViErrorHandler";
+import { useGetActivityList } from "@/hooks/useActivityList";
+import { RefreshControl } from "react-native-gesture-handler";
 
 export default function ActivitiesScreen() {
-  const { getCredentials } = useAuth0();
-  const [activityList, setActivityList] = useState<Activity[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [userLocation, setUserLocation] = useState<LocationObject | null>(null);
-  const API_URL = Constants.expoConfig?.extra?.apiUrl;
   const navigation = useNavigation();
   const bottomModalSheetRef = useRef<BottomSheetModal>(null);
 
   const handleOpenSheet = () => bottomModalSheetRef.current!.present();
   const handleCloseSheet = () => bottomModalSheetRef.current!.close();
 
-  // callbacks
-  const handleSheetChanges = useCallback((index: number) => {
-    //console.log("handleSheetChanges", index);
-  }, []);
-
-  const fetchActivities = async () => {
-    try {
-      setLoading(true);
-      const creds = await getCredentials();
-      const accessToken = creds?.accessToken;
-      console.log(accessToken);
-
-      if (!accessToken) {
-        console.warn("No access token available");
-        ToastAndroid.show(
-          "Authentication error: no access token",
-          ToastAndroid.SHORT
-        );
-        return;
-      }
-      console.log(userLocation);
-      if (!userLocation?.coords.longitude || !userLocation?.coords.latitude) {
-        console.warn("Location not found!!");
-        return;
-      }
-      const query = `${API_URL}/activities?d=1&lon=${userLocation?.coords.longitude.toString()}&lat=${userLocation?.coords.latitude.toString()}`;
-      console.log(query);
-      const response = await fetch(query, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        console.warn("Failed to fetch activities:", response);
-        ToastAndroid.show(
-          `Failed to load activities: ${response.status}`,
-          ToastAndroid.SHORT
-        );
-        return;
-      }
-
-      const data = await response.json();
-      setActivityList(data.data as Activity[]);
-      //console.log(data.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching activities:", error);
-      ToastAndroid.show(
-        "Network error while fetching activities",
-        ToastAndroid.SHORT
-      );
-      setLoading(false);
-    }
-  };
+  const { isLoading, data, error, refetch } = useGetActivityList({
+    enabled: userLocation?.coords != undefined,
+    lon: userLocation?.coords.longitude,
+    lat: userLocation?.coords.latitude,
+  });
 
   useEffect(() => {
     async function fetchLocation() {
@@ -135,14 +77,9 @@ export default function ActivitiesScreen() {
     });
   }, [navigation]);
 
-  useEffect(() => {
-    if (!userLocation) return; // wait until location is set
-    fetchActivities(); // now it will only run when userLocation is set
-  }, [userLocation]);
-
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
-      {loading ? (
+      {isLoading ? (
         <View
           style={{
             height: "100%",
@@ -154,7 +91,11 @@ export default function ActivitiesScreen() {
         >
           <Viloader vitoMessage="Vito is looking for more activities..." />
         </View>
-      ) : (
+      ) : null}
+      {error ? (
+        <VitoError error={error} loading={isLoading} refetch={refetch} />
+      ) : null}
+      {!isLoading && !error && data ? (
         <View
           style={{
             width: "100%",
@@ -165,8 +106,11 @@ export default function ActivitiesScreen() {
           }}
         >
           <FlatList
-            data={activityList}
-            keyExtractor={(item) => item.activityId.toString()}
+            refreshControl={
+              <RefreshControl refreshing={isLoading} onRefresh={refetch} />
+            }
+            data={data}
+            keyExtractor={(item) => item.activityId?.toString()}
             style={styles.FlatListStyles}
             contentContainerStyle={{
               gap: 8,
@@ -185,7 +129,6 @@ export default function ActivitiesScreen() {
               />
             )}
             ref={bottomModalSheetRef}
-            onChange={handleSheetChanges}
             backgroundStyle={[
               BackgroundColors.background,
               {
@@ -197,7 +140,7 @@ export default function ActivitiesScreen() {
             <FilterPanel handleCloseSheet={() => handleCloseSheet()} />
           </BottomSheetModal>
         </View>
-      )}
+      ) : null}
     </SafeAreaView>
   );
 }

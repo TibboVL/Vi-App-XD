@@ -8,8 +8,6 @@ export type Activity = {
   isGroupActivity: boolean;
   categories: Category[];
   debugUITId: string;
-  lat: number | null;
-  lon: number | null;
   distance: number;
 };
 
@@ -30,17 +28,7 @@ export type ActivitySuggestion = {
   updated_at: string | null;
   activity: Activity;
 };
-export type ActivityDetails = {
-  activityId: number;
-  name: string;
-  energyRequired: EnergyLevel;
-  estimatedDurationMinutes: number;
-  currency: string;
-  estimatedCost: number;
-  isGroupActivity: boolean;
-  categories: Category[];
-  debugUITId: string | null;
-
+export type ActivityDetails = Activity & {
   description: string;
   source: string;
   startDate: string | null; // ISO 8601 string
@@ -85,6 +73,7 @@ export enum Weekday {
 }
 
 export type Category = {
+  activityCategoryId: number;
   name: string;
   pillar: string;
 };

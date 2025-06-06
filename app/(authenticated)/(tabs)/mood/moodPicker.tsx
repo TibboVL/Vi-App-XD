@@ -20,19 +20,16 @@ import {
   VitoAnimatedMoods,
   VitoEmoteConfig,
 } from "@/components/VitoAnimatedMoods";
+import { useGetMoods } from "@/hooks/useMoods";
 
 export default function MoodPickerScreen() {
   const state = useCheckinState();
   const dispatch = useCheckinDispatch();
 
-  const [moods, setMoods] = useState<Mood[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedPrimaryMood, setSelectedPrimaryMoodMood] =
     useState<Number | null>(null);
   const [selectedSecondaryMood, setSelectedSecondaryMoodMood] =
     useState<Number | null>(null);
-  const { getCredentials } = useAuth0();
-  const API_URL = Constants.expoConfig?.extra?.apiUrl;
 
   const emoteManagerRef = useRef<VitoAnimatedMoodHandles>();
 
@@ -69,32 +66,11 @@ export default function MoodPickerScreen() {
     });
   };
 
-  async function fetchMoods() {
-    try {
-      setLoading(true);
-      const creds = await getCredentials();
-      const accessToken = creds?.accessToken;
+  const { isLoading: loading, data: moods, error } = useGetMoods();
 
-      const query = `${API_URL}/moods`;
-      const response = await fetch(query, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      const data = await response.json();
-      setMoods(data.data as Mood[]);
-      setLoading(false);
-    } catch (error) {
-      console.log("Failed to fetch moods: ", error);
-    }
-  }
   const navigation = useNavigation();
 
   useEffect(() => {
-    fetchMoods();
     const listener = navigation.addListener("beforeRemove", (e) => {
       e.preventDefault();
       ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
@@ -121,7 +97,7 @@ export default function MoodPickerScreen() {
           }}
         >
           {moods
-            .filter((mood) => mood.moodId == selectedPrimaryMood)
+            ?.filter((mood) => mood.moodId == selectedPrimaryMood)
             .map((primaryMood) => (
               <View key={primaryMood.moodId}>
                 <ViToggleButton
@@ -151,7 +127,7 @@ export default function MoodPickerScreen() {
           ]}
         >
           {moods
-            .filter((mood) => mood.parentMoodId == null)
+            ?.filter((mood) => mood.parentMoodId == null)
             .map((primaryMood) => {
               return (
                 <View key={primaryMood.moodId}>
@@ -172,7 +148,7 @@ export default function MoodPickerScreen() {
           ]}
         >
           {moods
-            .filter((mood) => mood.parentMoodId == selectedPrimaryMood)
+            ?.filter((mood) => mood.parentMoodId == selectedPrimaryMood)
             .map((secondaryMood) => {
               return (
                 <View key={secondaryMood.moodId}>

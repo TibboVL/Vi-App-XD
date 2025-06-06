@@ -10,9 +10,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Auth0Provider } from "react-native-auth0";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const queryClient = new QueryClient();
+
   const [loaded] = useFonts({
     //SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     AnekMalayalam: require("../assets/fonts/AnekMalayalam-VariableFont_wdth,wght.ttf"),
@@ -30,26 +33,28 @@ export default function RootLayout() {
   }
 
   return (
-    <Auth0Provider
-      domain={"vi-auth.eu.auth0.com"}
-      clientId={"W6Hoc4HcrkiGrTc29yM8i7mP7g6QAcsy"}
-    >
-      <SafeAreaProvider style={{ flex: 1 }}>
-        <GestureHandlerRootView>
-          <BottomSheetModalProvider>
-            <Stack>
-              <Stack.Screen
-                name="(authenticated)"
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen name="signIn" options={{ headerShown: false }} />
-              {/* <Stack.Screen name="register" /> */}
-              <Stack.Screen name="+not-found" />
-            </Stack>
-            <StatusBar style="dark" />
-          </BottomSheetModalProvider>
-        </GestureHandlerRootView>
-      </SafeAreaProvider>
-    </Auth0Provider>
+    <QueryClientProvider client={queryClient}>
+      <Auth0Provider
+        domain={"vi-auth.eu.auth0.com"}
+        clientId={"W6Hoc4HcrkiGrTc29yM8i7mP7g6QAcsy"}
+      >
+        <SafeAreaProvider style={{ flex: 1 }}>
+          <GestureHandlerRootView>
+            <BottomSheetModalProvider>
+              <Stack>
+                <Stack.Screen
+                  name="(authenticated)"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen name="signIn" options={{ headerShown: false }} />
+                {/* <Stack.Screen name="register" /> */}
+                <Stack.Screen name="+not-found" />
+              </Stack>
+              <StatusBar style="dark" />
+            </BottomSheetModalProvider>
+          </GestureHandlerRootView>
+        </SafeAreaProvider>
+      </Auth0Provider>
+    </QueryClientProvider>
   );
 }
