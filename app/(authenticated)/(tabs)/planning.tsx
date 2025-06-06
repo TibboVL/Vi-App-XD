@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableNativeFeedback,
   ToastAndroid,
-  RefreshControl,
 } from "react-native";
 import {
   AgendaList,
@@ -21,6 +20,8 @@ import { PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import { adjustLightness } from "@/constants/Colors";
 import { useGetUserActivityList } from "@/hooks/useUserActivityList";
+import VitoError from "@/components/ViErrorHandler";
+import { RefreshControl } from "react-native-gesture-handler";
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];
@@ -29,6 +30,7 @@ export default function PlanningScreen() {
   const {
     isLoading,
     data: userActivityListContainers,
+    error,
     refetch,
   } = useGetUserActivityList();
 
@@ -95,32 +97,7 @@ export default function PlanningScreen() {
                   pointerEvents="none" // make sure it doesn't block touches
                 />
               </View>
-              {!isLoading && userActivityListContainers ? (
-                userActivityListContainers.length < 1 ? (
-                  <View
-                    style={{
-                      flex: 1,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text>You don't have any plans this week</Text>
-                  </View>
-                ) : (
-                  <AgendaList
-                    refreshControl={
-                      <RefreshControl
-                        refreshing={isLoading}
-                        onRefresh={refetch}
-                      />
-                    }
-                    renderSectionHeader={SectionHeader}
-                    sections={userActivityListContainers}
-                    renderItem={AgendaItem}
-                    style={{ flex: 1, height: "100%", width: "100%" }}
-                  />
-                )
-              ) : (
+              {isLoading ? (
                 <View
                   style={{
                     flex: 1,
@@ -130,7 +107,40 @@ export default function PlanningScreen() {
                 >
                   <Viloader vitoMessage="Vito is stitching together your schedule!" />
                 </View>
-              )}
+              ) : null}
+              {error ? (
+                <VitoError
+                  error={error}
+                  loading={isLoading}
+                  refetch={refetch}
+                />
+              ) : null}
+              {userActivityListContainers ? (
+                <AgendaList
+                  ListEmptyComponent={
+                    <View
+                      style={{
+                        flex: 1,
+                        height: 500,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text>You don't have any plans yet!</Text>
+                    </View>
+                  }
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={isLoading}
+                      onRefresh={refetch}
+                    />
+                  }
+                  renderSectionHeader={SectionHeader}
+                  sections={userActivityListContainers}
+                  renderItem={AgendaItem}
+                  style={{ flex: 1, height: "100%", width: "100%" }}
+                />
+              ) : null}
             </CalendarProvider>
           </View>
         </View>

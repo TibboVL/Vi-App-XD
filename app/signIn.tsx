@@ -27,39 +27,6 @@ export default function WelcomeScreen() {
     }
   };
 
-  const sendAPICall = async () => {
-    try {
-      const creds = await getCredentials();
-      const accessToken = creds!.accessToken;
-      if (!accessToken) {
-        console.warn("No access token available");
-        return;
-      }
-
-      const res = await fetch(
-        "https://vi-backend-xd.onrender.com/api/v1/users",
-        {
-          method: "POST", // or POST if you need a body
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            username: "test",
-          }),
-        }
-      );
-
-      if (res.ok) {
-        console.log("API success:", await res.json());
-      } else {
-        console.error("API error:", res.status, await res.text());
-      }
-    } catch (e) {
-      console.error("sendAPICall failed:", e);
-    }
-  };
-
   return (
     <SafeAreaView>
       <View style={[styles.Container]}>
@@ -120,12 +87,6 @@ export default function WelcomeScreen() {
             type="light"
             title="To App"
             onPress={() => router.replace("/(authenticated)/(tabs)/discover")}
-          />
-          <ViButton
-            variant="secondary"
-            type="light"
-            title="test api call with token"
-            onPress={sendAPICall}
           />
         </View>
       </View>

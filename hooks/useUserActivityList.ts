@@ -24,6 +24,25 @@ export const useGetUserActivityList = ({
   });
 };
 
+export const useGetUserActivityListsItemsReview = ({
+  enabled = true,
+}: {
+  enabled?: boolean;
+} = {}) => {
+  const api = useApiClient();
+  return useQuery<CompactUserActivityListItem[]>({
+    queryKey: ["user-activity-list-to-review"], //! UNIQUE !
+    queryFn: async () => {
+      const result = await api<{
+        data: CompactUserActivityListItem[];
+      }>(`/useractivitylist/toReview`);
+      return result.data;
+    },
+    staleTime: 1000 * 60 * 60 * 24, // 1 day
+    enabled: enabled,
+  });
+};
+
 export const usePostUserActivityList = () => {
   const api = useApiClient();
   return useMutation({
@@ -47,6 +66,40 @@ export const usePostUserActivityList = () => {
           plannedStart: plannedStart.toISOString(),
           plannedEnd: plannedEnd.toISOString(),
           suggestedActivityId,
+        }),
+      });
+
+      return result.data;
+    },
+  });
+};
+
+export const usePostUserActivityListItemReview = () => {
+  const api = useApiClient();
+  return useMutation({
+    mutationFn: async ({
+      beforeMoodId,
+      afterMoodId,
+      beforeEnergy,
+      afterEnergy,
+      userActivityId,
+    }: {
+      beforeMoodId: number | null;
+      afterMoodId: number | null;
+      beforeEnergy: number | null;
+      afterEnergy: number | null;
+      userActivityId: number | null;
+    }) => {
+      const result = await api<{
+        data: CompactUserActivityListItem;
+      }>(`/checkin/add`, {
+        method: "POST",
+        body: JSON.stringify({
+          beforeMoodId,
+          afterMoodId,
+          beforeEnergy,
+          afterEnergy,
+          userActivityId,
         }),
       });
 

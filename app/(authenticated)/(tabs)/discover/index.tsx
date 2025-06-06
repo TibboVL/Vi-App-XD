@@ -1,30 +1,16 @@
 import { ViButton } from "@/components/ViButton";
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  ToastAndroid,
-  RefreshControl,
-} from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, SplashScreen } from "expo-router";
-import {
-  getLocation,
-  getReverseGeocodedLocation,
-} from "@/helpers/locationHelper";
+import { getLocation } from "@/helpers/locationHelper";
 import { useEffect, useState } from "react";
-import { LocationGeocodedAddress, LocationObject } from "expo-location";
-import { TextColors, textStyles } from "@/globalStyles";
-import Constants from "expo-constants";
-import { useAuth0 } from "react-native-auth0";
-import { ActivitySuggestion } from "@/types/activity";
-import { FlatList } from "react-native-gesture-handler";
+import { LocationObject } from "expo-location";
+import { TextColors } from "@/globalStyles";
+import { FlatList, RefreshControl } from "react-native-gesture-handler";
 import { ViActivitySuggestion } from "@/components/ViActivitySuggestion";
 import { Viloader } from "@/components/ViLoader";
 import { timeDifference } from "@/helpers/dateTimeHelpers";
 import { useGetSuggestedActivities } from "@/hooks/useSuggestedActivities";
-import { isError } from "lodash";
 import VitoError from "@/components/ViErrorHandler";
 SplashScreen.preventAutoHideAsync();
 
@@ -48,7 +34,7 @@ export default function DiscoverScreen() {
       setUserLocation(res); // triggers the effect below
     }
     fetchLocation();
-  });
+  }, []);
 
   return (
     <SafeAreaView>
@@ -140,12 +126,6 @@ export default function DiscoverScreen() {
                 pathname: "/discover/activities",
               });
             }}
-          />
-          <ViButton
-            title="force refetch"
-            variant="danger"
-            type="light"
-            onPress={refetch}
           />
         </View>
       </View>

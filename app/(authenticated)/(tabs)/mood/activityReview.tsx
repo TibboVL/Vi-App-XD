@@ -13,12 +13,7 @@ import {
   TouchableNativeFeedback,
   FlatList,
 } from "react-native";
-import { useAuth0 } from "react-native-auth0";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-import Constants from "expo-constants";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ViButton } from "@/components/ViButton";
 import { router, useNavigation } from "expo-router";
 import { CompactUserActivityListItem } from "@/types/userActivityList";
@@ -31,49 +26,26 @@ import {
   useCheckinState,
 } from "./checkinContext";
 import ContextDebugView from "./checkinContextDebug";
+import {
+  useGetUserActivityListsItemsReview,
+  usePostUserActivityListItemReview,
+} from "@/hooks/useUserActivityList";
+import VitoError from "@/components/ViErrorHandler";
 
 export default function ActivityReviewScreen() {
   const state = useCheckinState();
   const dispatch = useCheckinDispatch();
-
-  const [
-    userActivityListItemsToBeReviewed,
-    setUserActivityListItemsToBeReviewed,
-  ] = useState<CompactUserActivityListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [posting, setPosting] = useState(true);
-  useState<Number | null>(null);
   const [selectedReviewItemId, setSelectedReviewItemId] = useState<
     number | null
   >(null);
+  const [allowedToFetchList, setAllowedToFetchList] = useState<boolean>(false);
 
-  const { getCredentials } = useAuth0();
-  const API_URL = Constants.expoConfig?.extra?.apiUrl;
-
-  async function fetchUserActivityListItemsToBeReviewed() {
-    try {
-      setLoading(true);
-      const creds = await getCredentials();
-      const accessToken = creds?.accessToken;
-
-      const query = `${API_URL}/userActivityList/toReview`;
-      const response = await fetch(query, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      const data = await response.json();
-      setUserActivityListItemsToBeReviewed(
-        data.data as CompactUserActivityListItem[]
-      );
-      setLoading(false);
-    } catch (error) {
-      console.log("Failed to fetch : ", error);
-    }
-  }
+  const {
+    isLoading,
+    data: userActivityListItemsToBeReviewed,
+    error: fetchError,
+    refetch,
+  } = useGetUserActivityListsItemsReview({ enabled: allowedToFetchList });
 
   function toggleActivityId(activityId: number) {
     selectedReviewItemId == activityId
@@ -83,7 +55,6 @@ export default function ActivityReviewScreen() {
 
   function handleSetContextForActivityReview(reviewing: boolean) {
     if (router.canDismiss()) router.dismissAll();
-
     dispatch({
       action: CheckinContextAction.SET_USER_ACTIVITY, // automatically resets the rest
       payload: reviewing ? selectedReviewItemId : null,
@@ -91,46 +62,31 @@ export default function ActivityReviewScreen() {
   }
   const navigation = useNavigation();
 
+  const {
+    mutate,
+    isPending,
+    error: postError,
+  } = usePostUserActivityListItemReview();
   async function handlePostCheckin() {
-    try {
-      setPosting(true);
-      const creds = await getCredentials();
-      const accessToken = creds?.accessToken;
-
-      const query = `${API_URL}/checkin/add`;
-      const response = await fetch(query, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          beforeMoodId: state.moodBefore,
-          afterMoodId: state.moodAfter,
-          beforeEnergy: state.energyBefore,
-          afterEnergy: state.energyAfter,
-          userActivityId: state.userActivityId,
-        }),
-      });
-
-      const data = await response.json();
-      setUserActivityListItemsToBeReviewed(
-        data.data as CompactUserActivityListItem[]
-      );
-      setPosting(false);
-    } catch (error) {
-      console.log("Failed to fetch : ", error);
-    }
-    fetchUserActivityListItemsToBeReviewed();
+    mutate(
+      {
+        beforeMoodId: state.moodBefore,
+        afterMoodId: state.moodAfter,
+        beforeEnergy: state.energyBefore,
+        afterEnergy: state.energyAfter,
+        userActivityId: state.userActivityId,
+      },
+      {
+        onSuccess: () => setAllowedToFetchList(true),
+      }
+    );
   }
 
   useEffect(() => {
     if (state.moodBefore != null && state.energyBefore != null) {
-      // if data is already in the context we should send it to the backend
-      handlePostCheckin();
+      handlePostCheckin(); // if data is already in the context we should send it to the backend
     } else {
-      setPosting(false);
-      fetchUserActivityListItemsToBeReviewed();
+      setAllowedToFetchList(true);
     }
 
     const listener = navigation.addListener("beforeRemove", (e) => {
@@ -146,7 +102,23 @@ export default function ActivityReviewScreen() {
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       <ContextDebugView />
       <View style={[styles.Container]}>
-        {!loading ? (
+        {isLoading ? (
+          <View
+            style={{
+              flex: 1,
+              width: "100%",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Viloader vitoMessage="Vito is looking through your plans!" />
+          </View>
+        ) : null}
+        {fetchError ? (
+          <VitoError error={fetchError} loading={isLoading} refetch={refetch} />
+        ) : null}
+        {postError ? <VitoError error={postError} loading={isPending} /> : null}
+        {userActivityListItemsToBeReviewed ? (
           <View style={{ flex: 1, width: "100%" }}>
             <View
               style={{
@@ -216,19 +188,7 @@ export default function ActivityReviewScreen() {
               forward. Let’s reflect on how things went!
             </Text>
           </View>
-        ) : (
-          <View
-            style={{
-              flex: 1,
-              width: "100%",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Viloader vitoMessage="Vito is looking through your plans!" />
-          </View>
-        )}
-
+        ) : null}
         <View id="BottomButtonContainer" style={[styles.BottomContainer]}>
           <View style={{ flex: 1 }}>
             <ViButton

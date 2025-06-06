@@ -1,15 +1,14 @@
-import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import * as React from "react";
-import { RefreshControl, ScrollView, Text, View } from "react-native";
-import Svg, { G, Path, Defs, ClipPath } from "react-native-svg";
+import { ScrollView, Text, View } from "react-native";
 import { ViButton } from "./ViButton";
 import { getViFriendlyErrorMessage } from "@/helpers/errorHelper";
 import { ViCustomError } from "@/hooks/apiClient";
+import { RefreshControl } from "react-native-gesture-handler";
 
 interface VitoErrorProps {
   error: ViCustomError;
   loading: boolean;
-  refetch: () => Promise<any>;
+  refetch?: () => Promise<any>;
 }
 const VitoError = ({ error, loading, refetch }: VitoErrorProps) => (
   <ScrollView
@@ -36,9 +35,11 @@ const VitoError = ({ error, loading, refetch }: VitoErrorProps) => (
     >
       {getViFriendlyErrorMessage(error.status)}
     </Text>
-    <View style={{ width: 200 }}>
-      <ViButton title="Try again" onPress={refetch} />
-    </View>
+    {refetch ? (
+      <View style={{ width: 200 }}>
+        <ViButton title="Try again" onPress={refetch} />
+      </View>
+    ) : null}
   </ScrollView>
 );
 export default VitoError;

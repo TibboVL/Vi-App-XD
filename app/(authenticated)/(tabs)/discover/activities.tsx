@@ -6,7 +6,6 @@ import {
   Text,
   FlatList,
   TouchableNativeFeedback,
-  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useRef, useState } from "react";
@@ -32,6 +31,7 @@ import { getLocation } from "@/helpers/locationHelper";
 import { LocationObject } from "expo-location";
 import VitoError from "@/components/ViErrorHandler";
 import { useGetActivityList } from "@/hooks/useActivityList";
+import { RefreshControl } from "react-native-gesture-handler";
 
 export default function ActivitiesScreen() {
   const [userLocation, setUserLocation] = useState<LocationObject | null>(null);
