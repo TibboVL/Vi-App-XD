@@ -21,7 +21,6 @@ import { PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import { adjustLightness } from "@/constants/Colors";
 import { useUserActivityList } from "@/hooks/useUserActivityList";
-import { useQueryClient } from "@tanstack/react-query";
 import VitoError from "@/components/ViErrorHandler";
 
 export default function PlanningScreen() {

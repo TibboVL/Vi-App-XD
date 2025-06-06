@@ -11,7 +11,6 @@ export const useUserActivityList = () => {
       const result = await api<{
         data: CompactUserActivityListDayContainer[];
       }>("/useractivitylist/");
-      console.log("Fetched data:", result.data);
       return result.data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes

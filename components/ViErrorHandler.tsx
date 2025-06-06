@@ -1,13 +1,13 @@
-import { ViError } from "@/hooks/apiClient";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import * as React from "react";
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 import Svg, { G, Path, Defs, ClipPath } from "react-native-svg";
 import { ViButton } from "./ViButton";
 import { getViFriendlyErrorMessage } from "@/helpers/errorHelper";
+import { ViCustomError } from "@/hooks/apiClient";
 
 interface VitoErrorProps {
-  error: ViError;
+  error: ViCustomError;
   loading: boolean;
   refetch: (
     options?: RefetchOptions
