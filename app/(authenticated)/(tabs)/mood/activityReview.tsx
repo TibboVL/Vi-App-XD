@@ -31,6 +31,7 @@ import {
   usePostUserActivityListItemReview,
 } from "@/hooks/useUserActivityList";
 import VitoError from "@/components/ViErrorHandler";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ActivityReviewScreen() {
   const state = useCheckinState();
@@ -61,7 +62,7 @@ export default function ActivityReviewScreen() {
     });
   }
   const navigation = useNavigation();
-
+  const queryClient = useQueryClient();
   const {
     mutate,
     isPending,
@@ -77,7 +78,17 @@ export default function ActivityReviewScreen() {
         userActivityId: state.userActivityId,
       },
       {
-        onSuccess: () => setAllowedToFetchList(true),
+        onSuccess: (data) => {
+          console.log(data);
+          console.log(data.afterMoodId);
+          if (data.afterMoodId == null) {
+            queryClient.invalidateQueries({
+              queryKey: ["last-valid-checkin"],
+              refetchType: "active",
+            }); // we added a freestanding checkin so we want to invalidate the cache of the query so our mood screen updates
+          }
+          setAllowedToFetchList(true);
+        },
       }
     );
   }

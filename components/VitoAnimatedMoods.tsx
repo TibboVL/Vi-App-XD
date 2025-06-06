@@ -51,11 +51,35 @@ type VitoPartsConfig = {
 };
 
 export type VitoEmoteConfig = Record<
-  "happy" | "sad" | "angry" | "fearful" | "surprised" | "bad",
+  "default" | "happy" | "sad" | "angry" | "fearful" | "surprised" | "bad",
   VitoPartsConfig
 >;
 
 const vitoEmoteConfig: VitoEmoteConfig = {
+  default: {
+    Mouth: {
+      d: "M98 128C105 134 120 134 126 128",
+      opacity: 1,
+    },
+    CircleMouth: {
+      scale: 0, // hidden
+      opacity: 0,
+    },
+    LeftEye: { translateY: 0 },
+    RightEye: { translateY: 0 },
+    LeftPupil: { translateX: -10, translateY: -7, scale: 0.65 },
+    RightPupil: { translateX: -10, translateY: -7, scale: 0.65 },
+    LeftEyeReflection: { opacity: 0 },
+    RightEyeReflection: { opacity: 0 },
+    LeftEyeExtraReflection: { opacity: 0, translateX: 0, scale: 0 },
+    RightEyeExtraReflection: { opacity: 0, translateX: 0, scale: 0 },
+    LeftEyeLid: { scale: 1, translateY: 0 },
+    RightEyeLid: { scale: 1, translateY: 0 },
+    LeftCheek: { translateY: 0 },
+    RightCheek: { translateY: 0 },
+    LeftAngryEyeLid: { scale: 1, translateY: -20 },
+    RightAngryEyeLid: { scale: 1, translateY: -20 },
+  },
   happy: {
     Mouth: {
       d: "M98 128C105 134 120 134 126 128",
@@ -67,8 +91,8 @@ const vitoEmoteConfig: VitoEmoteConfig = {
     },
     LeftEye: { translateY: 0 },
     RightEye: { translateY: 0 },
-    LeftPupil: { translateY: 0, scale: 0.65 },
-    RightPupil: { translateY: 0, scale: 0.65 },
+    LeftPupil: { translateX: 0, translateY: 0, scale: 0.65 },
+    RightPupil: { translateX: 0, translateY: 0, scale: 0.65 },
     LeftEyeReflection: { opacity: 0 },
     RightEyeReflection: { opacity: 0 },
     LeftEyeExtraReflection: { opacity: 0, translateX: 0, scale: 0 },
@@ -91,8 +115,8 @@ const vitoEmoteConfig: VitoEmoteConfig = {
     },
     LeftEye: { translateY: 5 },
     RightEye: { translateY: 5 },
-    LeftPupil: { translateY: 25, scale: 0.45 },
-    RightPupil: { translateY: 25, scale: 0.45 },
+    LeftPupil: { translateX: 0, translateY: 25, scale: 0.45 },
+    RightPupil: { translateX: 0, translateY: 25, scale: 0.45 },
     LeftEyeReflection: { opacity: 0, translateX: 0, scale: 0 },
     RightEyeReflection: { opacity: 0, translateX: 0, scale: 0 },
     LeftEyeExtraReflection: { opacity: 0, scale: 0 },
@@ -115,8 +139,8 @@ const vitoEmoteConfig: VitoEmoteConfig = {
     },
     LeftEye: { translateY: 5 },
     RightEye: { translateY: 5 },
-    LeftPupil: { translateY: 55, scale: 0.3 },
-    RightPupil: { translateY: 55, scale: 0.3 },
+    LeftPupil: { translateX: 0, translateY: 55, scale: 0.3 },
+    RightPupil: { translateX: 0, translateY: 55, scale: 0.3 },
     LeftEyeReflection: { opacity: 0, translateX: 0, scale: 0 },
     RightEyeReflection: { opacity: 0, translateX: 0, scale: 0 },
     LeftEyeExtraReflection: { opacity: 0, scale: 0 },
@@ -140,8 +164,8 @@ const vitoEmoteConfig: VitoEmoteConfig = {
     },
     LeftEye: { translateY: 0 },
     RightEye: { translateY: 0 },
-    LeftPupil: { translateY: 0, scale: 1 },
-    RightPupil: { translateY: 0, scale: 1 },
+    LeftPupil: { translateX: 0, translateY: 0, scale: 1 },
+    RightPupil: { translateX: 0, translateY: 0, scale: 1 },
     LeftEyeReflection: { opacity: 1, translateX: 0, scale: 1 },
     RightEyeReflection: { opacity: 1, translateX: 0, scale: 1 },
     LeftEyeExtraReflection: { opacity: 1, scale: 1 },
@@ -165,8 +189,8 @@ const vitoEmoteConfig: VitoEmoteConfig = {
     },
     LeftEye: { translateY: 0 },
     RightEye: { translateY: 0 },
-    LeftPupil: { translateY: 0, scale: 1 },
-    RightPupil: { translateY: 0, scale: 1 },
+    LeftPupil: { translateX: 0, translateY: 0, scale: 1 },
+    RightPupil: { translateX: 0, translateY: 0, scale: 1 },
     LeftEyeReflection: { opacity: 1, translateX: 20, scale: 0.6 },
     RightEyeReflection: { opacity: 1, translateX: 20, scale: 0.6 },
     LeftEyeExtraReflection: { opacity: 0, scale: 0 },
@@ -189,8 +213,8 @@ const vitoEmoteConfig: VitoEmoteConfig = {
     },
     LeftEye: { translateY: 5 },
     RightEye: { translateY: 5 },
-    LeftPupil: { translateY: 15, scale: 0.6 },
-    RightPupil: { translateY: 15, scale: 0.6 },
+    LeftPupil: { translateX: 0, translateY: 15, scale: 0.6 },
+    RightPupil: { translateX: 0, translateY: 15, scale: 0.6 },
     LeftEyeReflection: { opacity: 0, translateX: 0, scale: 0 },
     RightEyeReflection: { opacity: 0, translateX: 0, scale: 0 },
     LeftEyeExtraReflection: { opacity: 0, scale: 0 },
@@ -255,7 +279,7 @@ export type VitoAnimatedMoodHandles = {
 
 export const VitoAnimatedMoods = forwardRef(
   (props: {}, ref: ForwardedRef<VitoAnimatedMoodHandles>) => {
-    const [mood, setMood] = useState("happy" as keyof VitoEmoteConfig);
+    const [mood, setMood] = useState("default" as keyof VitoEmoteConfig);
 
     useImperativeHandle(ref, () => ({
       setMood(mood: keyof VitoEmoteConfig) {

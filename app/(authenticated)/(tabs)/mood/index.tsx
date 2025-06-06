@@ -1,64 +1,37 @@
 import { ViButton } from "@/components/ViButton";
-import {
-  safeAreaEdges,
-  safeAreaStyles,
-  TextColors,
-  textStyles,
-} from "@/globalStyles";
+import { TextColors, textStyles } from "@/globalStyles";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, InteractionManager } from "react-native";
-import { useAuth0 } from "react-native-auth0";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Constants from "expo-constants";
-import { Mood } from "@/types/mood";
+import { useEffect, useRef, useState } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { EnergyLevel, EnergyMappings } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
-
-interface CurrentCheckin {
-  checkinId: number;
-  validAtDate: string | null;
-  moodId: number;
-  energy: number;
-  mood: string;
-  parentMoodId: number;
-}
-
+import { useGetLastValidCheckin } from "@/hooks/useCheckin";
+import {
+  VitoAnimatedMoodHandles,
+  VitoAnimatedMoods,
+  VitoEmoteConfig,
+} from "@/components/VitoAnimatedMoods";
+import { ViWave } from "@/components/ViWave";
+import { useSharedValue } from "react-native-reanimated";
+const batteryColors = {
+  low: "#FF707070",
+  medium: "#FFBA7070",
+  high: "#C8FF7070",
+  veryHigh: "#70FFD770",
+};
 export default function MoodScreen() {
-  const [loading, setLoading] = useState(true);
   const [daysAgo, setDaysAgo] = useState<number | null>(null);
-  const [lastKnownValidCheckin, setLastKnownValidCheckin] =
-    useState<CurrentCheckin | null>(null);
-  const { getCredentials } = useAuth0();
-  const API_URL = Constants.expoConfig?.extra?.apiUrl;
-
-  async function fetchMoods() {
-    try {
-      setLoading(true);
-      const creds = await getCredentials();
-      const accessToken = creds?.accessToken;
-
-      const query = `${API_URL}/checkin/lastValidCheckin`;
-      const response = await fetch(query, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      // this user has never done a checkin!!
-      // technically this shouldnt happen because the onboarding requires them to register a first checkin
-      if (response.status == 204) {
-        setLastKnownValidCheckin(null);
-      } else {
-        const data = await response.json();
-        setLastKnownValidCheckin(data.data as CurrentCheckin);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.log("Failed to fetch : ", error);
-    }
-  }
+  const emoteManagerRef = useRef<VitoAnimatedMoodHandles>();
+  const battery = useSharedValue(0.1);
+  const {
+    isLoading,
+    data: lastKnownValidCheckin,
+    error,
+  } = useGetLastValidCheckin();
 
   function getDaysAgo(checkinDateString: string | null) {
     if (!checkinDateString) return null;
@@ -89,17 +62,13 @@ export default function MoodScreen() {
   }
 
   useEffect(() => {
-    const task = InteractionManager.runAfterInteractions(() => {
-      fetchMoods();
-    });
-
-    return () => {
-      if (task) {
-        task.cancel();
-      }
-    };
-  }, []);
-  useEffect(() => {
+    const parentMood =
+      lastKnownValidCheckin?.parentMood?.toLowerCase() as keyof VitoEmoteConfig;
+    emoteManagerRef.current?.setMood(parentMood ?? "Happy");
+    battery.value = lastKnownValidCheckin
+      ? lastKnownValidCheckin.energy / 100
+      : 0.1;
+    console.log(battery.value);
     if (lastKnownValidCheckin?.validAtDate) {
       setDaysAgo(getDaysAgo(lastKnownValidCheckin.validAtDate));
     }
@@ -108,14 +77,35 @@ export default function MoodScreen() {
   function handleStartCheckin() {
     router.push("/mood/moodPicker");
   }
+
+  const insets = useSafeAreaInsets();
+
   return (
     <SafeAreaView
       style={{
         flex: 1,
       }}
     >
+      <View
+        style={[
+          {
+            zIndex: 0,
+            pointerEvents: "none",
+            height: "100%",
+            marginTop: insets.top,
+          },
+          styles.WaveContainerStyles,
+        ]}
+      >
+        <ViWave
+          fillPercent={battery}
+          baseAmplitude={15}
+          baseFrequency={1}
+          colors={batteryColors}
+        />
+      </View>
       <View style={styles.Container}>
-        {!loading ? (
+        {!isLoading ? (
           <View
             style={{
               flex: 1,
@@ -137,9 +127,7 @@ export default function MoodScreen() {
                 //backgroundColor: "red",
               }}
             >
-              <Text>TODO</Text>
-              <Text>Vito here</Text>
-              <Text>Battery here</Text>
+              <VitoAnimatedMoods ref={emoteManagerRef} />
             </View>
             <Text
               style={{
@@ -292,5 +280,13 @@ const styles = StyleSheet.create({
     width: "100%",
     display: "flex",
     gap: 8,
+  },
+  WaveContainerStyles: {
+    flex: 1,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    top: 0,
   },
 });

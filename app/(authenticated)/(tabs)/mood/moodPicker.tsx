@@ -38,6 +38,7 @@ export default function MoodPickerScreen() {
     if (stage == "primary") {
       if (selectedPrimaryMood == mood.moodId) {
         setSelectedPrimaryMoodMood(null);
+        emoteManagerRef.current?.setMood("default");
       } else {
         setSelectedPrimaryMoodMood(mood.moodId);
         emoteManagerRef.current?.setMood(
