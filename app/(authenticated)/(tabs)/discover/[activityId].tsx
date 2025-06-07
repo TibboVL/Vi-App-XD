@@ -374,9 +374,9 @@ function PlanningSheetView({
 
   const handleConfirmStartDate = (date: any) => {
     console.warn("A date has been picked: ", date);
-    if (date > endDateTime) {
-      setEndDateTime(date);
-    }
+    // if (date > endDateTime) {
+    setEndDateTime(date);
+    // }
     setStartDatePickerVisibility(false);
     setStartDateTime(date);
   };
