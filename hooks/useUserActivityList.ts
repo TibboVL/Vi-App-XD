@@ -108,3 +108,15 @@ export const usePostUserActivityListItemReview = () => {
     },
   });
 };
+
+export const useDeleteActivityFromUserActivityList = () => {
+  const api = useApiClient();
+  return useMutation({
+    mutationFn: async ({ userActivityListId }: { userActivityListId: string | number }) => {
+      await api(`/useractivitylist/${userActivityListId}`, {
+        method: "DELETE",
+      });
+      return userActivityListId;
+    },
+  });
+};

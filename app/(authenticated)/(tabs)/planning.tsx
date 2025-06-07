@@ -6,6 +6,9 @@ import {
   StyleSheet,
   TouchableNativeFeedback,
   ToastAndroid,
+  Modal,
+  Button,
+  ScrollView,
 } from "react-native";
 import {
   AgendaList,
@@ -14,18 +17,27 @@ import {
 } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CompactUserActivityListItem } from "@/types/userActivityList";
-import { CaretLeft, CaretRight } from "phosphor-react-native";
+import { CaretLeft, CaretRight, Scroll } from "phosphor-react-native";
 import { Tag } from "@/components/ViCategoryTag";
 import { PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import { adjustLightness } from "@/constants/Colors";
 import { useGetUserActivityList } from "@/hooks/useUserActivityList";
+import { useDeleteActivityFromUserActivityList } from "@/hooks/useUserActivityList";
 import VitoError from "@/components/ViErrorHandler";
 import { RefreshControl } from "react-native-gesture-handler";
+import { useRouter } from "expo-router";
+import { set } from "lodash";
+import { ViButton } from "@/components/ViButton";
+import { X } from "phosphor-react-native";
+
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];
   const [activeDate, setActiveDate] = useState(today);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<CompactUserActivityListItem | null>(null);
+  const router = useRouter();
 
   const {
     isLoading,
@@ -33,6 +45,13 @@ export default function PlanningScreen() {
     error,
     refetch,
   } = useGetUserActivityList();
+
+  const { mutate: deleteActivity} = useDeleteActivityFromUserActivityList();
+
+  const handleAgendaItemPress = (item: CompactUserActivityListItem) => {
+    setSelectedActivity(item);
+    setModalVisible(true);
+  };
 
   return (
     <View
@@ -137,17 +156,136 @@ export default function PlanningScreen() {
                   }
                   renderSectionHeader={SectionHeader}
                   sections={userActivityListContainers}
-                  renderItem={AgendaItem}
+                  renderItem={({ item }) => (
+                    <AgendaItem
+                      item={item}
+                      onPress={() => handleAgendaItemPress(item)}
+                    />
+                  )}
                   style={{ flex: 1, height: "100%", width: "100%" }}
                 />
               ) : null}
+              <Modal
+                visible={modalVisible}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setModalVisible(false)}
+              >
+                <View
+                  style={{
+                    backgroundColor: "white",
+                    padding: 20,
+                    borderRadius: 10,
+                    minWidth: "80%",
+                    maxWidth: "90%",
+                    maxHeight: "40%",
+                    alignSelf: "center",
+                    position: "absolute",
+                    top: "30%",
+                    left: "5%",
+                    right: "5%",
+                    bottom: "30%",
+                  }}>
+                  <ScrollView>
+                    {selectedActivity && (
+                      <>
+                        <Text style={{ fontWeight: "bold", fontSize: 18 }}>
+                          {selectedActivity.activityTitle}
+                        </Text>
+                        <Text>
+                          {new Date(selectedActivity.plannedStart!).toLocaleString()}
+                        </Text>
+                        <Text>
+                          {new Date(selectedActivity.plannedEnd!).toLocaleString()}
+                        </Text>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            gap: 4,
+                            marginTop: 8,
+                          }}
+                        >
+                          {selectedActivity.categories.map((category) => (
+                            <Tag
+                              key={category.name}
+                              label={category.name}
+                              pillar={category.pillar?.toLowerCase() as PillarKey}
+                            />
+                          ))}     
+                        </View>
+                      <ViButton 
+                        title="Delete Activity"
+                        variant="danger"
+                        onPress={() => {
+                          if (!selectedActivity) return;
+                          deleteActivity({
+                            userActivityListId: selectedActivity.userActivityId
+                          },
+                            {
+                              onSuccess: () => {
+                                setModalVisible(false);
+                                refetch();
+                              },
+                              onError: (error) => {
+                                ToastAndroid.show(
+                                  `Failed to delete activity: ${error.message}`,
+                                  ToastAndroid.LONG
+                                );
+                              },
+                          }
+                        );
+                      }}
+
+                      />
+                      <View style={{ height: 16 }} />
+                      <ViButton
+                        title="Add Review"
+                        variant="primary"
+                        onPress={() => {
+                          setModalVisible(false);
+                          router.push({
+                            pathname: "/mood/activity-review",
+
+                            params: {
+                              activityId: selectedActivity.activityId,
+                            },
+                          });
+                        }}
+                      />
+                      <View style={{ height: 16 }} />
+                      <TouchableNativeFeedback onPress={() => setModalVisible(false)}>
+                        <View
+                          style={{
+                            position: "absolute",
+                            top: 10,
+                            right: 10,
+                            padding: 8,
+                            borderRadius: 999,
+                            backgroundColor: adjustLightness(
+                              BackgroundColors.primary.backgroundColor,
+                              -20
+                            ),
+                          }}
+                        >
+                          <X size={24} color="#fff" />
+                        </View>
+                      </TouchableNativeFeedback>
+                    </>
+
+                    )}
+                  </ScrollView>
+                </View>
+              </Modal>
             </CalendarProvider>
           </View>
         </View>
       </SafeAreaView>
     </View>
   );
-}
+};
+
+
+  
 
 interface CalendarProps {
   dateString: string;
@@ -263,10 +401,10 @@ const SectionHeader = (date: any) => {
 };
 
 interface ItemProps {
-  item: CompactUserActivityListItem; // TODO improve typesafety
+  item: CompactUserActivityListItem;
+  onPress: () => void; 
 }
-const AgendaItem = (props: ItemProps) => {
-  const { item } = props;
+const AgendaItem = ({ item, onPress }: ItemProps) => {
   var options = {
     hour: "2-digit",
     minute: "2-digit",
@@ -277,13 +415,9 @@ const AgendaItem = (props: ItemProps) => {
   );
   const end = new Date(item.plannedEnd!).toLocaleTimeString("en-nl", options);
 
-  const itemPressed = useCallback(() => {
-    ToastAndroid.show(`Not implemented`, ToastAndroid.SHORT);
-  }, [item]);
-
   return (
     <View style={styles.wrapper}>
-      <TouchableNativeFeedback onPress={itemPressed}>
+      <TouchableNativeFeedback onPress={onPress}>
         <View
           style={[
             styles.card,
