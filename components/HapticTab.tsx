@@ -1,15 +1,8 @@
 import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { PlatformPressable } from "@react-navigation/elements";
 import * as Haptics from "expo-haptics";
-import { useEffect } from "react";
 
 export function HapticTab(props: BottomTabBarButtonProps) {
-  useEffect(() => {
-    return () => {
-      console.log("Tab button unmounted");
-    };
-  }, []);
-
   return (
     <PlatformPressable
       {...props}

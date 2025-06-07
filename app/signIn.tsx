@@ -4,10 +4,11 @@ import { router } from "expo-router";
 import { useAuth0 } from "react-native-auth0";
 import { ViButton } from "@/components/ViButton";
 import ViSVGLogo from "@/components/ViSVGLogo";
-import { ViDivider } from "@/components/ViDivider";
+import { useGetUserExists } from "@/hooks/useUser";
+import { useEffect } from "react";
 
 export default function WelcomeScreen() {
-  const { authorize, clearSession, user, error, getCredentials } = useAuth0();
+  const { authorize, user, error } = useAuth0();
 
   const handleLogin = async () => {
     try {
@@ -19,16 +20,33 @@ export default function WelcomeScreen() {
       console.error("Login failed:", e);
     }
   };
-  const handleLogout = async () => {
-    try {
-      await clearSession();
-    } catch (e) {
-      console.log(e);
+
+  const {
+    data,
+    isLoading,
+    error: getUserError,
+  } = useGetUserExists({
+    enabled: user != null,
+  });
+
+  useEffect(() => {
+    if (!user || isLoading || !data) return;
+
+    if (!isLoading && data?.exists === false) {
+      // user does not exist -> show onboarding
+      router.replace("/onboarding");
+    } else if (!isLoading && data?.exists === true) {
+      // user exists -> go to home
+      router.replace("/(authenticated)/(tabs)/discover");
     }
-  };
+  }, [user, isLoading, data]);
 
   return (
-    <SafeAreaView>
+    <SafeAreaView
+      style={{
+        flex: 1,
+      }}
+    >
       <View style={[styles.Container]}>
         <View
           style={{
@@ -46,12 +64,6 @@ export default function WelcomeScreen() {
               alignItems: "center",
             }}
           >
-            <Text>Status</Text>
-            {user ? (
-              <Text>Logged in as {user.name}</Text>
-            ) : (
-              <Text>Not logged in</Text>
-            )}
             {error ? (
               <Text
                 style={{
@@ -63,30 +75,26 @@ export default function WelcomeScreen() {
               </Text>
             ) : null}
           </View>
+          <View>
+            {getUserError ? (
+              <Text
+                style={{
+                  paddingBlock: 16,
+                  color: "red",
+                }}
+              >
+                An error while checking if user exists: {getUserError.message}
+              </Text>
+            ) : null}
+          </View>
         </View>
 
-        <View style={{ width: "100%", height: "100%", flex: 1, gap: 8 }}>
+        <View style={{ width: "100%", paddingBlock: 32, gap: 8 }}>
           <ViButton
             enabled={!user}
             variant="primary"
-            title="Log in"
+            title="Log in / Register"
             onPress={handleLogin}
-          />
-          <ViButton
-            enabled={user != null}
-            variant="danger"
-            type="outline"
-            title="Log out"
-            onPress={handleLogout}
-          />
-          <ViDivider />
-          <Text>These buttons are for testing</Text>
-          <ViButton
-            // enabled={user != null}
-            variant="secondary"
-            type="light"
-            title="To App"
-            onPress={() => router.replace("/(authenticated)/(tabs)/discover")}
           />
         </View>
       </View>
@@ -103,10 +111,11 @@ const styles = StyleSheet.create({
     paddingInline: 16,
     alignItems: "center",
     gap: 8,
+    flex: 1,
   },
   Image: {
     flex: 1,
     height: "40%",
-    // height: "100%",
+    //height: "100%",
   },
 });
