@@ -13,5 +13,6 @@ export type PerPillarStatistics = {
 export type StatisticWrapper = {
   start: string;
   end: string;
+  pillarStats: Record<string, number>;
   statistics: PerPillarStatistics[];
 };

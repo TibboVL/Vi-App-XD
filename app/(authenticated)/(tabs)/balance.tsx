@@ -19,6 +19,8 @@ import { ViSelect } from "@/components/ViSelect";
 import { getPillarInfo, PillarKey, Pillars } from "@/types/activity";
 import { useGetStatisticsPerPillar } from "@/hooks/useStatistics";
 import { RefreshControl } from "react-native-gesture-handler";
+import { Viloader } from "@/components/ViLoader";
+import VitoError from "@/components/ViErrorHandler";
 
 type TimespanOption = "week" | "month" | "year";
 const timespanOptions: { label: string; value: TimespanOption }[] = [
@@ -155,27 +157,34 @@ export default function BalanceScreen() {
   }, [data]);
   return (
     <SafeAreaView>
-      <FlatList
-        data={[{}]}
-        refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} />
-        }
-        style={styles.Container}
-        renderItem={() => (
-          <>
-            <View
-              style={{
-                paddingTop: 8,
-              }}
-            >
-              <ViSelect
-                variant="secondary"
-                selectedValue={selectedTimespan}
-                onValueChange={(itemValue) => setSelectedTimespan(itemValue)}
-                options={timespanOptions}
-              />
-            </View>
-            {!isLoading && data && groupedData ? (
+      {isLoading ? (
+        <Viloader vitoMessage="Vito is sorting your activities" />
+      ) : null}
+      {error ? (
+        <VitoError error={error} loading={isLoading} refetch={refetch} />
+      ) : null}
+      {!isLoading && !error && data && groupedData ? (
+        <FlatList
+          data={[{}]}
+          refreshControl={
+            <RefreshControl refreshing={isLoading} onRefresh={refetch} />
+          }
+          style={styles.Container}
+          renderItem={() => (
+            <>
+              <View
+                style={{
+                  paddingTop: 8,
+                }}
+              >
+                <ViSelect
+                  variant="secondary"
+                  selectedValue={selectedTimespan}
+                  onValueChange={(itemValue) => setSelectedTimespan(itemValue)}
+                  options={timespanOptions}
+                />
+              </View>
+
               <VictoryChart
                 scale={{ x: "time" }}
                 domainPadding={{
@@ -236,43 +245,69 @@ export default function BalanceScreen() {
                   }
                 />
               </VictoryChart>
-            ) : null}
-            <Text style={textStyles.h2}>Your activities</Text>
-            <View
-              style={{
-                gap: 16,
-                paddingTop: 8,
-                width: "100%",
-              }}
-            >
-              <View
-                style={{
-                  gap: 16,
-                  flexDirection: "row",
-                  width: "100%",
-                }}
-              >
-                <TimelineTile
-                  pillar={"mindfulness"}
-                  durationInMinutes={60 * 8}
-                />
-                <TimelineTile pillar={"physical"} durationInMinutes={60 * 11} />
-              </View>
-              <View
-                style={{
-                  gap: 16,
 
+              <Text style={textStyles.h3}>Total time per pillar</Text>
+              <View
+                style={{
+                  gap: 16,
+                  paddingTop: 8,
                   width: "100%",
-                  flexDirection: "row",
                 }}
               >
-                <TimelineTile pillar={"social"} durationInMinutes={60 * 20} />
-                <TimelineTile pillar={"skills"} durationInMinutes={60 * 9} />
+                <View
+                  style={{
+                    gap: 16,
+                    flexDirection: "row",
+                    width: "100%",
+                  }}
+                >
+                  <TimelineTile
+                    pillar={"mindfulness"}
+                    durationInMinutes={
+                      Object.entries(data!.pillarStats).find(
+                        ([key, value]) => key.toLowerCase() == "mindfulness"
+                      )?.[1] ?? 0
+                    }
+                  />
+                  <TimelineTile
+                    pillar={"physical"}
+                    durationInMinutes={
+                      Object.entries(data!.pillarStats).find(
+                        ([key, value]) => key.toLowerCase() == "physical"
+                      )?.[1] ?? 0
+                    }
+                  />
+                </View>
+                <View
+                  style={{
+                    gap: 16,
+
+                    width: "100%",
+                    flexDirection: "row",
+                  }}
+                >
+                  <TimelineTile
+                    pillar={"social"}
+                    durationInMinutes={
+                      Object.entries(data!.pillarStats).find(
+                        ([key, value]) => key.toLowerCase() == "social"
+                      )?.[1] ?? 0
+                    }
+                  />
+                  <TimelineTile
+                    pillar={"skills"}
+                    durationInMinutes={
+                      Object.entries(data!.pillarStats).find(
+                        ([key, value]) => key.toLowerCase() == "skills"
+                      )?.[1] ?? 0
+                    }
+                  />
+                </View>
               </View>
-            </View>
-          </>
-        )}
-      />
+            </>
+          )}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }
