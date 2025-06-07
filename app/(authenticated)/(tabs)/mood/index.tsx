@@ -25,7 +25,7 @@ const batteryColors = {
 };
 export default function MoodScreen() {
   const [daysAgo, setDaysAgo] = useState<number | null>(null);
-  const emoteManagerRef = useRef<VitoAnimatedMoodHandles>();
+  const emoteManagerRef = useRef<VitoAnimatedMoodHandles>(null);
   const battery = useSharedValue(0.1);
   const {
     isLoading,
