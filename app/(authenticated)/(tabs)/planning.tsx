@@ -1,6 +1,12 @@
 import { BackgroundColors, textStyles } from "@/globalStyles";
-import { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableNativeFeedback,
+  TouchableOpacity,
+} from "react-native";
 import {
   AgendaList,
   CalendarProvider,
@@ -18,7 +24,7 @@ import {
   Trash,
 } from "phosphor-react-native";
 import { Tag } from "@/components/ViCategoryTag";
-import { PillarKey } from "@/types/activity";
+import { getPillarInfo, PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import { adjustLightness } from "@/constants/Colors";
 import {
@@ -44,6 +50,14 @@ import {
   CheckinContextAction,
   useCheckinDispatch,
 } from "./mood/checkinContext";
+import { isEmpty } from "lodash";
+import {
+  MarkedDates,
+  MarkingTypes,
+  Theme,
+} from "react-native-calendars/src/types";
+import { MarkingProps } from "react-native-calendars/src/calendar/day/marking";
+import { DotProps } from "react-native-calendars/src/calendar/day/dot";
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];
@@ -65,6 +79,44 @@ export default function PlanningScreen() {
     setSelectedActivityListItem(item);
     handleOpenSheet();
   };
+
+  const getMarkedDates = useMemo(() => {
+    const marked: MarkedDates = {};
+
+    userActivityListContainers?.forEach((item) => {
+      // NOTE: only mark dates with data
+      if (item.data && item.data.length > 0 && !isEmpty(item.data[0])) {
+        const dots = [];
+        for (const entry of item.data) {
+          dots.push({
+            key: entry.userActivityId.toString(),
+            color: adjustLightness(
+              getPillarInfo(
+                entry.categories[0].pillar.toLowerCase() as PillarKey
+              )?.color,
+              -10
+            ),
+          });
+        }
+        marked[item.title!] = {
+          marked: true,
+          dots: dots,
+          selectedColor: adjustLightness(
+            BackgroundColors.background.backgroundColor,
+            -15
+          ),
+
+          //selectedTextColor:
+        };
+      } else {
+        marked[item.title!] = {
+          disabled: true,
+        };
+      }
+    });
+    console.log(JSON.stringify(marked));
+    return marked;
+  }, [userActivityListContainers]);
 
   return (
     <View
@@ -94,9 +146,97 @@ export default function PlanningScreen() {
               onDateChanged={(newDate) => setActiveDate(newDate)}
             >
               <ExpandableCalendar
+                onDayPress={(day) => {
+                  //console.log("Day pressed:", day.dateString);
+                  setActiveDate(day.dateString);
+                }}
+                dayComponent={({ date, state, marking, theme }) => {
+                  const isToday = date!.dateString === today;
+
+                  return (
+                    <View
+                      style={{
+                        borderRadius: 8,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <TouchableOpacity
+                        style={{}}
+                        onPress={() => setActiveDate(date?.dateString!)}
+                      >
+                        <View
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            borderColor:
+                              state == "selected"
+                                ? BackgroundColors.primary.backgroundColor
+                                : isToday
+                                ? "#ccc"
+                                : "transparent",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color:
+                                state == "selected"
+                                  ? adjustLightness(
+                                      BackgroundColors.primary.backgroundColor,
+                                      -20
+                                    ) //"#fff"
+                                  : isToday
+                                  ? "#555" // adjustLightness(  BackgroundColors.primary.backgroundColor,   30     )
+                                  : date?.month ==
+                                    parseInt(activeDate.split("-")[1])
+                                  ? "#555"
+                                  : "#ccc",
+                            }}
+                          >
+                            {date!.day}
+                          </Text>
+                          {marking?.dots ? (
+                            <View
+                              style={{
+                                marginTop: 2,
+                                height: 4,
+                                width: 32,
+                                justifyContent: "center",
+                                alignItems: "center",
+                                flexDirection: "row",
+                                gap: 2,
+                              }}
+                            >
+                              {marking?.dots?.map((dot) => {
+                                // console.log(dot);
+                                return (
+                                  <View
+                                    key={dot.key}
+                                    style={{
+                                      bottom: 2,
+                                      width: 4,
+                                      height: 4,
+                                      borderRadius: 2,
+                                      backgroundColor: dot.color,
+                                    }}
+                                  />
+                                );
+                              })}
+                            </View>
+                          ) : null}
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                }}
+                markingType="multi-dot"
                 style={{
                   zIndex: 10,
                 }}
+                markedDates={getMarkedDates}
                 firstDay={1}
                 allowShadow={false}
                 hideArrows={true}
