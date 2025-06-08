@@ -158,7 +158,7 @@ export default function BalanceScreen() {
   return (
     <SafeAreaView>
       {isLoading ? (
-        <Viloader vitoMessage="Vito is sorting your activities" />
+        <Viloader message="Vito is sorting your activities" />
       ) : null}
       {error ? (
         <VitoError error={error} loading={isLoading} refetch={refetch} />

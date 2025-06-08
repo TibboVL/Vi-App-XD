@@ -51,32 +51,8 @@ export default function DiscoverScreen() {
           display: "flex",
         }}
       >
-        {/* <Text
-          style={{
-            textAlign: "center",
-          }}
-        >
-          ENV:{process.env.NODE_ENV}
-        </Text>
-        <Text
-          style={{
-            textAlign: "center",
-          }}
-        >
-          APIURL{Constants.expoConfig?.extra?.apiUrl}
-        </Text> */}
         {isLoading ? (
-          <View
-            style={{
-              height: "100%",
-              width: "100%",
-              flex: 1,
-              alignContent: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Viloader vitoMessage="Vito is gathering your reccomendation" />
-          </View>
+          <Viloader message="Vito is gathering your reccomendation" />
         ) : null}
         {error ? (
           <VitoError error={error} loading={isLoading} refetch={refetch} />
