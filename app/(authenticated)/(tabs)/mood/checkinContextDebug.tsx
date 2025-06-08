@@ -9,6 +9,7 @@ export default function ContextDebugView() {
       style={{
         backgroundColor: "rgba(255,0,0,0.4)",
         position: "absolute",
+        zIndex: 1000,
         display: "none",
       }}
     >

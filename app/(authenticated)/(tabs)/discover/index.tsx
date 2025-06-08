@@ -35,6 +35,12 @@ export default function DiscoverScreen() {
     console.log(token?.accessToken);
   };
 
+  const { getCredentials } = useAuth0();
+  const logToken = async () => {
+    const token = await getCredentials();
+    console.log(token?.accessToken);
+  };
+
   useEffect(() => {
     async function fetchLocation() {
       const res = await getLocation();

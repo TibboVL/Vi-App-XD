@@ -1,4 +1,5 @@
 import { textStyles } from "@/globalStyles";
+import { Icon } from "phosphor-react-native";
 import {
   TouchableNativeFeedback,
   StyleSheet,
@@ -19,6 +20,9 @@ interface ViButtonProps {
   title: string;
   onPress?: () => void;
   style?: ViewStyle;
+  Icon?: Icon;
+  hideText?: boolean;
+  size?: number;
 }
 
 export function ViButton({
@@ -28,9 +32,21 @@ export function ViButton({
   title,
   onPress,
   style,
+  Icon,
+  hideText = false,
+  size = 56,
 }: ViButtonProps) {
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          width: Icon ? size : "100%",
+          maxHeight: size, // ensure  we dont grow vertically!
+          minHeight: size,
+        },
+      ]}
+    >
       {!enabled ? (
         <View
           style={{
@@ -54,21 +70,35 @@ export function ViButton({
             style,
           ]}
         >
-          <Text
-            style={[
-              {
-                textTransform: "capitalize",
-              },
-              textStyles.CTA,
-              variant === "primary"
-                ? styles.textPrimary
-                : variant === "secondary"
-                ? styles.textSecondary
-                : styles.textDanger,
-            ]}
-          >
-            {title}
-          </Text>
+          {Icon ? (
+            <Icon
+              weight={"bold"}
+              color={
+                variant === "primary"
+                  ? styles.textPrimary.color
+                  : variant === "secondary"
+                  ? styles.textSecondary.color
+                  : styles.textDanger.color
+              }
+            />
+          ) : null}
+          {hideText ? null : (
+            <Text
+              style={[
+                {
+                  textTransform: "capitalize",
+                },
+                textStyles.CTA,
+                variant === "primary"
+                  ? styles.textPrimary
+                  : variant === "secondary"
+                  ? styles.textSecondary
+                  : styles.textDanger,
+              ]}
+            >
+              {title}
+            </Text>
+          )}
         </View>
       </TouchableNativeFeedback>
     </View>
@@ -79,7 +109,7 @@ const styles = StyleSheet.create({
   container: {
     maxHeight: 56, // ensure  we dont grow vertically!
     minHeight: 56,
-    width: "100%", // expand as much as possible
+    //  width: "100%", // expand as much as possible
     borderRadius: 16,
     overflow: "hidden",
   },

@@ -1,12 +1,6 @@
 import { BackgroundColors, textStyles } from "@/globalStyles";
-import { useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableNativeFeedback,
-  ToastAndroid,
-} from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
 import {
   AgendaList,
   CalendarProvider,
@@ -14,18 +8,51 @@ import {
 } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CompactUserActivityListItem } from "@/types/userActivityList";
-import { CaretLeft, CaretRight } from "phosphor-react-native";
+import {
+  ArrowLeft,
+  Calendar,
+  CaretLeft,
+  CaretRight,
+  Check,
+  Clock,
+  Trash,
+} from "phosphor-react-native";
 import { Tag } from "@/components/ViCategoryTag";
 import { PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import { adjustLightness } from "@/constants/Colors";
-import { useGetUserActivityList } from "@/hooks/useUserActivityList";
+import {
+  useDeleteActivityList,
+  useGetUserActivityList,
+  useUpdateUserActivityList,
+} from "@/hooks/useUserActivityList";
 import VitoError from "@/components/ViErrorHandler";
-import { RefreshControl } from "react-native-gesture-handler";
+import { RefreshControl, ScrollView } from "react-native-gesture-handler";
+import { useRouter } from "expo-router";
+import { ViButton } from "@/components/ViButton";
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
+import { ViIconButton } from "@/components/ViIconButton";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGetActivityDetails } from "@/hooks/useActivityDetails";
+import { ActivityDetailInformation } from "./discover/[activityId]";
+import {
+  CheckinContextAction,
+  useCheckinDispatch,
+} from "./mood/checkinContext";
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];
   const [activeDate, setActiveDate] = useState(today);
+  const [selectedActivityListItem, setSelectedActivityListItem] =
+    useState<CompactUserActivityListItem | null>(null);
+  const bottomModalSheetRef = useRef<BottomSheetModal>(null);
+  const handleOpenSheet = () => bottomModalSheetRef.current!.present();
+  const handleCloseSheet = () => bottomModalSheetRef.current!.close();
 
   const {
     isLoading,
@@ -33,6 +60,11 @@ export default function PlanningScreen() {
     error,
     refetch,
   } = useGetUserActivityList();
+
+  const handleAgendaItemPress = (item: CompactUserActivityListItem) => {
+    setSelectedActivityListItem(item);
+    handleOpenSheet();
+  };
 
   return (
     <View
@@ -137,15 +169,378 @@ export default function PlanningScreen() {
                   }
                   renderSectionHeader={SectionHeader}
                   sections={userActivityListContainers}
-                  renderItem={AgendaItem}
+                  renderItem={({ item }) => (
+                    <AgendaItem
+                      item={item}
+                      onPress={() => handleAgendaItemPress(item)}
+                    />
+                  )}
                   style={{ flex: 1, height: "100%", width: "100%" }}
                 />
               ) : null}
+
+              <BottomSheetModal
+                backdropComponent={(props) => (
+                  <BottomSheetBackdrop
+                    {...props}
+                    disappearsOnIndex={-1}
+                    appearsOnIndex={0}
+                    pressBehavior="close"
+                  />
+                )}
+                ref={bottomModalSheetRef}
+                backgroundStyle={[
+                  BackgroundColors.background,
+                  {
+                    boxShadow: "-10px -10px 10px rgba(0,0,0,0.1)",
+                  },
+                ]}
+                enableContentPanningGesture={false} // Prevents modal drag from content
+              >
+                <EditExistingEventSheet
+                  handleClose={handleCloseSheet}
+                  compactUserActivityListItem={selectedActivityListItem}
+                />
+              </BottomSheetModal>
             </CalendarProvider>
           </View>
         </View>
       </SafeAreaView>
     </View>
+  );
+}
+
+interface ExitingEventSheetProps {
+  handleClose: () => void;
+  compactUserActivityListItem: CompactUserActivityListItem | null;
+}
+function EditExistingEventSheet({
+  handleClose,
+  compactUserActivityListItem,
+}: ExitingEventSheetProps) {
+  const [isStartDatePickerVisible, setStartDatePickerVisibility] =
+    useState(false);
+  const [startDatePickerMode, setStartDatePickerMode] = useState<
+    "datetime" | "date" | "time" | undefined
+  >("date");
+  const [endDatePickerMode, setEndDatePickerMode] = useState<
+    "datetime" | "date" | "time" | undefined
+  >("date");
+  const [isEndDatePickerVisible, setEndDatePickerVisibility] = useState(false);
+  const [startDateTime, setStartDateTime] = useState(
+    new Date(compactUserActivityListItem?.plannedStart ?? 0)
+  );
+  const [endDateTime, setEndDateTime] = useState(
+    new Date(compactUserActivityListItem?.plannedEnd ?? 0)
+  );
+  const router = useRouter();
+
+  const handleConfirmStartDate = (date: any) => {
+    console.warn("A date has been picked: ", date);
+    if (date > endDateTime) {
+      setEndDateTime(date);
+    }
+    setStartDatePickerVisibility(false);
+    setStartDateTime(date);
+  };
+  const handleConfirmEndDate = (date: any) => {
+    console.warn("A date has been picked: ", date);
+    setEndDatePickerVisibility(false);
+    setEndDateTime(date);
+  };
+
+  useEffect(() => {
+    handleUpdateEvent();
+  }, [startDateTime, endDateTime]);
+
+  const {
+    isLoading,
+    data: activity,
+    error,
+    refetch,
+  } = useGetActivityDetails({
+    activityId: compactUserActivityListItem?.activityId!,
+  });
+  useEffect(() => {
+    console.log(activity);
+  }, [activity]);
+  const queryClient = useQueryClient();
+  const {
+    mutate: handleUpdate,
+    isPending: isUpdating,
+    error: updateError,
+  } = useUpdateUserActivityList();
+  async function handleUpdateEvent() {
+    handleUpdate(
+      {
+        userActivityId: compactUserActivityListItem?.userActivityId!,
+        plannedStart: startDateTime,
+        plannedEnd: endDateTime,
+      },
+      {
+        onSuccess: (data) => {
+          // handleClose();
+          queryClient.invalidateQueries({ queryKey: ["user-activity-list"] });
+        },
+      }
+    );
+  }
+
+  const {
+    mutate: handleDelete,
+    isPending: isDeleting,
+    error: deleteError,
+  } = useDeleteActivityList();
+  async function handleDeleteEvent() {
+    handleDelete(
+      {
+        userActivityId: compactUserActivityListItem?.userActivityId!,
+      },
+      {
+        onSuccess: (data) => {
+          handleClose();
+          queryClient.invalidateQueries({ queryKey: ["user-activity-list"] });
+        },
+      }
+    );
+  }
+  const dispatch = useCheckinDispatch();
+  const handleStartReview = () => {
+    handleClose();
+    if (router.canDismiss()) router.dismissAll();
+    dispatch({
+      action: CheckinContextAction.SET_USER_ACTIVITY, // automatically resets the rest
+      payload: compactUserActivityListItem?.userActivityId,
+    });
+    router.push("/mood/moodPicker");
+  };
+
+  var dateOptions = {
+    day: "numeric",
+    weekday: "long",
+    month: "short",
+  } as Intl.DateTimeFormatOptions;
+  var timeOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+  } as Intl.DateTimeFormatOptions;
+
+  return (
+    <BottomSheetView>
+      {updateError ? (
+        <VitoError
+          error={updateError}
+          loading={isUpdating}
+          refetch={handleUpdateEvent}
+        />
+      ) : null}
+      {deleteError ? (
+        <VitoError
+          error={deleteError}
+          loading={isDeleting}
+          refetch={handleDeleteEvent}
+        />
+      ) : null}
+      {isDeleting || isUpdating || isLoading ? (
+        <Viloader vitoMessage="Vito is working on it!" />
+      ) : (
+        <View
+          style={{
+            padding: 16,
+            paddingBottom: 32,
+            gap: 4,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontWeight: "bold", fontSize: 18 }}>
+              {activity?.name}
+            </Text>
+            {compactUserActivityListItem?.markedCompletedAt != null ? (
+              <Check
+                size={24}
+                style={{
+                  transform: [
+                    {
+                      translateX: -3,
+                    },
+                    { translateY: -2 },
+                  ],
+                }}
+                weight="bold"
+                color={adjustLightness(
+                  BackgroundColors.primary.backgroundColor,
+                  -20
+                )}
+              />
+            ) : null}
+          </View>
+
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 4,
+              marginTop: 8,
+            }}
+          >
+            {activity?.categories.map((category) => (
+              <Tag
+                key={category.name}
+                label={category.name}
+                pillar={category.pillar?.toLowerCase() as PillarKey}
+              />
+            ))}
+          </View>
+          <Text
+            style={{
+              paddingTop: 8,
+            }}
+          >
+            Start
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 8,
+              alignSelf: "center",
+              width: "100%",
+            }}
+          >
+            <ViIconButton
+              Icon={Calendar}
+              onPress={() => {
+                setStartDatePickerMode("date");
+                setStartDatePickerVisibility(true);
+              }}
+            >
+              {startDateTime.toLocaleDateString("en-us", dateOptions)}
+            </ViIconButton>
+            <ViIconButton
+              Icon={Clock}
+              onPress={() => {
+                setStartDatePickerMode("time");
+                setStartDatePickerVisibility(true);
+              }}
+            >
+              {startDateTime.toLocaleTimeString("nl-be", timeOptions)}
+            </ViIconButton>
+          </View>
+          <Text
+            style={{
+              paddingTop: 8,
+            }}
+          >
+            End
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 8,
+              alignSelf: "center",
+              width: "100%",
+            }}
+          >
+            <ViIconButton
+              Icon={Calendar}
+              onPress={() => {
+                setEndDatePickerMode("date");
+                setEndDatePickerVisibility(true);
+              }}
+            >
+              {endDateTime.toLocaleDateString("en-us", dateOptions)}
+            </ViIconButton>
+            <ViIconButton
+              Icon={Clock}
+              onPress={() => {
+                setEndDatePickerMode("time");
+                setEndDatePickerVisibility(true);
+              }}
+            >
+              {endDateTime.toLocaleTimeString("nl-be", timeOptions)}
+            </ViIconButton>
+          </View>
+          <ScrollView>
+            <ActivityDetailInformation
+              activity={activity!}
+              customStyles={{
+                Container: {
+                  paddingRight: 0,
+                  paddingLeft: 0,
+                  paddingTop: 12,
+                },
+              }}
+              showHeader={false}
+            />
+          </ScrollView>
+          <DateTimePickerModal
+            date={startDateTime}
+            locale="en_GB"
+            is24Hour={true}
+            firstDayOfWeek={1}
+            mode={startDatePickerMode}
+            isVisible={isStartDatePickerVisible}
+            onConfirm={handleConfirmStartDate}
+            onCancel={() => setStartDatePickerVisibility(false)}
+          />
+          <DateTimePickerModal
+            date={endDateTime}
+            locale="en_GB"
+            is24Hour={true}
+            firstDayOfWeek={1}
+            mode={endDatePickerMode}
+            isVisible={isEndDatePickerVisible}
+            onConfirm={handleConfirmEndDate}
+            onCancel={() => setEndDatePickerVisibility(false)}
+          />
+        </View>
+      )}
+      <View style={[styles.BottomContainer]}>
+        <ViButton
+          title="Close"
+          variant="primary"
+          //type="text-only"
+          Icon={ArrowLeft}
+          hideText={true}
+          enabled={isUpdating || isDeleting ? false : true}
+          onPress={() => handleClose()}
+        />
+        <View style={styles.BottomContainerButton}>
+          <ViButton
+            title={
+              compactUserActivityListItem
+                ? compactUserActivityListItem.markedCompletedAt == null
+                  ? "Review"
+                  : "Already reviewed!"
+                : "Review"
+            }
+            variant="primary"
+            type="light"
+            enabled={
+              isUpdating ||
+              isDeleting ||
+              compactUserActivityListItem?.markedCompletedAt != null
+                ? false
+                : true
+            }
+            onPress={() => handleStartReview()}
+          />
+        </View>
+        <ViButton
+          Icon={Trash}
+          title="Delete"
+          variant="danger"
+          type="light"
+          hideText={true}
+          enabled={isUpdating || isDeleting ? false : true}
+          onPress={() => handleDeleteEvent()}
+        />
+      </View>
+    </BottomSheetView>
   );
 }
 
@@ -263,10 +658,10 @@ const SectionHeader = (date: any) => {
 };
 
 interface ItemProps {
-  item: CompactUserActivityListItem; // TODO improve typesafety
+  item: CompactUserActivityListItem;
+  onPress: () => void;
 }
-const AgendaItem = (props: ItemProps) => {
-  const { item } = props;
+const AgendaItem = ({ item, onPress }: ItemProps) => {
   var options = {
     hour: "2-digit",
     minute: "2-digit",
@@ -277,13 +672,9 @@ const AgendaItem = (props: ItemProps) => {
   );
   const end = new Date(item.plannedEnd!).toLocaleTimeString("en-nl", options);
 
-  const itemPressed = useCallback(() => {
-    ToastAndroid.show(`Not implemented`, ToastAndroid.SHORT);
-  }, [item]);
-
   return (
     <View style={styles.wrapper}>
-      <TouchableNativeFeedback onPress={itemPressed}>
+      <TouchableNativeFeedback onPress={onPress}>
         <View
           style={[
             styles.card,
@@ -294,7 +685,33 @@ const AgendaItem = (props: ItemProps) => {
           ]}
         >
           <View>
-            <Text style={{ fontWeight: 700 }}>{item.activityTitle}</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ fontWeight: 700 }}>{item.activityTitle}</Text>
+              {item.markedCompletedAt != null ? (
+                <Check
+                  size={16}
+                  style={{
+                    transform: [
+                      {
+                        translateX: -3,
+                      },
+                      { translateY: -2 },
+                    ],
+                  }}
+                  weight="bold"
+                  color={adjustLightness(
+                    BackgroundColors.primary.backgroundColor,
+                    -20
+                  )}
+                />
+              ) : null}
+            </View>
             <View
               style={{
                 flexDirection: "row",
@@ -348,4 +765,13 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#fff",
   },
+  BottomContainer: {
+    paddingBlock: 16,
+    paddingInline: 16,
+    flexDirection: "row",
+    width: "100%",
+    display: "flex",
+    gap: 8,
+  },
+  BottomContainerButton: { flex: 1 },
 });
