@@ -11,17 +11,19 @@ import Animated, {
 import { useEffect } from "react";
 
 interface ViLoaderProps {
-  vitoMessage: string;
-  style?: ViewStyle;
+  message: string;
+  inPopup?: boolean;
 }
 
 export function Viloader({
-  vitoMessage = "Vito is working on it!",
-  style,
+  message = "Vito is working on it!",
+  inPopup = false,
 }: ViLoaderProps) {
   return (
     <View
       style={{
+        minHeight: 300,
+        height: inPopup ? "auto" : "100%",
         width: "100%",
         justifyContent: "center",
         alignItems: "center",
@@ -30,7 +32,7 @@ export function Viloader({
       }}
     >
       <VitoLoader />
-      <Text>{vitoMessage}</Text>
+      <Text>{message}</Text>
     </View>
   );
 }

@@ -52,6 +52,7 @@ import VitoError from "@/components/ViErrorHandler";
 import { useGetActivityDetails } from "@/hooks/useActivityDetails";
 import { usePostUserActivityList } from "@/hooks/useUserActivityList";
 import { ViIconButton } from "@/components/ViIconButton";
+import { isLoading } from "expo-font";
 
 export default function ActivityDetailsScreen() {
   const local = useLocalSearchParams();
@@ -71,17 +72,7 @@ export default function ActivityDetailsScreen() {
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       {isLoading ? (
-        <View
-          style={{
-            height: "100%",
-            width: "100%",
-            flex: 1,
-            alignContent: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Viloader vitoMessage="Vito is looking gathering more details..." />
-        </View>
+        <Viloader message="Vito is looking gathering more details..." />
       ) : null}
 
       {error ? (
@@ -458,7 +449,7 @@ function PlanningSheetView({
       ) : null}
 
       {isPending ? (
-        <Viloader vitoMessage="Adding the event to your calendar!" />
+        <Viloader inPopup={true} message="Adding the event to your calendar!" />
       ) : (
         <View
           style={{

@@ -111,19 +111,9 @@ export default function ActivityReviewScreen() {
 
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
-      <ContextDebugView />
       <View style={[styles.Container]}>
         {isLoading ? (
-          <View
-            style={{
-              flex: 1,
-              width: "100%",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Viloader vitoMessage="Vito is looking through your plans!" />
-          </View>
+          <Viloader message="Vito is looking through your plans!" />
         ) : null}
         {fetchError ? (
           <VitoError error={fetchError} loading={isLoading} refetch={refetch} />

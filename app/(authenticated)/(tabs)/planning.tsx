@@ -270,15 +270,7 @@ export default function PlanningScreen() {
                 />
               </View>
               {isLoading ? (
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Viloader vitoMessage="Vito is stitching together your schedule!" />
-                </View>
+                <Viloader message="Vito is stitching together your schedule!" />
               ) : null}
               {error ? (
                 <VitoError
@@ -482,7 +474,7 @@ function EditExistingEventSheet({
         />
       ) : null}
       {isDeleting || isUpdating || isLoading ? (
-        <Viloader vitoMessage="Vito is working on it!" />
+        <Viloader inPopup={true} message="Vito is working on it!" />
       ) : (
         <View
           style={{

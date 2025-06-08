@@ -163,16 +163,7 @@ export default function MoodScreen() {
             </Text>
           </View>
         ) : (
-          <View
-            style={{
-              flex: 1,
-              width: "100%",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Viloader vitoMessage="Vito is reading your checkin history!" />
-          </View>
+          <Viloader message="Vito is reading your checkin history!" />
         )}
       </View>
       <View style={styles.BottomContainer}>

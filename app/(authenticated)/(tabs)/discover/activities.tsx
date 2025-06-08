@@ -80,17 +80,7 @@ export default function ActivitiesScreen() {
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       {isLoading ? (
-        <View
-          style={{
-            height: "100%",
-            width: "100%",
-            flex: 1,
-            alignContent: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Viloader vitoMessage="Vito is looking for more activities..." />
-        </View>
+        <Viloader message="Vito is looking for more activities..." />
       ) : null}
       {error ? (
         <VitoError error={error} loading={isLoading} refetch={refetch} />
