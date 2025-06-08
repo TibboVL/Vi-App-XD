@@ -12,6 +12,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableNativeFeedback,
+  StyleProp,
+  ViewStyle,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
@@ -23,7 +25,7 @@ import {
   BackgroundColors,
 } from "@/globalStyles";
 import { useRef, useState } from "react";
-import { ActivityDetails, PillarKey } from "@/types/activity";
+import { Activity, ActivityDetails, PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import {
   BabyCarriage,
@@ -49,18 +51,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import VitoError from "@/components/ViErrorHandler";
 import { useGetActivityDetails } from "@/hooks/useActivityDetails";
 import { usePostUserActivityList } from "@/hooks/useUserActivityList";
+import { ViIconButton } from "@/components/ViIconButton";
 
 export default function ActivityDetailsScreen() {
   const local = useLocalSearchParams();
-  const [descriptionExpandedState, setDescriptionExpandedState] =
-    useState<boolean>(false);
-
-  function toggleDescriptionState() {
-    setDescriptionExpandedState(!descriptionExpandedState);
-  }
-
   const bottomModalSheetRef = useRef<BottomSheetModal>(null);
-
   const handleOpenSheet = () => bottomModalSheetRef.current!.present();
   const handleCloseSheet = () => bottomModalSheetRef.current!.close();
 
@@ -95,219 +90,7 @@ export default function ActivityDetailsScreen() {
 
       {!isLoading && !error && activity ? (
         <>
-          <ScrollView
-            style={[styles.Container]}
-            contentContainerStyle={{ gap: 12 }}
-          >
-            <View
-              id="HeaderInfo"
-              style={{
-                flexDirection: "column",
-                gap: 8,
-              }}
-            >
-              <Text style={[textStyles.h4]}>{activity.name}</Text>
-              {activity.categories?.length > 0 ? (
-                <View style={styles.tagsContainer}>
-                  {activity.categories?.map((category) => (
-                    <Tag
-                      key={category.activityCategoryId}
-                      label={category.name}
-                      pillar={category.pillar?.toLowerCase() as PillarKey}
-                    />
-                  ))}
-                </View>
-              ) : (
-                <Text>No categories - this shouldnt happen!</Text>
-              )}
-            </View>
-            <View id="CoreInformation" style={styles.Card}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 4,
-                }}
-              >
-                <CoreInfoBox
-                  Icon={CurrencyEur}
-                  activity={activity}
-                  label="Price"
-                  value={
-                    activity.estimatedCost
-                      ? `€${activity.estimatedCost}`
-                      : "Free"
-                  }
-                />
-                <CoreInfoBox
-                  Icon={() => (
-                    <EnergyIcon
-                      style={{ color: TextColors.muted.color }}
-                      energy={activity.energyRequired}
-                      size={20}
-                    />
-                  )}
-                  activity={activity}
-                  label="Required energy"
-                  value={activity.energyRequired}
-                />
-                <CoreInfoBox
-                  Icon={BabyCarriage}
-                  activity={activity}
-                  label="Min age"
-                  value={`${activity.minAge ? activity.minAge + " +" : "N/A"}`}
-                />
-              </View>
-              <CoreInfoBox
-                Icon={MapPinLine}
-                activity={activity}
-                label="Location"
-                value={`${
-                  activity.locationName ? activity.locationName : "N/A"
-                }`}
-              />
-            </View>
-            <View
-              id="Description"
-              style={{
-                borderRadius: 16,
-                overflow: "hidden",
-              }}
-            >
-              <TouchableNativeFeedback onPress={() => toggleDescriptionState()}>
-                <View style={[styles.Card]}>
-                  <Text style={[textStyles.bodyLarge, { fontWeight: "700" }]}>
-                    About this event
-                  </Text>
-                  <Text
-                    style={[textStyles.bodyLarge, TextColors.muted]}
-                    numberOfLines={!descriptionExpandedState ? 3 : undefined}
-                  >
-                    {activity.description}
-                  </Text>
-                </View>
-              </TouchableNativeFeedback>
-            </View>
-            <View
-              id="OpeningHours"
-              style={[
-                styles.Card,
-                {
-                  display:
-                    activity.openingHoursStructured &&
-                    activity.openingHoursStructured?.length > 0
-                      ? "flex"
-                      : "none",
-                },
-              ]}
-            >
-              <Text style={[textStyles.bodyLarge, { fontWeight: "700" }]}>
-                Opening hours
-              </Text>
-              <View
-                style={{
-                  flexDirection: "column",
-                }}
-              >
-                {activity.openingHoursStructured?.map((OH, index) => (
-                  <View
-                    key={OH.weekday}
-                    style={{
-                      flexDirection: "row",
-                      borderBottomColor: adjustLightness(
-                        TextColors.muted.color,
-                        55
-                      ),
-                      justifyContent: "space-between",
-                      paddingBlock: 4,
-                      borderBottomWidth: activity.openingHoursStructured
-                        ? index == activity.openingHoursStructured.length - 1
-                          ? 0
-                          : 1
-                        : 0,
-                    }}
-                  >
-                    <Text>
-                      {OH.weekday.substring(0, 1).toUpperCase()}
-                      {OH.weekday.substring(1, 3)}
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        gap: 6,
-                      }}
-                    >
-                      {OH.intervals?.map((interval, index) => (
-                        <Text key={index}>
-                          {interval.opens} - {interval.closes}
-                        </Text>
-                      ))}
-                    </View>
-                  </View>
-                ))}
-              </View>
-            </View>
-            <View
-              id="ContactInfo"
-              style={[
-                styles.Card,
-                {
-                  display:
-                    activity.contactEmails &&
-                    activity.contactPhones &&
-                    activity.contactURLs
-                      ? "flex"
-                      : "none",
-                },
-              ]}
-            >
-              <Text style={[textStyles.bodyLarge, { fontWeight: "700" }]}>
-                Contact information
-              </Text>
-              <View
-                style={{
-                  flexDirection: "column",
-                }}
-              >
-                {activity.contactEmails?.map((email, index) => (
-                  <ContactInfoBox
-                    key={email}
-                    Icon={Envelope}
-                    link={`mailto:${email}`}
-                    value={email}
-                    styles={{
-                      borderBottomWidth: 1,
-                    }}
-                  />
-                ))}
-                {activity.contactPhones?.map((phone, index) => (
-                  <ContactInfoBox
-                    key={phone}
-                    Icon={Phone}
-                    link={`tel:${phone}`}
-                    value={phone}
-                    styles={{
-                      borderBottomWidth: 1,
-                    }}
-                  />
-                ))}
-                {activity.contactURLs?.map((url, index) => (
-                  <ContactInfoBox
-                    key={url}
-                    Icon={Globe}
-                    link={url as ExternalPathString}
-                    value={url}
-                    styles={{
-                      borderBottomWidth: activity.contactURLs
-                        ? index == activity.contactURLs.length - 1
-                          ? 0
-                          : 1
-                        : 0,
-                    }}
-                  />
-                ))}
-              </View>
-            </View>
-          </ScrollView>
+          <ActivityDetailInformation activity={activity} />
           <View style={[styles.BottomContainer]}>
             <View style={styles.BottomContainerButton}>
               <ViButton title="Google more" variant="primary" type="outline" />
@@ -350,6 +133,242 @@ export default function ActivityDetailsScreen() {
     </SafeAreaView>
   );
 }
+
+interface ActivityDeetailInformaationProps {
+  activity: ActivityDetails;
+  showHeader?: boolean;
+  showAbout?: boolean;
+  customStyles?: {
+    Container?: StyleProp<ViewStyle>; // For ScrollView style
+    ContentContainer?: StyleProp<ViewStyle>; // For contentContainerStyle
+    // Optional: Add others like Header, Description, etc.
+  };
+}
+export const ActivityDetailInformation = ({
+  activity,
+  showHeader = true,
+  showAbout = true,
+  customStyles,
+}: ActivityDeetailInformaationProps) => {
+  const [descriptionExpandedState, setDescriptionExpandedState] =
+    useState<boolean>(false);
+
+  function toggleDescriptionState() {
+    setDescriptionExpandedState(!descriptionExpandedState);
+  }
+  return (
+    <ScrollView
+      style={[customStyles?.Container, styles.Container]}
+      contentContainerStyle={[{ gap: 12 }, customStyles?.ContentContainer]}
+    >
+      {showHeader ? (
+        <View
+          id="HeaderInfo"
+          style={{
+            flexDirection: "column",
+            gap: 8,
+          }}
+        >
+          <Text style={[textStyles.h4]}>{activity.name}</Text>
+          {activity.categories?.length > 0 ? (
+            <View style={styles.tagsContainer}>
+              {activity.categories?.map((category) => (
+                <Tag
+                  key={category.activityCategoryId}
+                  label={category.name}
+                  pillar={category.pillar?.toLowerCase() as PillarKey}
+                />
+              ))}
+            </View>
+          ) : (
+            <Text>No categories - this shouldnt happen!</Text>
+          )}
+        </View>
+      ) : null}
+      <View id="CoreInformation" style={styles.Card}>
+        <View
+          style={{
+            flexDirection: "row",
+            gap: 4,
+          }}
+        >
+          <CoreInfoBox
+            Icon={CurrencyEur}
+            activity={activity}
+            label="Price"
+            value={
+              activity.estimatedCost ? `€${activity.estimatedCost}` : "Free"
+            }
+          />
+          <CoreInfoBox
+            Icon={() => (
+              <EnergyIcon
+                style={{ color: TextColors.muted.color }}
+                energy={activity.energyRequired}
+                size={20}
+              />
+            )}
+            activity={activity}
+            label="Required energy"
+            value={activity.energyRequired}
+          />
+          <CoreInfoBox
+            Icon={BabyCarriage}
+            activity={activity}
+            label="Min age"
+            value={`${activity.minAge ? activity.minAge + " +" : "N/A"}`}
+          />
+        </View>
+        <CoreInfoBox
+          Icon={MapPinLine}
+          activity={activity}
+          label="Location"
+          value={`${activity.locationName ? activity.locationName : "N/A"}`}
+        />
+      </View>
+      {showAbout ? (
+        <View
+          id="Description"
+          style={{
+            borderRadius: 16,
+            overflow: "hidden",
+          }}
+        >
+          <TouchableNativeFeedback onPress={() => toggleDescriptionState()}>
+            <View style={[styles.Card]}>
+              <Text style={[textStyles.bodyLarge, { fontWeight: "700" }]}>
+                About this event
+              </Text>
+              <Text
+                style={[textStyles.bodyLarge, TextColors.muted]}
+                numberOfLines={!descriptionExpandedState ? 3 : undefined}
+              >
+                {activity.description}
+              </Text>
+            </View>
+          </TouchableNativeFeedback>
+        </View>
+      ) : null}
+      <View
+        id="OpeningHours"
+        style={[
+          styles.Card,
+          {
+            display:
+              activity.openingHoursStructured &&
+              activity.openingHoursStructured?.length > 0
+                ? "flex"
+                : "none",
+          },
+        ]}
+      >
+        <Text style={[textStyles.bodyLarge, { fontWeight: "700" }]}>
+          Opening hours
+        </Text>
+        <View
+          style={{
+            flexDirection: "column",
+          }}
+        >
+          {activity.openingHoursStructured?.map((OH, index) => (
+            <View
+              key={OH.weekday}
+              style={{
+                flexDirection: "row",
+                borderBottomColor: adjustLightness(TextColors.muted.color, 55),
+                justifyContent: "space-between",
+                paddingBlock: 4,
+                borderBottomWidth: activity.openingHoursStructured
+                  ? index == activity.openingHoursStructured.length - 1
+                    ? 0
+                    : 1
+                  : 0,
+              }}
+            >
+              <Text>
+                {OH.weekday.substring(0, 1).toUpperCase()}
+                {OH.weekday.substring(1, 3)}
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 6,
+                }}
+              >
+                {OH.intervals?.map((interval, index) => (
+                  <Text key={index}>
+                    {interval.opens} - {interval.closes}
+                  </Text>
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+      <View
+        id="ContactInfo"
+        style={[
+          styles.Card,
+          {
+            display:
+              activity.contactEmails &&
+              activity.contactPhones &&
+              activity.contactURLs
+                ? "flex"
+                : "none",
+          },
+        ]}
+      >
+        <Text style={[textStyles.bodyLarge, { fontWeight: "700" }]}>
+          Contact information
+        </Text>
+        <View
+          style={{
+            flexDirection: "column",
+          }}
+        >
+          {activity.contactEmails?.map((email, index) => (
+            <ContactInfoBox
+              key={email}
+              Icon={Envelope}
+              link={`mailto:${email}`}
+              value={email}
+              styles={{
+                borderBottomWidth: 1,
+              }}
+            />
+          ))}
+          {activity.contactPhones?.map((phone, index) => (
+            <ContactInfoBox
+              key={phone}
+              Icon={Phone}
+              link={`tel:${phone}`}
+              value={phone}
+              styles={{
+                borderBottomWidth: 1,
+              }}
+            />
+          ))}
+          {activity.contactURLs?.map((url, index) => (
+            <ContactInfoBox
+              key={url}
+              Icon={Globe}
+              link={url as ExternalPathString}
+              value={url}
+              styles={{
+                borderBottomWidth: activity.contactURLs
+                  ? index == activity.contactURLs.length - 1
+                    ? 0
+                    : 1
+                  : 0,
+              }}
+            />
+          ))}
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
 interface PlanningSheetViewProps {
   handleClose: () => void;
   activity: ActivityDetails;
@@ -463,7 +482,7 @@ function PlanningSheetView({
               width: "100%",
             }}
           >
-            <IconButton
+            <ViIconButton
               Icon={Calendar}
               onPress={() => {
                 setStartDatePickerMode("date");
@@ -471,8 +490,8 @@ function PlanningSheetView({
               }}
             >
               {startDateTime.toLocaleDateString("en-us", dateOptions)}
-            </IconButton>
-            <IconButton
+            </ViIconButton>
+            <ViIconButton
               Icon={Clock}
               onPress={() => {
                 setStartDatePickerMode("time");
@@ -480,7 +499,7 @@ function PlanningSheetView({
               }}
             >
               {startDateTime.toLocaleTimeString("nl-be", timeOptions)}
-            </IconButton>
+            </ViIconButton>
           </View>
           <Text
             style={{
@@ -497,7 +516,7 @@ function PlanningSheetView({
               width: "100%",
             }}
           >
-            <IconButton
+            <ViIconButton
               Icon={Calendar}
               onPress={() => {
                 setEndDatePickerMode("date");
@@ -505,8 +524,8 @@ function PlanningSheetView({
               }}
             >
               {endDateTime.toLocaleDateString("en-us", dateOptions)}
-            </IconButton>
-            <IconButton
+            </ViIconButton>
+            <ViIconButton
               Icon={Clock}
               onPress={() => {
                 setEndDatePickerMode("time");
@@ -514,7 +533,7 @@ function PlanningSheetView({
               }}
             >
               {endDateTime.toLocaleTimeString("nl-be", timeOptions)}
-            </IconButton>
+            </ViIconButton>
           </View>
           <DateTimePickerModal
             date={startDateTime}
@@ -563,38 +582,6 @@ function PlanningSheetView({
   );
 }
 
-interface IconButtonProps {
-  Icon: Icon;
-  onPress: () => void;
-  children: any;
-}
-const IconButton = ({ Icon, onPress, children }: IconButtonProps) => {
-  return (
-    <View
-      style={{
-        flex: 1,
-        borderRadius: 16,
-        overflow: "hidden",
-      }}
-    >
-      <TouchableNativeFeedback onPress={onPress}>
-        <View
-          style={[
-            styles.Card,
-            {
-              flexDirection: "row",
-              gap: 8,
-              alignItems: "center",
-            },
-          ]}
-        >
-          <Icon />
-          <Text>{children}</Text>
-        </View>
-      </TouchableNativeFeedback>
-    </View>
-  );
-};
 interface infoBoxProps {
   activity: ActivityDetails;
   Icon: Icon;

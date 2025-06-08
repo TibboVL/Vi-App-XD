@@ -13,6 +13,7 @@ import { timeDifference } from "@/helpers/dateTimeHelpers";
 import { useGetSuggestedActivities } from "@/hooks/useSuggestedActivities";
 import VitoError from "@/components/ViErrorHandler";
 import Constants from "expo-constants";
+import { useAuth0 } from "react-native-auth0";
 SplashScreen.preventAutoHideAsync();
 
 export default function DiscoverScreen() {
@@ -29,11 +30,18 @@ export default function DiscoverScreen() {
     lat: userLocation?.coords.latitude,
   });
 
+  const { getCredentials } = useAuth0();
+  const logToken = async () => {
+    const token = await getCredentials();
+    console.log(token?.accessToken);
+  };
+
   useEffect(() => {
     async function fetchLocation() {
       const res = await getLocation();
       setUserLocation(res); // triggers the effect below
     }
+    logToken();
     fetchLocation();
   }, []);
 

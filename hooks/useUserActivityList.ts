@@ -109,14 +109,49 @@ export const usePostUserActivityListItemReview = () => {
   });
 };
 
-export const useDeleteActivityFromUserActivityList = () => {
+export const useUpdateUserActivityList = () => {
   const api = useApiClient();
   return useMutation({
-    mutationFn: async ({ userActivityListId }: { userActivityListId: string | number }) => {
-      await api(`/useractivitylist/${userActivityListId}`, {
+    mutationFn: async ({
+      userActivityId,
+      plannedStart,
+      plannedEnd,
+    }: {
+      userActivityId: number | string;
+      plannedStart: Date;
+      plannedEnd: Date;
+    }) => {
+      console.log(userActivityId, plannedEnd, plannedStart);
+      const result = await api<{
+        data: CompactUserActivityListItem;
+      }>(`/useractivitylist/update`, {
+        method: "POST",
+        body: JSON.stringify({
+          userActivityId: userActivityId,
+          plannedStart: plannedStart.toISOString(),
+          plannedEnd: plannedEnd.toISOString(),
+        }),
+      });
+      console.log(result.data);
+
+      return result.data;
+    },
+  });
+};
+
+export const useDeleteActivityList = () => {
+  const api = useApiClient();
+  return useMutation({
+    mutationFn: async ({
+      userActivityId,
+    }: {
+      userActivityId: string | number;
+    }) => {
+      console.log(userActivityId);
+      await api(`/useractivitylist/delete?userActivityId=${userActivityId}`, {
         method: "DELETE",
       });
-      return userActivityListId;
+      return userActivityId;
     },
   });
 };
