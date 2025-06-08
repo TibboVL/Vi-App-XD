@@ -12,7 +12,6 @@ import { Viloader } from "@/components/ViLoader";
 import { timeDifference } from "@/helpers/dateTimeHelpers";
 import { useGetSuggestedActivities } from "@/hooks/useSuggestedActivities";
 import VitoError from "@/components/ViErrorHandler";
-import Constants from "expo-constants";
 import { useAuth0 } from "react-native-auth0";
 SplashScreen.preventAutoHideAsync();
 
@@ -29,12 +28,6 @@ export default function DiscoverScreen() {
     lon: userLocation?.coords.longitude,
     lat: userLocation?.coords.latitude,
   });
-  const { getCredentials } = useAuth0();
-  const logToken = async () => {
-    const token = await getCredentials();
-    console.log(token?.accessToken);
-  };
-
   const { getCredentials } = useAuth0();
   const logToken = async () => {
     const token = await getCredentials();
