@@ -51,13 +51,7 @@ import {
   useCheckinDispatch,
 } from "./mood/checkinContext";
 import { isEmpty } from "lodash";
-import {
-  MarkedDates,
-  MarkingTypes,
-  Theme,
-} from "react-native-calendars/src/types";
-import { MarkingProps } from "react-native-calendars/src/calendar/day/marking";
-import { DotProps } from "react-native-calendars/src/calendar/day/dot";
+import { MarkedDates } from "react-native-calendars/src/types";
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];
@@ -146,13 +140,8 @@ export default function PlanningScreen() {
               onDateChanged={(newDate) => setActiveDate(newDate)}
             >
               <ExpandableCalendar
-                onDayPress={(day) => {
-                  //console.log("Day pressed:", day.dateString);
-                  setActiveDate(day.dateString);
-                }}
-                dayComponent={({ date, state, marking, theme }) => {
+                dayComponent={({ date, state, marking, theme, onPress }) => {
                   const isToday = date!.dateString === today;
-
                   return (
                     <View
                       style={{
@@ -161,8 +150,7 @@ export default function PlanningScreen() {
                       }}
                     >
                       <TouchableOpacity
-                        style={{}}
-                        onPress={() => setActiveDate(date?.dateString!)}
+                        onPress={() => (onPress ? onPress(date) : null)}
                       >
                         <View
                           style={{

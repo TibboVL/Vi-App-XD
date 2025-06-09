@@ -89,7 +89,6 @@ export const ViActivitySuggestion = memo(
                 {name}
               </Text>
             </View>
-
             {categories?.length > 0 ? (
               <View style={styles.tagsContainer}>
                 {categories?.map((category) => (
@@ -166,7 +165,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   details: {
-    marginTop: 8,
+    marginTop: 0,
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
@@ -182,7 +181,7 @@ const styles = StyleSheet.create({
     color: TextColors.muted.color,
   },
   tagsContainer: {
-    marginTop: 4,
+    marginTop: 0,
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 4,
