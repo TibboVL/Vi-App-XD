@@ -140,13 +140,8 @@ export default function PlanningScreen() {
               onDateChanged={(newDate) => setActiveDate(newDate)}
             >
               <ExpandableCalendar
-                onDayPress={(day) => {
-                  //console.log("Day pressed:", day.dateString);
-                  setActiveDate(day.dateString);
-                }}
-                dayComponent={({ date, state, marking, theme }) => {
+                dayComponent={({ date, state, marking, theme, onPress }) => {
                   const isToday = date!.dateString === today;
-
                   return (
                     <View
                       style={{
@@ -155,8 +150,7 @@ export default function PlanningScreen() {
                       }}
                     >
                       <TouchableOpacity
-                        style={{}}
-                        onPress={() => setActiveDate(date?.dateString!)}
+                        onPress={() => (onPress ? onPress(date) : null)}
                       >
                         <View
                           style={{
