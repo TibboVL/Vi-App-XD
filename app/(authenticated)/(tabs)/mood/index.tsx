@@ -17,6 +17,7 @@ import {
 } from "@/components/VitoAnimatedMoods";
 import { ViWave } from "@/components/ViWave";
 import { useSharedValue } from "react-native-reanimated";
+import { mapEnergyToFriendly } from "@/helpers/energyToFriendlyHelper";
 const batteryColors = {
   low: "#FF707070",
   medium: "#FFBA7070",
@@ -39,26 +40,6 @@ export default function MoodScreen() {
     const now = new Date();
     const diffTime = now.getTime() - checkinDate.getTime();
     return Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  }
-
-  function mapEnergyToFriendly() {
-    return lastKnownValidCheckin
-      ? Object.entries(EnergyLevel)
-          .find(
-            (energyLevel) =>
-              energyLevel[0] ==
-              Object.entries(EnergyMappings).find(([key, value]) => {
-                if (
-                  lastKnownValidCheckin.energy >= value.min &&
-                  lastKnownValidCheckin?.energy <= value.max
-                ) {
-                  return key;
-                }
-                return;
-              })?.[0]
-          )?.[1]
-          .toLowerCase()
-      : null;
   }
 
   useEffect(() => {
@@ -157,7 +138,7 @@ export default function MoodScreen() {
                   fontWeight: 800,
                 }}
               >
-                {mapEnergyToFriendly()}
+                {mapEnergyToFriendly(lastKnownValidCheckin?.energy)}
               </Text>{" "}
               energy level.
             </Text>

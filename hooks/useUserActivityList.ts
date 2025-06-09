@@ -121,7 +121,6 @@ export const useUpdateUserActivityList = () => {
       plannedStart: Date;
       plannedEnd: Date;
     }) => {
-      console.log(userActivityId, plannedEnd, plannedStart);
       const result = await api<{
         data: CompactUserActivityListItem;
       }>(`/useractivitylist/update`, {
@@ -132,7 +131,6 @@ export const useUpdateUserActivityList = () => {
           plannedEnd: plannedEnd.toISOString(),
         }),
       });
-      console.log(result.data);
 
       return result.data;
     },

@@ -51,13 +51,7 @@ import {
   useCheckinDispatch,
 } from "./mood/checkinContext";
 import { isEmpty } from "lodash";
-import {
-  MarkedDates,
-  MarkingTypes,
-  Theme,
-} from "react-native-calendars/src/types";
-import { MarkingProps } from "react-native-calendars/src/calendar/day/marking";
-import { DotProps } from "react-native-calendars/src/calendar/day/dot";
+import { MarkedDates } from "react-native-calendars/src/types";
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];

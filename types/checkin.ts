@@ -1,3 +1,5 @@
+import { Mood } from "./mood";
+
 export interface CurrentCheckin {
   checkinId: number;
   validAtDate: string | null;
@@ -16,4 +18,15 @@ export interface Checkin {
   afterEnergyLevel: number;
   userActivityId: number;
   created_at: string | null;
+}
+
+export interface ExtendedCheckin extends Checkin {
+  afterMood: string;
+  beforeMood: string;
+  afterParentMoodId: number;
+  afterParentMood: string;
+  beforeParentMoodId: number;
+  beforeParentMood: string;
+  createdAt: string | null;
+  plannedEnd: string | null;
 }
