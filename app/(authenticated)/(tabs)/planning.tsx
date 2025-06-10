@@ -51,6 +51,7 @@ import {
   useCheckinDispatch,
 } from "./mood/checkinContext";
 import { MarkedDates } from "react-native-calendars/src/types";
+import { timeDifference } from "../../../helpers/dateTimeHelpers";
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];
@@ -434,6 +435,9 @@ function EditExistingEventSheet({
     router.push("/mood/moodPicker");
   };
 
+  const hasEnded =
+    new Date(compactUserActivityListItem?.plannedEnd!) <= new Date();
+
   var dateOptions = {
     day: "numeric",
     weekday: "long",
@@ -631,7 +635,9 @@ function EditExistingEventSheet({
         <View style={styles.BottomContainerButton}>
           <ViButton
             title={
-              compactUserActivityListItem
+              !hasEnded
+                ? "Has not ended!"
+                : compactUserActivityListItem
                 ? compactUserActivityListItem.markedCompletedAt == null
                   ? "Review"
                   : "Already reviewed!"
@@ -640,6 +646,7 @@ function EditExistingEventSheet({
             variant="primary"
             type="light"
             enabled={
+              !hasEnded ||
               isUpdating ||
               isDeleting ||
               compactUserActivityListItem?.markedCompletedAt != null
