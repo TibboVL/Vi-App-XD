@@ -41,18 +41,26 @@ export default function ActivitiesScreen() {
   const handleOpenSheet = () => bottomModalSheetRef.current!.present();
   const handleCloseSheet = () => bottomModalSheetRef.current!.close();
 
-  const { isLoading, data, error, refetch } = useGetActivityList({
+  const {
+    isLoading,
+    data,
+    error,
+    refetch: refetchActivityList,
+  } = useGetActivityList({
     enabled: userLocation?.coords != undefined,
     lon: userLocation?.coords.longitude,
     lat: userLocation?.coords.latitude,
   });
+  async function fetchLocation() {
+    const res = await getLocation(true);
+    setUserLocation(res);
+  }
+
+  async function refetch() {
+    await fetchLocation().then(() => refetchActivityList());
+  }
 
   useEffect(() => {
-    async function fetchLocation() {
-      const res = await getLocation();
-      setUserLocation(res); // triggers the effect below
-    }
-
     fetchLocation();
 
     navigation.setOptions({
