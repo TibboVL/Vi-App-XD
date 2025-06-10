@@ -50,7 +50,6 @@ import {
   CheckinContextAction,
   useCheckinDispatch,
 } from "./mood/checkinContext";
-import { isEmpty } from "lodash";
 import { MarkedDates } from "react-native-calendars/src/types";
 
 export default function PlanningScreen() {
@@ -79,7 +78,7 @@ export default function PlanningScreen() {
 
     userActivityListContainers?.forEach((item) => {
       // NOTE: only mark dates with data
-      if (item.data && item.data.length > 0 && !isEmpty(item.data[0])) {
+      if (item.data && item.data.length > 0) {
         const dots = [];
         for (const entry of item.data) {
           dots.push({

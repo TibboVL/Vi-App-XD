@@ -5,7 +5,6 @@ import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { Calendar, Compass, Scales, Smiley, User } from "phosphor-react-native";
-import { CheckinProvider } from "./mood/checkinContext";
 
 export default function TabLayout() {
   const segments = useSegments(); // console.log(pathname);
