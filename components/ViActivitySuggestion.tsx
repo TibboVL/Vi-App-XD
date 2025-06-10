@@ -1,26 +1,5 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableNativeFeedback,
-  Pressable,
-  Touchable,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
-
-import {
-  BatteryLow,
-  BatteryMedium,
-  BatteryHigh,
-  Clock,
-  CurrencyEur,
-  MapPin,
-  Users,
-  BatteryFull,
-  User,
-} from "phosphor-react-native";
-
+import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
+import { Clock, CurrencyEur, MapPin, Users, User } from "phosphor-react-native";
 import { Tag } from "./ViCategoryTag";
 import { router } from "expo-router";
 import {
@@ -34,7 +13,6 @@ import { getIconByActivity } from "@/helpers/activityIconHelper";
 import { memo, useCallback, useMemo } from "react";
 import { TextColors, textStyles } from "@/globalStyles";
 import { EnergyIcon } from "./EnergyIcon";
-import { BlurView } from "expo-blur";
 import Svg, {
   Defs,
   FeBlend,
@@ -57,7 +35,6 @@ export const ViActivitySuggestion = memo(
     activitySuggestion?: ActivitySuggestion;
     handleShowPremiumDialog?: () => void;
   }) => {
-    // later we replace this with an ID from the DB so we can pass the activity between screens
     const {
       name,
       categories,

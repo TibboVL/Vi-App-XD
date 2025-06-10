@@ -14,9 +14,9 @@ import {
   TouchableNativeFeedback,
   StyleProp,
   ViewStyle,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as Clipboard from "expo-clipboard";
 import {
   safeAreaEdges,
   safeAreaStyles,
@@ -25,7 +25,7 @@ import {
   BackgroundColors,
 } from "@/globalStyles";
 import { useRef, useState } from "react";
-import { Activity, ActivityDetails, PillarKey } from "@/types/activity";
+import { ActivityDetails, PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import {
   BabyCarriage,
@@ -52,7 +52,6 @@ import VitoError from "@/components/ViErrorHandler";
 import { useGetActivityDetails } from "@/hooks/useActivityDetails";
 import { usePostUserActivityList } from "@/hooks/useUserActivityList";
 import { ViIconButton } from "@/components/ViIconButton";
-import { isLoading } from "expo-font";
 
 export default function ActivityDetailsScreen() {
   const local = useLocalSearchParams();
@@ -130,9 +129,8 @@ interface ActivityDeetailInformaationProps {
   showHeader?: boolean;
   showAbout?: boolean;
   customStyles?: {
-    Container?: StyleProp<ViewStyle>; // For ScrollView style
-    ContentContainer?: StyleProp<ViewStyle>; // For contentContainerStyle
-    // Optional: Add others like Header, Description, etc.
+    Container?: StyleProp<ViewStyle>;
+    ContentContainer?: StyleProp<ViewStyle>;
   };
 }
 export const ActivityDetailInformation = ({
@@ -147,6 +145,22 @@ export const ActivityDetailInformation = ({
   function toggleDescriptionState() {
     setDescriptionExpandedState(!descriptionExpandedState);
   }
+
+  const openInMaps = () => {
+    let url = `https://www.google.com/maps/search/?api=1&query=${activity.locationLatitude},${activity.locationLongitude}`;
+    if (activity.locationStreetAddress) {
+      const address = `${
+        activity.locationStreetAddress
+          ? activity.locationStreetAddress + ", "
+          : "null"
+      }${activity.locationPostcode} ${activity.locationCity}`;
+      url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        address
+      )}`;
+    }
+    Linking.openURL(url);
+  };
+
   return (
     <ScrollView
       style={[customStyles?.Container, styles.Container]}
@@ -194,7 +208,7 @@ export const ActivityDetailInformation = ({
           <CoreInfoBox
             Icon={() => (
               <EnergyIcon
-                style={{ color: TextColors.muted.color }}
+                style={{ color: TextColors.muted.color, marginTop: 8 }}
                 energy={activity.energyRequired}
                 size={20}
               />
@@ -207,15 +221,41 @@ export const ActivityDetailInformation = ({
             Icon={BabyCarriage}
             activity={activity}
             label="Min age"
-            value={`${activity.minAge ? activity.minAge + " +" : "N/A"}`}
+            value={`${activity.minAge ? activity.minAge + " +" : "Any"}`}
           />
         </View>
-        <CoreInfoBox
-          Icon={MapPinLine}
-          activity={activity}
-          label="Location"
-          value={`${activity.locationName ? activity.locationName : "N/A"}`}
-        />
+        {activity.locationName ? (
+          <View
+            style={{
+              borderRadius: 16,
+              overflow: "hidden",
+            }}
+          >
+            <TouchableNativeFeedback
+              onPress={activity.locationLongitude ? openInMaps : () => null}
+            >
+              <View>
+                <CoreInfoBox
+                  Icon={MapPinLine}
+                  activity={activity}
+                  label="Location"
+                  value={`${
+                    activity.locationName ? activity.locationName : "N/A"
+                  }`}
+                >
+                  <Text>
+                    {activity.locationStreetAddress
+                      ? activity.locationStreetAddress + ", "
+                      : ""}
+                    {activity.locationPostcode}{" "}
+                    {activity.locationCity ? activity.locationCity + ", " : ""}
+                    {activity.locationCountry?.toUpperCase()}
+                  </Text>
+                </CoreInfoBox>
+              </View>
+            </TouchableNativeFeedback>
+          </View>
+        ) : null}
       </View>
       {showAbout ? (
         <View
@@ -578,19 +618,32 @@ interface infoBoxProps {
   Icon: Icon;
   label: string;
   value: string;
+  children?: any;
 }
-const CoreInfoBox = ({ activity, Icon, label, value }: infoBoxProps) => {
+const CoreInfoBox = ({
+  activity,
+  Icon,
+  label,
+  value,
+  children,
+}: infoBoxProps) => {
   return (
     <View
       style={{
         flexDirection: "row",
         gap: 4,
-        alignItems: "center",
+        alignItems: "flex-start",
         padding: 4,
         flex: 1,
       }}
     >
-      <Icon size={20} color={TextColors.muted.color} />
+      <Icon
+        size={20}
+        style={{
+          marginTop: 8,
+        }}
+        color={TextColors.muted.color}
+      />
       <View
         style={{
           flexDirection: "column",
@@ -607,6 +660,7 @@ const CoreInfoBox = ({ activity, Icon, label, value }: infoBoxProps) => {
         >
           {value}
         </Text>
+        {children}
       </View>
     </View>
   );
