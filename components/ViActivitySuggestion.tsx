@@ -1,4 +1,13 @@
-import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableNativeFeedback,
+  Pressable,
+  Touchable,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 
 import {
   BatteryLow,
@@ -25,14 +34,28 @@ import { getIconByActivity } from "@/helpers/activityIconHelper";
 import { memo, useCallback, useMemo } from "react";
 import { TextColors, textStyles } from "@/globalStyles";
 import { EnergyIcon } from "./EnergyIcon";
+import { BlurView } from "expo-blur";
+import Svg, {
+  Defs,
+  FeBlend,
+  FeGaussianBlur,
+  FeOffset,
+  Filter,
+  G,
+  RadialGradient,
+  Stop,
+} from "react-native-svg";
+import { Rect } from "victory-native";
 
 export const ViActivitySuggestion = memo(
   ({
     activity,
     activitySuggestion,
+    handleShowPremiumDialog,
   }: {
     activity: Activity;
     activitySuggestion?: ActivitySuggestion;
+    handleShowPremiumDialog?: () => void;
   }) => {
     // later we replace this with an ID from the DB so we can pass the activity between screens
     const {
@@ -141,6 +164,102 @@ export const ViActivitySuggestion = memo(
             </View>
           </View>
         </TouchableNativeFeedback>
+
+        {activitySuggestion?.isPremiumLocked ? (
+          <TouchableNativeFeedback onPress={handleShowPremiumDialog}>
+            {/*       <BlurView
+              intensity={35}
+              style={[
+                styles.blurContainer,
+                {
+                  backgroundColor:
+                    Platform.OS == "android"
+                      ? "rgba(255,255,255,1)"
+                      : "transparent",
+                },
+              ]}
+            >
+              <Text style={[textStyles.h4]}>This is a Premium feature!</Text>
+              <Text style={[TextColors.muted]}>
+                Upgrade now to see up to 5 activity suggestions
+              </Text>
+            </BlurView> */}
+            <View
+              style={[
+                styles.blurContainer,
+                {
+                  backgroundColor: "rgba(255,255,255,1)",
+                },
+              ]}
+            >
+              <View style={[styles.blurContainer]}>
+                <Text style={[textStyles.h4]}>This is a Premium feature!</Text>
+                <Text style={[TextColors.muted]}>
+                  Upgrade now to see up to 5 activity suggestions
+                </Text>
+              </View>
+              <Svg height="100%" width="100%">
+                <Defs>
+                  {/* Purple Radial Gradient */}
+                  <RadialGradient
+                    id="grad1"
+                    cx="35%"
+                    cy="0%"
+                    rx="150%"
+                    ry="150%"
+                    fx="35%"
+                    fy="0%"
+                  >
+                    <Stop offset="0%" stopColor="#40E0D0" stopOpacity=".5" />
+                    <Stop offset="70%" stopColor="#40E0D0" stopOpacity="0" />
+                  </RadialGradient>
+                  {/* Blue Radial Gradient */}
+                  <RadialGradient
+                    id="grad2"
+                    cx="75%"
+                    cy="100%"
+                    rx="150%"
+                    ry="150%"
+                    fx="75%"
+                    fy="100%"
+                  >
+                    <Stop offset="0%" stopColor="#FF8C00" stopOpacity=".3" />
+                    <Stop offset="70%" stopColor="#FF8C00" stopOpacity="0" />
+                  </RadialGradient>
+                  <RadialGradient
+                    id="grad3"
+                    cx="95%"
+                    cy="100%"
+                    rx="150%"
+                    ry="150%"
+                    fx="15%"
+                    fy="100%"
+                  >
+                    <Stop offset="0%" stopColor="#FF0080" stopOpacity=".2" />
+                    <Stop offset="70%" stopColor="#FF0080" stopOpacity="0" />
+                  </RadialGradient>
+                  {/* Blur Filter */}
+                  <Filter
+                    id="blurFilter"
+                    x="-20%"
+                    y="-20%"
+                    width="140%"
+                    height="140%"
+                  >
+                    <FeGaussianBlur stdDeviation="100" />
+                  </Filter>
+                </Defs>
+
+                {/* First Radial Gradient with blur */}
+                <G filter="url(#blurFilter)">
+                  <Rect width="100%" height="100%" fill="url(#grad1)" />
+                  <Rect width="100%" height="100%" fill="url(#grad2)" />
+                  <Rect width="100%" height="100%" fill="url(#grad3)" />
+                </G>
+              </Svg>
+            </View>
+          </TouchableNativeFeedback>
+        ) : null}
       </View>
     );
   }
@@ -185,5 +304,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 4,
+  },
+  blurContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    width: "100%",
+    height: "100%",
+    zIndex: 20,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

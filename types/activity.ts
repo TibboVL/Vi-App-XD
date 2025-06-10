@@ -54,6 +54,7 @@ export type ActivitySuggestion = {
   overwriteIsGroupActivity: boolean;
   updated_at: string | null;
   activity: Activity;
+  isPremiumLocked: boolean;
 };
 export type ActivityDetails = Activity & {
   description: string;

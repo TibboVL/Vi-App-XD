@@ -1,4 +1,3 @@
-import { Dictionary } from "lodash";
 import { PillarKey } from "./activity";
 export type PerPillarStatistics = {
   activityId: number;

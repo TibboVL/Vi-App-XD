@@ -21,6 +21,7 @@ export const useApiClient = () => {
 
 export class ViCustomError extends Error {
   status: number;
+  meta?: any;
   data?: any;
 
   constructor(status: number, message: string, data?: any) {

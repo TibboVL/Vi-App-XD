@@ -3,7 +3,7 @@ import { StyleSheet, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, SplashScreen } from "expo-router";
 import { getLocation } from "@/helpers/locationHelper";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LocationObject } from "expo-location";
 import { BackgroundColors, TextColors, textStyles } from "@/globalStyles";
 import { FlatList, RefreshControl } from "react-native-gesture-handler";
@@ -21,9 +21,17 @@ import { adjustLightness } from "@/constants/Colors";
 import { mapEnergyToFriendly } from "@/helpers/energyToFriendlyHelper";
 import { ExtendedCheckin } from "@/types/checkin";
 import { AISuggestionResponse } from "@/types/activity";
+import { Notifier } from "react-native-notifier";
+import { ViNotifierAlert } from "@/components/ViNotifierAlert";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { ViPremiumModalSheet } from "@/components/ViPremiumModalSheet";
 SplashScreen.preventAutoHideAsync();
 
 export default function DiscoverScreen() {
+  const PremiumSheetRef = useRef<BottomSheetModal>(null);
+  const handleOpenSheet = () => PremiumSheetRef.current!.present();
+  const handleCloseSheet = () => PremiumSheetRef.current!.close();
+
   const [userLocation, setUserLocation] = useState<LocationObject | null>(null);
   const [latestSuggestions, setLatestSuggestions] =
     useState<AISuggestionResponse>();
@@ -69,10 +77,20 @@ export default function DiscoverScreen() {
     }
   }, [existingResults]);
   useEffect(() => {
-    if (generationResults) {
+    if (generationResults && !generationError) {
       setLatestSuggestions(generationResults);
+    } else if (generationError?.status == 503) {
+      console.log(generationError, generationResults);
+      Notifier.showNotification({
+        title: "Failed to generate suggestions",
+        description: `You used up your AI requests for today! Your limit resets at midnight UTC`,
+        Component: ViNotifierAlert,
+        componentProps: {
+          alertType: "error",
+        },
+      });
     }
-  }, [generationResults]);
+  }, [generationResults, generationError]);
 
   var dateOptions = {
     hour: "2-digit",
@@ -108,7 +126,7 @@ export default function DiscoverScreen() {
               refetch={refetch}
             />
           ) : null}
-          {generationError ? (
+          {generationError && generationError.status != 503 ? (
             <VitoError
               error={generationError}
               loading={generatingSuggestions}
@@ -118,7 +136,6 @@ export default function DiscoverScreen() {
           {!loadingExistingSuggestions &&
           !gettingExistingSuggestionsError &&
           !generatingSuggestions &&
-          !generationError &&
           latestSuggestions?.activitySuggestionList ? (
             <View
               style={{
@@ -199,6 +216,7 @@ export default function DiscoverScreen() {
                   <ViActivitySuggestion
                     activity={item.activity}
                     activitySuggestion={item}
+                    handleShowPremiumDialog={handleOpenSheet}
                   />
                 )}
                 ListEmptyComponent={<Text>Something went wrong!</Text>}
@@ -206,7 +224,6 @@ export default function DiscoverScreen() {
             </View>
           ) : null}
         </View>
-
         <View style={[styles.BottomContainer]}>
           <View>
             <Text
@@ -263,6 +280,11 @@ export default function DiscoverScreen() {
           </View>
         </View>
       </View>
+      <ViPremiumModalSheet
+        BottomSheetModalRef={PremiumSheetRef}
+        handleOpen={handleOpenSheet}
+        handleClose={handleCloseSheet}
+      />
     </SafeAreaView>
   );
 }

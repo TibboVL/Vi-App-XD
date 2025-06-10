@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CheckinProvider } from "./(authenticated)/(tabs)/mood/checkinContext";
+import { NotifierWrapper } from "react-native-notifier";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -42,21 +43,22 @@ export default function RootLayout() {
         <CheckinProvider>
           <SafeAreaProvider style={{ flex: 1 }}>
             <GestureHandlerRootView>
-              <BottomSheetModalProvider>
-                <Stack>
-                  <Stack.Screen
-                    name="(authenticated)"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="signIn"
-                    options={{ headerShown: false }}
-                  />
-                  {/* <Stack.Screen name="register" /> */}
-                  <Stack.Screen name="+not-found" />
-                </Stack>
-                <StatusBar style="dark" />
-              </BottomSheetModalProvider>
+              <NotifierWrapper>
+                <BottomSheetModalProvider>
+                  <Stack>
+                    <Stack.Screen
+                      name="(authenticated)"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="signIn"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen name="+not-found" />
+                  </Stack>
+                  <StatusBar style="dark" />
+                </BottomSheetModalProvider>
+              </NotifierWrapper>
             </GestureHandlerRootView>
           </SafeAreaProvider>
         </CheckinProvider>
