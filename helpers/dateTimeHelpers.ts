@@ -17,11 +17,11 @@ export function timeDifference(date: Date) {
   var elapsed = new Date().getTime() - date.getTime();
 
   if (elapsed < msPerMinute) {
-    return Math.round(elapsed / 1000) + " seconds ago";
+    return Math.round(elapsed / 1000) + "s ago";
   } else if (elapsed < msPerHour) {
-    return Math.round(elapsed / msPerMinute) + " minutes ago";
+    return Math.round(elapsed / msPerMinute) + "m ago";
   } else if (elapsed < msPerDay) {
-    return Math.round(elapsed / msPerHour) + " hours ago";
+    return Math.round(elapsed / msPerHour) + "h ago";
   } else if (elapsed < msPerMonth) {
     return "~" + Math.round(elapsed / msPerDay) + " days ago";
   } else if (elapsed < msPerYear) {

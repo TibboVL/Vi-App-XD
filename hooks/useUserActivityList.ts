@@ -39,7 +39,7 @@ export const useGetUserActivityListsItemsReview = ({
       }>(`/useractivitylist/toReview`);
       return result.data;
     },
-    staleTime: 1000 * 60 * 60 * 24, // 1 day
+    staleTime: 0, // never save these
     enabled: enabled,
   });
 };

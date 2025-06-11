@@ -1,4 +1,5 @@
 // context/AppStateContext.tsx
+import { Activity } from "@/types/activity";
 import React, { createContext, useContext, useReducer } from "react";
 import { Text, View } from "react-native";
 

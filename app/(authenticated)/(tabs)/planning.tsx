@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableNativeFeedback,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import {
   AgendaList,
@@ -412,16 +413,33 @@ function EditExistingEventSheet({
     error: deleteError,
   } = useDeleteActivityList();
   async function handleDeleteEvent() {
-    handleDelete(
-      {
-        userActivityId: compactUserActivityListItem?.userActivityId!,
-      },
-      {
-        onSuccess: (data) => {
-          handleClose();
-          queryClient.invalidateQueries({ queryKey: ["user-activity-list"] });
+    Alert.alert(
+      `Remove activity?`,
+      `Are you sure you want to remove "${activity?.name}" from your calendar?`,
+      [
+        {
+          text: "No, keep it!",
+          style: "cancel",
         },
-      }
+        {
+          text: "Yes, remove!",
+          style: "destructive",
+          onPress: () =>
+            handleDelete(
+              {
+                userActivityId: compactUserActivityListItem?.userActivityId!,
+              },
+              {
+                onSuccess: (data) => {
+                  handleClose();
+                  queryClient.invalidateQueries({
+                    queryKey: ["user-activity-list"],
+                  });
+                },
+              }
+            ),
+        },
+      ]
     );
   }
   const dispatch = useCheckinDispatch();

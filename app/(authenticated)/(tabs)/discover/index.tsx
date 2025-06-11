@@ -101,7 +101,8 @@ export default function DiscoverScreen() {
     const date = new Date(checkin.plannedEnd ?? checkin.createdAt!);
     const time = date.toLocaleTimeString("en-be", dateOptions);
     const diff = timeDifference(date);
-    return `${time} ${diff}`;
+    return `${diff}`;
+    // return `${time} ${diff}`;
   }
 
   return (
@@ -168,7 +169,7 @@ export default function DiscoverScreen() {
                       latestSuggestions.basedOnCheckin.afterEnergyLevel ??
                         latestSuggestions.basedOnCheckin.beforeEnergyLevel
                     )}{" "}
-                    energy at{" "}
+                    energy{" "}
                     {getCheckinTimeDisplay(latestSuggestions.basedOnCheckin)}
                   </Text>
                 </View>
@@ -177,7 +178,7 @@ export default function DiscoverScreen() {
                     style={[
                       TextColors.muted,
                       {
-                        paddingBlock: 8,
+                        paddingBottom: 8,
                         textAlign: "center",
                       },
                     ]}
