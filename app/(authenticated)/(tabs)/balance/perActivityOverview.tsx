@@ -112,7 +112,7 @@ export default function PerActivityOverview({
           basedOnCheckinAmount: d.basedOnCheckinAmount,
         } as ActivityImpactEntry)
     )
-    .sort((a, b) => a.x);
+    .sort((a, b) => a.x as number);
 
   const headers = ["Activity", "Alertness", "Enjoyment"];
 
@@ -183,8 +183,8 @@ export default function PerActivityOverview({
 
               const sectionPoints = mappedData.filter(
                 (point) =>
-                  point.x >= xMin &&
-                  point.x < xMax &&
+                  (point.x as number) >= xMin &&
+                  (point.x as number) < xMax &&
                   point.y >= yMin &&
                   point.y < yMax
               );
