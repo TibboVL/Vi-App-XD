@@ -165,7 +165,7 @@ export default function MoodPickerScreen() {
 
         <View id="BottomButtonContainer" style={[styles.BottomContainer]}>
           <ViButton
-            style={{
+            innerStyle={{
               display: selectedSecondaryMood ? "flex" : "none",
             }}
             title="Continue"

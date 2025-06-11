@@ -19,7 +19,9 @@ interface ViButtonProps {
   enabled?: boolean;
   title: string;
   onPress?: () => void;
-  style?: ViewStyle;
+  innerStyle?: ViewStyle;
+  outerStyle?: ViewStyle;
+  contentStyle?: any;
   Icon?: Icon;
   hideText?: boolean;
   size?: number;
@@ -31,7 +33,9 @@ export function ViButton({
   enabled = true,
   title,
   onPress,
-  style,
+  innerStyle,
+  outerStyle,
+  contentStyle,
   Icon,
   hideText = false,
   size = 56,
@@ -44,6 +48,7 @@ export function ViButton({
           width: Icon ? size : "100%",
           maxHeight: size, // ensure  we dont grow vertically!
           minHeight: size,
+          ...outerStyle,
         },
       ]}
     >
@@ -67,11 +72,14 @@ export function ViButton({
               : type == "outline"
               ? outlineStyles[variant]
               : "",
-            style,
+            innerStyle,
           ]}
         >
           {Icon ? (
             <Icon
+              style={{
+                ...contentStyle,
+              }}
               weight={"bold"}
               color={
                 variant === "primary"
@@ -87,6 +95,7 @@ export function ViButton({
               style={[
                 {
                   textTransform: "capitalize",
+                  ...contentStyle,
                 },
                 textStyles.CTA,
                 variant === "primary"

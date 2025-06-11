@@ -1,14 +1,43 @@
-import { Link, Stack } from "expo-router";
-import { StyleSheet, Text } from "react-native";
+import { ViButton } from "@/components/ViButton";
+import { textStyles } from "@/globalStyles";
+import { Link, router, Stack } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
 
 export default function NotFoundScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "Oops!" }} />
-      <Text>This screen doesn't exist.</Text>
-      <Link href="/signIn" style={styles.link}>
-        <Text>Go to home screen!</Text>
-      </Link>
+
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "column",
+          height: "100%",
+          justifyContent: "center",
+        }}
+      >
+        <Text
+          style={[
+            textStyles.h3,
+            {
+              textAlign: "center",
+            },
+          ]}
+        >
+          This screen doesn't exist!
+        </Text>
+
+        <View
+          style={{
+            padding: 16,
+          }}
+        >
+          <ViButton
+            title="Go to home screen!"
+            onPress={() => router.navigate("/signIn")}
+          />
+        </View>
+      </View>
     </>
   );
 }

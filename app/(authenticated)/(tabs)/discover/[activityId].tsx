@@ -45,13 +45,13 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { Tag } from "@/components/ViCategoryTag";
 import { EnergyIcon } from "@/components/EnergyIcon";
 import { useQueryClient } from "@tanstack/react-query";
 import VitoError from "@/components/ViErrorHandler";
 import { useGetActivityDetails } from "@/hooks/useActivityDetails";
 import { usePostUserActivityList } from "@/hooks/useUserActivityList";
 import { ViIconButton } from "@/components/ViIconButton";
+import ViCategoryContainer from "@/components/ViCategoryContainer";
 
 export default function ActivityDetailsScreen() {
   const local = useLocalSearchParams();
@@ -175,19 +175,7 @@ export const ActivityDetailInformation = ({
           }}
         >
           <Text style={[textStyles.h4]}>{activity.name}</Text>
-          {activity.categories?.length > 0 ? (
-            <View style={styles.tagsContainer}>
-              {activity.categories?.map((category) => (
-                <Tag
-                  key={category.activityCategoryId}
-                  label={category.name}
-                  pillar={category.pillar?.toLowerCase() as PillarKey}
-                />
-              ))}
-            </View>
-          ) : (
-            <Text>No categories - this shouldnt happen!</Text>
-          )}
+          <ViCategoryContainer activity={activity} />
         </View>
       ) : null}
       <View id="CoreInformation" style={styles.Card}>
@@ -723,10 +711,4 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   BottomContainerButton: { flex: 1 },
-  tagsContainer: {
-    marginTop: 4,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 4,
-  },
 });
