@@ -13,7 +13,10 @@ import {
   TouchableNativeFeedback,
   FlatList,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { ViButton } from "@/components/ViButton";
 import { router, useNavigation } from "expo-router";
 import { CompactUserActivityListItem } from "@/types/userActivityList";
@@ -56,9 +59,21 @@ export default function ActivityReviewScreen() {
 
   function handleSetContextForActivityReview(reviewing: boolean) {
     if (router.canDismiss()) router.dismissAll();
+    // const activity = userActivityListItemsToBeReviewed?.find(
+    //   (a) => a.userActivityId == selectedReviewItemId
+    // );
+    // console.log(activity);
     dispatch({
       action: CheckinContextAction.SET_USER_ACTIVITY, // automatically resets the rest
-      payload: reviewing ? selectedReviewItemId : null,
+      payload: {
+        userActivityId: reviewing ? selectedReviewItemId : null,
+        // activity:
+        // {
+        //   title: activity?.activityTitle,
+        //   plannedEnd: activity?.plannedEnd,
+        //   categories: activity?.categories
+        // },
+      },
     });
   }
   const navigation = useNavigation();
@@ -109,9 +124,18 @@ export default function ActivityReviewScreen() {
     };
   }, []);
 
+  const insets = useSafeAreaInsets();
+
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
-      <View style={[styles.Container]}>
+      <View
+        style={[
+          styles.Container,
+          {
+            paddingBottom: insets.top,
+          },
+        ]}
+      >
         {isLoading ? (
           <Viloader message="Vito is looking through your plans!" />
         ) : null}
