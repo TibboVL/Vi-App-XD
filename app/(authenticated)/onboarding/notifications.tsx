@@ -101,11 +101,11 @@ export default function OnboardingNotificationsScreen() {
         >
           <ViButton title="Maybe later" type="text-only" />
           <ViButton
-            title="send test notification"
+            title="Send test notification"
             onPress={() => schedulePushNotification()}
           />
           <ViButton
-            title="complete onboarding"
+            title="Complete onboarding"
             onPress={() => router.push("/(authenticated)/(tabs)")}
           />
         </View>

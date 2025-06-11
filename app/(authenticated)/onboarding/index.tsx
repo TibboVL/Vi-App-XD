@@ -1,47 +1,74 @@
+// app/(authenticated)/onboarding/index.tsx
 import { ViButton } from "@/components/ViButton";
 import { textStyles } from "@/globalStyles";
 import { router } from "expo-router";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Dimensions, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, { Circle, ClipPath, Defs, G, Path, Rect } from "react-native-svg";
+import { SwiperFlatList, Pagination } from "react-native-swiper-flatlist";
+import { useState } from "react";
 
-export default function OnboardingPrivacyScreen() {
+const vitoCheckinOnboarding = require("../../../assets/images/vitoCheckinOnboarding.png");
+const vitoActivityOnboarding = require("../../../assets/images/vitoActivityOnboarding.png");
+const vitoBalanceOnboarding = require("../../../assets/images/vitoBalanceOnboarding.png");
+const slides = [
+  {
+    id: "1",
+    image: vitoCheckinOnboarding,
+    subtext: "Discover new experiences tailored just for you.",
+  },
+  {
+    id: "2",
+    image: vitoActivityOnboarding,
+    subtext: "Connect with vibrant communities and local events.",
+  },
+  {
+    id: "3",
+    image: vitoBalanceOnboarding,
+    subtext: "Track your progress and achieve your goals with ease.",
+  },
+];
+
+const { width } = Dimensions.get("window");
+
+export default function OnboardingWelcomeScreen() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const renderItem = ({ item }: { item: (typeof slides)[0] }) => (
+    <View style={styles.slide}>
+      <Image
+        source={item.image}
+        style={styles.slideImage}
+        resizeMode="contain"
+      />
+      <Text style={[textStyles.h3, styles.slideSubtext]}>{item.subtext}</Text>
+    </View>
+  );
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.Container}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            paddingBottom: 64,
-          }}
-        >
-          <Text style={[textStyles.h3, { textAlign: "center" }]}>
-            We value your privacy. Your personal data is stored securely and
-            used only to tailor your experience.
+        <View style={styles.contentArea}>
+          <Text style={[textStyles.h1, styles.welcomeTitle]}>
+            Welcome to Vi!
           </Text>
+          {/* SwiperFlatList for the slides */}
+          <SwiperFlatList
+            autoplay={false}
+            index={0}
+            showPagination
+            data={slides}
+            renderItem={renderItem}
+            onChangeIndex={({ index }) => setCurrentIndex(index)}
+            paginationStyle={styles.paginationContainer}
+            paginationStyleItem={styles.paginationDot}
+            paginationStyleItemActive={styles.paginationDotActive}
+          />
         </View>
-        <View
-          style={{
-            width: "100%",
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <VitoGuard />
-        </View>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "flex-end",
-            paddingBottom: 24,
-            width: "100%",
-          }}
-        >
+
+        <View style={styles.buttonArea}>
           <ViButton
             title="Continue"
-            onPress={() => router.push("/(authenticated)/onboarding/location")}
+            onPress={() => router.push("/(authenticated)/onboarding/privacy")}
           />
         </View>
       </View>
@@ -49,92 +76,68 @@ export default function OnboardingPrivacyScreen() {
   );
 }
 
-const VitoGuard = () => {
-  return (
-    <Svg width={294} height={249} viewBox="0 0 294 249" fill="none">
-      <Path
-        d="M256.673 96.9126C279.739 16.3795 178.592 -32.2551 85.6105 24.819C-7.22726 81.8931 45.0657 186.457 104.092 199.474C162.975 212.491 234.466 174.728 256.673 96.9126Z"
-        fill="#4DA06D"
-      />
-      <Circle cx={177} cy={95} r={22} fill="white" />
-      <Circle cx={118} cy={95} r={22} fill="white" />
-      <Circle cx={172.5} cy={90.5} r={11.5} fill="#626262" />
-      <Circle cx={112.5} cy={90.5} r={11.5} fill="#626262" />
-      <Path
-        d="M134 130.87C141 136 156 136 162 130.87"
-        stroke="white"
-        strokeWidth={5}
-        strokeLinecap="round"
-      />
-      <Path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M20.828 132.341C18.5 135.658 18.5 145.518 18.5 165.236V174.947C18.5 209.715 44.6402 226.587 61.0411 233.752C65.49 235.695 67.7143 236.667 74 236.667V113.333C68.9964 113.333 64.1642 114.987 54.4993 118.296L50.9669 119.505C32.4263 125.851 23.156 129.025 20.828 132.341Z"
-        fill="#1C274C"
-      />
-      <Path
-        opacity={0.5}
-        d="M129.5 174.947V165.236C129.5 145.518 129.5 135.658 127.172 132.341C124.844 129.025 115.574 125.851 97.0331 119.505L93.5009 118.296C83.8358 114.987 79.0036 113.333 74 113.333V236.667C80.2857 236.667 82.51 235.695 86.9586 233.752C103.36 226.587 129.5 209.715 129.5 174.947Z"
-        fill="#1C274C"
-      />
-      <G clipPath="url(#clip0_982_5060)">
-        <Path
-          d="M201.217 202.798C201.068 202.072 200.635 201.433 200.016 201.025L190.675 194.866C189.385 194.014 187.649 194.37 186.8 195.661L167.212 225.374C166.361 226.661 166.717 228.395 168.007 229.247L177.348 235.406C178.637 236.253 180.373 235.897 181.223 234.61L200.811 204.898C201.22 204.279 201.366 203.525 201.217 202.798Z"
-          fill="#ED5564"
-        />
-        <Path
-          d="M266.17 115.936C266.457 115.499 266.615 114.987 266.629 114.464L267.138 93.37C267.157 92.406 266.683 91.4996 265.879 90.968C265.076 90.4364 264.052 90.3581 263.176 90.7595L243.989 99.5342C243.511 99.7536 243.105 100.101 242.819 100.538L186.749 185.575C185.9 186.866 186.256 188.6 187.545 189.452L206.226 201.77C206.845 202.178 207.603 202.324 208.329 202.175C209.056 202.026 209.693 201.594 210.101 200.975L266.17 115.936Z"
-          fill="#CCD1D9"
-        />
-        <Path
-          opacity={0.2}
-          d="M265.879 90.9681C265.075 90.4365 264.051 90.3581 263.176 90.7596L243.988 99.5343C243.511 99.7536 243.105 100.101 242.818 100.538L186.749 185.575C185.9 186.866 186.256 188.6 187.545 189.452L206.226 201.77C206.845 202.178 207.603 202.324 208.329 202.175C209.056 202.026 209.693 201.594 210.101 200.975L266.17 115.936C266.457 115.499 266.615 114.987 266.629 114.464L267.138 93.37C267.157 92.4058 266.683 91.4994 265.879 90.9681ZM264.338 93.3027L263.833 114.395L207.766 199.434L189.084 187.116L245.151 102.079L264.338 93.3027Z"
-          fill="white"
-        />
-        <Path
-          d="M196.884 195.611C195.595 194.759 195.239 193.025 196.088 191.734L235.535 131.908C236.387 130.619 238.121 130.263 239.408 131.113C240.7 131.963 241.056 133.699 240.204 134.988L200.759 194.815C199.909 196.103 198.175 196.459 196.884 195.611Z"
-          fill="#AAB2BC"
-        />
-        <Path
-          d="M175.384 212.975L198.633 208.202L200.811 204.898C201.219 204.278 201.366 203.525 201.217 202.798C201.16 202.521 201.063 202.261 200.931 202.02L179.74 206.371L175.384 212.975Z"
-          fill="#DA4453"
-        />
-        <Path
-          d="M193.752 215.608L170.501 220.382L167.212 225.374C166.909 225.833 166.761 226.349 166.752 226.861L189.396 222.212L193.752 215.608Z"
-          fill="#DA4453"
-        />
-        <Path
-          d="M220.981 204.797L178.947 177.084C177.657 176.234 175.923 176.59 175.073 177.879L170.453 184.884C169.603 186.175 169.959 187.909 171.248 188.757L213.282 216.471C213.902 216.879 214.657 217.025 215.384 216.876C216.112 216.727 216.749 216.295 217.158 215.676L221.776 208.671C222.626 207.383 222.269 205.645 220.981 204.797Z"
-          fill="#FFCE54"
-        />
-        <Path
-          d="M181.67 233.059C181.07 230.133 179.364 227.614 176.87 225.967C171.718 222.57 164.767 223.998 161.37 229.15C159.726 231.646 159.152 234.633 159.752 237.559C160.353 240.485 162.058 243.004 164.552 244.65C167.049 246.296 170.034 246.871 172.962 246.27C175.89 245.669 178.407 243.964 180.053 241.468C181.697 238.972 182.271 235.985 181.67 233.059Z"
-          fill="#FFCE54"
-        />
-        <Path
-          d="M171.274 238.048C172.787 237.738 173.761 236.259 173.451 234.745C173.14 233.231 171.661 232.256 170.148 232.566C168.636 232.877 167.661 234.356 167.972 235.87C168.283 237.384 169.761 238.359 171.274 238.048Z"
-          fill="#F6BB42"
-        />
-      </G>
-      <Defs>
-        <ClipPath id="clip0_982_5060">
-          <Rect
-            width={134.261}
-            height={134.261}
-            fill="white"
-            transform="translate(135 117.003) rotate(-11.6025)"
-          />
-        </ClipPath>
-      </Defs>
-    </Svg>
-  );
-};
-
 const styles = StyleSheet.create({
   Container: {
-    height: Dimensions.get("window").height,
-    paddingInline: 32,
-    flexDirection: "column",
     flex: 1,
+    paddingHorizontal: 0,
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    paddingBottom: 24,
+  },
+  contentArea: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 0,
+  },
+  welcomeTitle: {
+    textAlign: "center",
+    marginBottom: 0,
+    marginTop: 100,
+    color: "#333",
+    paddingHorizontal: 32,
+  },
+  buttonArea: {
+    width: "100%",
+    paddingHorizontal: 32,
+    marginTop: 0,
+  },
+  
+  slide: {
+    width: width, 
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    marginTop: 30,
+    marginBottom: 10,
+  },
+  slideImage: {
+    width: "80%", 
+    height: 200, 
+    marginBottom: 15,
+    resizeMode: "contain",
+  },
+  slideSubtext: {
+    textAlign: "center",
+    color: "#666",
+    width: "80%",
+  },
+  paginationContainer: {
+    position: "relative",
+    marginTop: 5,
+    marginBottom: 120,
+  },
+  paginationDot: {
+    backgroundColor: "rgba(63, 63, 63, 0.2)",
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 3,
+  },
+  paginationDotActive: {
+    backgroundColor: "green",
+    width: 24,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 3,
   },
 });

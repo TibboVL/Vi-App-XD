@@ -12,9 +12,15 @@ export default function StackLayout() {
         }}
       />
       <Stack.Screen
-        name="location"
+        name="privacy"
         options={{
-          title: "Location",
+          title: "Privacy",
+        }}
+      />
+      <Stack.Screen
+        name="goals"
+        options={{
+          title: "Your Goals",
         }}
       />
     </Stack>

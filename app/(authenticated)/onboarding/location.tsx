@@ -97,7 +97,7 @@ export default function OnboardingLocationScreen() {
             onPress={() => getCurrentLocation()}
           />
           <ViButton
-            title="next"
+            title="Continue"
             onPress={() =>
               router.push("/(authenticated)/onboarding/notifications")
             }
