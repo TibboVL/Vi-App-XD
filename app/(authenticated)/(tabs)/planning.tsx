@@ -52,7 +52,7 @@ import {
 } from "./mood/checkinContext";
 import { MarkedDates } from "react-native-calendars/src/types";
 import { timeDifference } from "../../../helpers/dateTimeHelpers";
-import ViCategoryContainer from "@/components/ViCategoryContains";
+import ViCategoryContainer from "@/components/ViCategoryContainer";
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];

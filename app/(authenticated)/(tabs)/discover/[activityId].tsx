@@ -51,7 +51,7 @@ import VitoError from "@/components/ViErrorHandler";
 import { useGetActivityDetails } from "@/hooks/useActivityDetails";
 import { usePostUserActivityList } from "@/hooks/useUserActivityList";
 import { ViIconButton } from "@/components/ViIconButton";
-import ViCategoryContainer from "@/components/ViCategoryContains";
+import ViCategoryContainer from "@/components/ViCategoryContainer";
 
 export default function ActivityDetailsScreen() {
   const local = useLocalSearchParams();

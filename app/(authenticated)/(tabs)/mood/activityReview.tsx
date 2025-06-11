@@ -34,7 +34,7 @@ import {
 } from "@/hooks/useUserActivityList";
 import VitoError from "@/components/ViErrorHandler";
 import { useQueryClient } from "@tanstack/react-query";
-import ViCategoryContainer from "@/components/ViCategoryContains";
+import ViCategoryContainer from "@/components/ViCategoryContainer";
 
 export default function ActivityReviewScreen() {
   const state = useCheckinState();

@@ -1,4 +1,4 @@
-import ViCategoryContainer from "@/components/ViCategoryContains";
+import ViCategoryContainer from "@/components/ViCategoryContainer";
 import { adjustLightness } from "@/constants/Colors";
 import { TextColors, textStyles } from "@/globalStyles";
 import { Activity } from "@/types/activity";

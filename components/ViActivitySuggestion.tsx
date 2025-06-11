@@ -24,7 +24,7 @@ import Svg, {
   Stop,
 } from "react-native-svg";
 import { Rect } from "victory-native";
-import ViCategoryContainer from "./ViCategoryContains";
+import ViCategoryContainer from "./ViCategoryContainer";
 
 export const ViActivitySuggestion = memo(
   ({
