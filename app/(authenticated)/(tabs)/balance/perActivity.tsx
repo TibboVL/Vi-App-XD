@@ -200,6 +200,7 @@ export default function PerActivityScreen() {
               );
               return (
                 <ActivityImpactSection
+                  key={index}
                   sectionData={section}
                   points={sectionPoints}
                 />
