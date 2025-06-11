@@ -32,33 +32,43 @@ interface SectionData {
   color: string;
   title: string;
 }
+
+const axisTicks = [-2, -1, 0, 1, 2];
+
 // Area overlays for visual groups
 const overlaySections: SectionData[] = [
   {
     x0: 0,
-    x1: 3,
-    y0: 3,
+    x1: Math.max(...axisTicks),
+    y0: Math.max(...axisTicks),
     y1: 0,
     color: "#009966",
     title: "Energizing & Uplifting",
   }, // top right
   {
     x0: 0,
-    x1: 3,
-    y0: -3,
+    x1: Math.max(...axisTicks),
+    y0: Math.min(...axisTicks),
     y1: 0,
     color: "#155dfc",
     title: "Calming & Uplifting",
   }, // bottom right
   {
-    x0: -3,
+    x0: Math.min(...axisTicks),
     x1: 0,
-    y0: 3,
+    y0: Math.max(...axisTicks),
     y1: 0,
     color: "#e17100",
     title: "Stressful & Energizing",
   }, // top left
-  { x0: -3, x1: 0, y0: -3, y1: 0, color: "#52525c", title: "Draining & Down" }, // bottom left
+  {
+    x0: Math.min(...axisTicks),
+    x1: 0,
+    y0: Math.min(...axisTicks),
+    y1: 0,
+    color: "#52525c",
+    title: "Draining & Down",
+  }, // bottom left
 ];
 
 interface ActivityImpactEntry {
@@ -66,61 +76,6 @@ interface ActivityImpactEntry {
   y: number;
   activity: Activity;
 }
-
-const temporaryChartData: ActivityImpactEntry[] = [
-  {
-    x: -1,
-    y: 1,
-    activity: {
-      name: "abc",
-      activityId: 1,
-      categories: [
-        {
-          activityCategoryId: 32,
-          name: "clean",
-          pillar: "Physical",
-        },
-        {
-          activityCategoryId: 33,
-          name: "organize",
-          pillar: "Skills",
-        },
-      ],
-    } as Activity,
-  },
-  {
-    x: 2,
-    y: 2,
-    activity: {
-      name: "abc",
-      activityId: 1,
-    } as Activity,
-  },
-  {
-    x: -3,
-    y: 2,
-    activity: {
-      name: "abc",
-      activityId: 1,
-    } as Activity,
-  },
-  {
-    x: 1,
-    y: -2,
-    activity: {
-      name: "abc",
-      activityId: 1,
-    } as Activity,
-  },
-  {
-    x: -1,
-    y: -1.5,
-    activity: {
-      name: "abc",
-      activityId: 1,
-    } as Activity,
-  },
-];
 
 export default function PerActivityScreen() {
   const [boundingRect, setBoundingRect] = useState({ width: 0, height: 0 });
@@ -169,11 +124,13 @@ export default function PerActivityScreen() {
             { textAlign: "center" /* backgroundColor: "blue"  */ },
           ]}
         >
-          Activity impact on mood
+          Activity impact
         </Text>
         <View
           onLayout={onLayout}
           style={{
+            //width: 400,
+
             //backgroundColor: "#FF000033",
             aspectRatio: 1,
           }}
@@ -207,15 +164,15 @@ export default function PerActivityScreen() {
             <VictoryScatter data={mappedData}></VictoryScatter>
             <VictoryAxis
               dependentAxis
-              domain={[-3, 3]}
+              domain={[axisTicks[0], axisTicks[axisTicks.length - 1]]}
               offsetX={50}
-              tickValues={[-3, -2, -1, 0, 1, 2, 3]}
+              tickValues={axisTicks}
               label={"Energy change"}
             />
             <VictoryAxis
-              domain={[-3, 3]}
+              domain={[axisTicks[0], axisTicks[axisTicks.length - 1]]}
               offsetY={50}
-              tickValues={[-3, -2, -1, 0, 1, 2, 3]}
+              tickValues={axisTicks}
               label={"Mood change"}
             />
           </VictoryChart>
