@@ -5,13 +5,17 @@ import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { Calendar, Compass, Scales, Smiley, User } from "phosphor-react-native";
+import { useGlobalSearchParams, useRouteInfo } from "expo-router/build/hooks";
 
 export default function TabLayout() {
-  const segments = useSegments(); // console.log(pathname);
+  //const segments = useSegments(); // console.log(pathname);
+  const routeInfo = useRouteInfo();
+  const glob = useGlobalSearchParams();
+  // const isRootTab = useMemo(() => {
+  //   return segments.length <= 3; // ["(authenticated)", "(tabs)", "HERE"] hide navbar on anything beyond these
+  // }, [segments]);
 
-  const isRootTab = useMemo(() => {
-    return segments.length <= 3; // ["(authenticated)", "(tabs)", "HERE"] hide navbar on anything beyond these
-  }, [segments]);
+  const showTabBar = glob.showTabBar ?? routeInfo.segments.length <= 3;
 
   return (
     <Tabs
@@ -29,13 +33,13 @@ export default function TabLayout() {
             position: "absolute",
             height: 80,
             backgroundColor: "#f1f5f9",
-            display: isRootTab ? "flex" : "none",
+            display: showTabBar ? "flex" : "none",
           },
           android: {
             height: 80,
             backgroundColor: "#f1f5f9",
             paddingInline: 12,
-            display: isRootTab ? "flex" : "none",
+            display: showTabBar ? "flex" : "none",
           },
         }),
       }}

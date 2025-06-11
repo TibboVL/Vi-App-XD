@@ -24,8 +24,7 @@ import {
   Clock,
   Trash,
 } from "phosphor-react-native";
-import { Tag } from "@/components/ViCategoryTag";
-import { getPillarInfo, PillarKey } from "@/types/activity";
+import { Activity, getPillarInfo, PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import { adjustLightness } from "@/constants/Colors";
 import {
@@ -53,6 +52,7 @@ import {
 } from "./mood/checkinContext";
 import { MarkedDates } from "react-native-calendars/src/types";
 import { timeDifference } from "../../../helpers/dateTimeHelpers";
+import ViCategoryContainer from "@/components/ViCategoryContains";
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];
@@ -521,22 +521,7 @@ function EditExistingEventSheet({
               />
             ) : null}
           </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 4,
-              marginTop: 8,
-            }}
-          >
-            {activity?.categories.map((category) => (
-              <Tag
-                key={category.name}
-                label={category.name}
-                pillar={category.pillar?.toLowerCase() as PillarKey}
-              />
-            ))}
-          </View>
+          <ViCategoryContainer activity={activity} />
           <Text
             style={{
               paddingTop: 8,
@@ -866,20 +851,13 @@ const AgendaItem = ({ item, onPress }: ItemProps) => {
               <Text>
                 {start} - {end}
               </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 2,
-                }}
-              >
-                {item.categories.map((category) => (
-                  <Tag
-                    key={category.name}
-                    label={category.name}
-                    pillar={category.pillar?.toLowerCase() as PillarKey}
-                  />
-                ))}
-              </View>
+              <ViCategoryContainer
+                activity={
+                  {
+                    categories: item.categories,
+                  } as Activity
+                }
+              />
             </View>
           </View>
         </View>

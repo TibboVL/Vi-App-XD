@@ -20,8 +20,7 @@ import {
 import { ViButton } from "@/components/ViButton";
 import { router, useNavigation } from "expo-router";
 import { CompactUserActivityListItem } from "@/types/userActivityList";
-import { Tag } from "@/components/ViCategoryTag";
-import { PillarKey } from "@/types/activity";
+import { Activity } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import {
   CheckinContextAction,
@@ -35,6 +34,7 @@ import {
 } from "@/hooks/useUserActivityList";
 import VitoError from "@/components/ViErrorHandler";
 import { useQueryClient } from "@tanstack/react-query";
+import ViCategoryContainer from "@/components/ViCategoryContains";
 
 export default function ActivityReviewScreen() {
   const state = useCheckinState();
@@ -65,15 +65,7 @@ export default function ActivityReviewScreen() {
     // console.log(activity);
     dispatch({
       action: CheckinContextAction.SET_USER_ACTIVITY, // automatically resets the rest
-      payload: {
-        userActivityId: reviewing ? selectedReviewItemId : null,
-        // activity:
-        // {
-        //   title: activity?.activityTitle,
-        //   plannedEnd: activity?.plannedEnd,
-        //   categories: activity?.categories
-        // },
-      },
+      payload: reviewing ? selectedReviewItemId : null,
     });
   }
   const navigation = useNavigation();
@@ -305,20 +297,9 @@ const ReviewItem = ({ item, selected, onPress }: ReviewItemProps) => {
                 alignItems: "center",
               }}
             >
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 2,
-                }}
-              >
-                {item.categories.map((category) => (
-                  <Tag
-                    key={category.name}
-                    label={category.name}
-                    pillar={category.pillar?.toLowerCase() as PillarKey}
-                  />
-                ))}
-              </View>
+              <ViCategoryContainer
+                activity={{ categories: item.categories } as Activity}
+              />
             </View>
           </View>
         </View>

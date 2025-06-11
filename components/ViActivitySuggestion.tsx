@@ -24,6 +24,7 @@ import Svg, {
   Stop,
 } from "react-native-svg";
 import { Rect } from "victory-native";
+import ViCategoryContainer from "./ViCategoryContains";
 
 export const ViActivitySuggestion = memo(
   ({
@@ -89,19 +90,12 @@ export const ViActivitySuggestion = memo(
                 {name}
               </Text>
             </View>
-            {categories?.length > 0 ? (
-              <View style={styles.tagsContainer}>
-                {categories?.map((category) => (
-                  <Tag
-                    key={category?.name}
-                    label={category?.name}
-                    pillar={category?.pillar?.toLowerCase() as PillarKey}
-                  />
-                ))}
-              </View>
-            ) : (
-              <Text>No categories - this shouldnt happen!</Text>
-            )}
+            <ViCategoryContainer
+              activity={activity}
+              style={{
+                marginTop: 0,
+              }}
+            />
 
             <View style={styles.details}>
               <View style={styles.detail}>
@@ -276,12 +270,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     color: TextColors.muted.color,
   },
-  tagsContainer: {
-    marginTop: 0,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 4,
-  },
+
   blurContainer: {
     position: "absolute",
     top: 0,
