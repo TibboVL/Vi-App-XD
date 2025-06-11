@@ -25,6 +25,7 @@ import { Notifier } from "react-native-notifier";
 import { ViNotifierAlert } from "@/components/ViNotifierAlert";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { ViPremiumModalSheet } from "@/components/ViPremiumModalSheet";
+import ViNotificationDot from "@/components/ViNotificationDot";
 SplashScreen.preventAutoHideAsync();
 
 export default function DiscoverScreen() {
@@ -227,32 +228,24 @@ export default function DiscoverScreen() {
         </View>
         <View style={[styles.BottomContainer]}>
           <View>
-            <Text
-              style={[
-                textStyles.bodySmall,
-                {
-                  position: "absolute",
-                  zIndex: 10,
-                  backgroundColor: adjustLightness(
-                    BackgroundColors.primary.backgroundColor,
-                    20
-                  ),
-                  height: 16,
-                  aspectRatio: 1,
-                  textAlign: "center",
-                  justifyContent: "center",
-                  borderRadius: 1000,
-                  top: 6,
-                  right: 6,
-                },
-              ]}
-            >
-              {latestSuggestions
-                ? latestSuggestions!.subscriptionStatus.subscription
-                    .maxAIRequestsPerDay -
-                  latestSuggestions!.subscriptionStatus.usage
-                : "N/A"}
-            </Text>
+            <ViNotificationDot
+              styles={{
+                position: "absolute",
+                top: 6,
+                right: 6,
+                backgroundColor: adjustLightness(
+                  BackgroundColors.primary.backgroundColor,
+                  20
+                ),
+              }}
+              content={
+                latestSuggestions
+                  ? latestSuggestions!.subscriptionStatus.subscription
+                      .maxAIRequestsPerDay -
+                    latestSuggestions!.subscriptionStatus.usage
+                  : "N/A"
+              }
+            />
             <ViButton
               enabled={!loadingExistingSuggestions && !generatingSuggestions}
               title="Update suggestions"
