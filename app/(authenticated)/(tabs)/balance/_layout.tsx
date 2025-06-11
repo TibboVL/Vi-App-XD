@@ -47,8 +47,11 @@ export default function BalanceStackLayout() {
             title="Timeline"
             outerStyle={{
               borderRadius: 24,
+              minHeight: 0,
             }}
             innerStyle={{
+              paddingBlock: 12,
+
               backgroundColor:
                 activeRoute.pathname == "/balance"
                   ? lightStyles.primary.backgroundColor
@@ -73,9 +76,13 @@ export default function BalanceStackLayout() {
             }
             title="Activity impact"
             outerStyle={{
+              minHeight: 0,
+
               borderRadius: 24,
             }}
             innerStyle={{
+              paddingBlock: 12,
+
               backgroundColor:
                 activeRoute.pathname == "/balance/perActivity"
                   ? lightStyles.primary.backgroundColor

@@ -21,9 +21,9 @@ export default function ViCategoryContainer({
         ...style,
       }}
     >
-      {activity?.categories?.map((category) => (
+      {activity?.categories?.map((category, index) => (
         <Tag
-          key={category.activityCategoryId}
+          key={index}
           label={category.name}
           pillar={category.pillar?.toLowerCase() as PillarKey}
         />

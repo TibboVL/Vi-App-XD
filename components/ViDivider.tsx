@@ -13,6 +13,7 @@ export function ViDivider({ style }: ViButtonProps) {
         {
           height: 2,
           marginBlock: 12,
+          ...style,
         },
       ]}
     ></View>

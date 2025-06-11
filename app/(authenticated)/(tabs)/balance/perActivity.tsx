@@ -2,7 +2,7 @@ import ViCategoryContainer from "@/components/ViCategoryContains";
 import { adjustLightness } from "@/constants/Colors";
 import { TextColors, textStyles } from "@/globalStyles";
 import { Activity } from "@/types/activity";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FlatList,
   LayoutChangeEvent,
@@ -20,6 +20,9 @@ import {
   VictoryLabel,
   VictoryScatter,
 } from "victory-native";
+import { useGetStatisticsPerActivity } from "@/hooks/useStatistics";
+import { ViDivider } from "@/components/ViDivider";
+import { RefreshControl } from "react-native-gesture-handler";
 
 interface SectionData {
   x0: number;
@@ -128,16 +131,45 @@ export default function PerActivityScreen() {
     });
   };
 
+  const [mappedData, setMappedData] = useState<ActivityImpactEntry[]>();
+  const { isLoading, isFetching, data, error, refetch } =
+    useGetStatisticsPerActivity({
+      // startDate: dateRange?.start,
+      // endDate: dateRange?.end,
+    });
+
+  useEffect(() => {
+    if (data) {
+      const mappedData = data.map(
+        (d) =>
+          ({
+            x: d.averageDeltas.combinedDeltaMood,
+            y: d.averageDeltas.normalizedDeltaEnergy,
+            activity: {
+              name: d.activityTitle,
+              activityId: d.activityId,
+              categories: d.categories,
+            },
+          } as ActivityImpactEntry)
+      );
+      setMappedData(mappedData);
+    }
+  }, [data]);
+
   return (
     <SafeAreaView>
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+        }
+      >
         <Text
           style={[
             textStyles.h3,
             { textAlign: "center" /* backgroundColor: "blue"  */ },
           ]}
         >
-          Activity impact
+          Activity impact on mood
         </Text>
         <View
           onLayout={onLayout}
@@ -172,7 +204,7 @@ export default function PerActivityScreen() {
                 ]}
               />
             ))}
-            <VictoryScatter data={temporaryChartData}></VictoryScatter>
+            <VictoryScatter data={mappedData}></VictoryScatter>
             <VictoryAxis
               dependentAxis
               domain={[-3, 3]}
@@ -188,34 +220,36 @@ export default function PerActivityScreen() {
             />
           </VictoryChart>
         </View>
-        <View
-          style={{
-            paddingInline: 16,
-            gap: 12,
-            marginTop: 6,
-          }}
-        >
-          {overlaySections.map((section, index) => {
-            const xMin = Math.min(section.x0, section.x1);
-            const xMax = Math.max(section.x0, section.x1);
-            const yMin = Math.min(section.y0, section.y1);
-            const yMax = Math.max(section.y0, section.y1);
+        {mappedData ? (
+          <View
+            style={{
+              paddingInline: 16,
+              gap: 12,
+              marginTop: 6,
+            }}
+          >
+            {overlaySections.map((section, index) => {
+              const xMin = Math.min(section.x0, section.x1);
+              const xMax = Math.max(section.x0, section.x1);
+              const yMin = Math.min(section.y0, section.y1);
+              const yMax = Math.max(section.y0, section.y1);
 
-            const sectionPoints = temporaryChartData.filter(
-              (point) =>
-                point.x >= xMin &&
-                point.x <= xMax &&
-                point.y >= yMin &&
-                point.y <= yMax
-            );
-            return (
-              <ActivityImpactSection
-                sectionData={section}
-                points={sectionPoints}
-              />
-            );
-          })}
-        </View>
+              const sectionPoints = mappedData.filter(
+                (point) =>
+                  point.x >= xMin &&
+                  point.x < xMax &&
+                  point.y >= yMin &&
+                  point.y < yMax
+              );
+              return (
+                <ActivityImpactSection
+                  sectionData={section}
+                  points={sectionPoints}
+                />
+              );
+            })}
+          </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -232,7 +266,7 @@ const ActivityImpactSection = ({
   return (
     <View
       style={{
-        backgroundColor: adjustLightness(sectionData.color, 20) + "44",
+        backgroundColor: adjustLightness(sectionData.color, 20) + "33",
         borderRadius: 16,
         overflow: "hidden",
       }}
@@ -272,11 +306,21 @@ const ActivityImpactSection = ({
             data={points}
             scrollEnabled={false}
             keyExtractor={(_, index) => index.toString()}
+            ItemSeparatorComponent={() => (
+              <ViDivider
+                style={{
+                  marginBlock: 2,
+                  backgroundColor:
+                    adjustLightness(sectionData.color, 10) + "44",
+                }}
+              />
+            )}
             renderItem={({ item }) => (
               <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
+                  alignItems: "center",
                 }}
               >
                 <Text>{item.activity.name}</Text>
