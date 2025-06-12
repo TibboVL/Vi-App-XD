@@ -1,3 +1,4 @@
+import SubscriptionScreen from "@/app/(authenticated)/(tabs)/profile/settings/subscription";
 import { BackgroundColors, textStyles } from "@/globalStyles";
 import {
   BottomSheetBackdrop,
@@ -6,6 +7,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { useRef } from "react";
 import { Text, View } from "react-native";
+import { ScrollView } from "react-native-reanimated/lib/typescript/Animated";
 
 interface ViPremiumModalSheetProps {
   BottomSheetModalRef: React.RefObject<BottomSheetModal>;
@@ -34,7 +36,7 @@ export const ViPremiumModalSheet = ({
           boxShadow: "-10px -10px 10px rgba(0,0,0,0.1)",
         },
       ]}
-      enableContentPanningGesture={false} // Prevents modal drag from content
+      //enableContentPanningGesture={false} // Prevents modal drag from content
     >
       <BottomSheetView>
         <View
@@ -45,7 +47,24 @@ export const ViPremiumModalSheet = ({
             justifyContent: "center",
           }}
         >
-          <Text style={textStyles.h3}>Upgrade to Vi-Premium!</Text>
+          <Text
+            style={[
+              textStyles.h3,
+              {
+                paddingBlock: 16,
+              },
+            ]}
+          >
+            Upgrade to Vi-Premium!
+          </Text>
+
+          <View
+            style={{
+              width: "100%",
+            }}
+          >
+            <SubscriptionScreen embedded={true} />
+          </View>
         </View>
       </BottomSheetView>
     </BottomSheetModal>

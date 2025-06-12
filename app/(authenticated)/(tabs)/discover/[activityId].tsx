@@ -187,7 +187,6 @@ export const ActivityDetailInformation = ({
         >
           <CoreInfoBox
             Icon={CurrencyEur}
-            activity={activity}
             label="Price"
             value={
               activity.estimatedCost ? `€${activity.estimatedCost}` : "Free"
@@ -201,13 +200,11 @@ export const ActivityDetailInformation = ({
                 size={20}
               />
             )}
-            activity={activity}
             label="Required energy"
             value={activity.energyRequired}
           />
           <CoreInfoBox
             Icon={BabyCarriage}
-            activity={activity}
             label="Min age"
             value={`${activity.minAge ? activity.minAge + " +" : "Any"}`}
           />
@@ -225,7 +222,6 @@ export const ActivityDetailInformation = ({
               <View>
                 <CoreInfoBox
                   Icon={MapPinLine}
-                  activity={activity}
                   label="Location"
                   value={`${
                     activity.locationName ? activity.locationName : "N/A"
@@ -602,19 +598,12 @@ function PlanningSheetView({
 }
 
 interface infoBoxProps {
-  activity: ActivityDetails;
-  Icon: Icon;
+  Icon?: Icon;
   label: string;
   value: string;
   children?: any;
 }
-const CoreInfoBox = ({
-  activity,
-  Icon,
-  label,
-  value,
-  children,
-}: infoBoxProps) => {
+export const CoreInfoBox = ({ Icon, label, value, children }: infoBoxProps) => {
   return (
     <View
       style={{
@@ -625,13 +614,15 @@ const CoreInfoBox = ({
         flex: 1,
       }}
     >
-      <Icon
-        size={20}
-        style={{
-          marginTop: 8,
-        }}
-        color={TextColors.muted.color}
-      />
+      {Icon ? (
+        <Icon
+          size={20}
+          style={{
+            marginTop: 8,
+          }}
+          color={TextColors.muted.color}
+        />
+      ) : null}
       <View
         style={{
           flexDirection: "column",
