@@ -33,6 +33,12 @@ export default function PorfileStackLayout() {
             title: "Account",
           }}
         />
+        <Stack.Screen
+          name="subscription"
+          options={{
+            title: "Subscription",
+          }}
+        />
       </Stack>
     </>
   );

@@ -26,6 +26,7 @@ import { ViNotifierAlert } from "@/components/ViNotifierAlert";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { ViPremiumModalSheet } from "@/components/ViPremiumModalSheet";
 import ViNotificationDot from "@/components/ViNotificationDot";
+import { useQueryClient } from "@tanstack/react-query";
 SplashScreen.preventAutoHideAsync();
 
 export default function DiscoverScreen() {
@@ -72,11 +73,18 @@ export default function DiscoverScreen() {
     lon: userLocation?.coords.longitude,
     lat: userLocation?.coords.latitude,
   });
+  const queryClient = useQueryClient();
   useEffect(() => {
-    if (existingResults) {
+    if (existingResults && !gettingExistingSuggestionsError) {
       setLatestSuggestions(existingResults);
+    } else if (gettingExistingSuggestionsError?.status == 404) {
+      // This is a new user and has no existing suggestions, just get new suggestions for them to avoid confusion
+      generationRefetch().then(() =>
+        // invalidate the errored out data in the suggested activity list query
+        queryClient.invalidateQueries({ queryKey: ["suggested-activity-list"] })
+      );
     }
-  }, [existingResults]);
+  }, [existingResults, gettingExistingSuggestionsError]);
   useEffect(() => {
     if (generationResults && !generationError) {
       setLatestSuggestions(generationResults);
@@ -121,13 +129,15 @@ export default function DiscoverScreen() {
           {generatingSuggestions ? (
             <Viloader message="Vito is looking for the perfect activities for you!" />
           ) : null}
-          {gettingExistingSuggestionsError ? (
+          {gettingExistingSuggestionsError &&
+          gettingExistingSuggestionsError.status != 404 ? (
             <VitoError
               error={gettingExistingSuggestionsError}
               loading={loadingExistingSuggestions}
               refetch={refetch}
             />
           ) : null}
+
           {generationError && generationError.status != 503 ? (
             <VitoError
               error={generationError}
@@ -136,7 +146,8 @@ export default function DiscoverScreen() {
             />
           ) : null}
           {!loadingExistingSuggestions &&
-          !gettingExistingSuggestionsError &&
+          (!gettingExistingSuggestionsError ||
+            gettingExistingSuggestionsError.status === 404) && // excempt 404 on getting existing suggestions because we then generate new suggestions automatically
           !generatingSuggestions &&
           latestSuggestions?.activitySuggestionList ? (
             <View

@@ -4,6 +4,7 @@ import {
   BellRinging,
   CaretRight,
   Code,
+  Crown,
   Gear,
   Icon,
   IconProps,
@@ -57,6 +58,15 @@ export default function SettingsScreen() {
             icon={User}
             onPress={() =>
               router.push("/(authenticated)/(tabs)/profile/settings/account")
+            }
+          />
+          <SettingsTile
+            title="Subscription"
+            icon={Crown}
+            onPress={() =>
+              router.push(
+                "/(authenticated)/(tabs)/profile/settings/subscription"
+              )
             }
           />
           <SettingsTile title="Notifications" icon={BellRinging} />

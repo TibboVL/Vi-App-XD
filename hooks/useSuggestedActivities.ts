@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useApiClient } from "./apiClient";
-import { ActivitySuggestion, AISuggestionResponse } from "@/types/activity";
+import { AISuggestionResponse } from "@/types/activity";
 
 export const useGetSuggestedActivities = ({
   enabled = true,
@@ -19,6 +19,12 @@ export const useGetSuggestedActivities = ({
         data: AISuggestionResponse;
       }>(`/activitySuggestions?lon=${lon?.toString()}&lat=${lat?.toString()}`);
       return result.data;
+    },
+    retry: (failureCount, error) => {
+      if (error?.status === 404) {
+        return false; // ❌ No retry on not found error
+      }
+      return failureCount < 3; // Retry other errors up to 3 times
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: enabled,
