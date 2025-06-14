@@ -1,39 +1,36 @@
 import {
-  BackgroundColors,
   safeAreaEdges,
   safeAreaStyles,
   TextColors,
   textStyles,
 } from "@/globalStyles";
 import { useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList } from "react-native";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableNativeFeedback,
-  FlatList,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { ViButton } from "@/components/ViButton";
 import { router, useNavigation } from "expo-router";
 import { CompactUserActivityListItem } from "@/types/userActivityList";
-import { Tag } from "@/components/ViCategoryTag";
-import { PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import {
   CheckinContextAction,
   useCheckinDispatch,
   useCheckinState,
 } from "./checkinContext";
-import ContextDebugView from "./checkinContextDebug";
 import {
   useGetUserActivityListsItemsReview,
   usePostUserActivityListItemReview,
 } from "@/hooks/useUserActivityList";
 import VitoError from "@/components/ViErrorHandler";
 import { useQueryClient } from "@tanstack/react-query";
+import { AgendaItem } from "@/components/ViAgendaItem";
+import { usePreventUserBack } from "@/hooks/usePreventBack";
 
 export default function ActivityReviewScreen() {
+  usePreventUserBack();
+
   const state = useCheckinState();
   const dispatch = useCheckinDispatch();
   const [selectedReviewItemId, setSelectedReviewItemId] = useState<
@@ -55,81 +52,81 @@ export default function ActivityReviewScreen() {
   }
 
   function handleSetContextForActivityReview(reviewing: boolean) {
-    if (router.canDismiss()) router.dismissAll();
     dispatch({
       action: CheckinContextAction.SET_USER_ACTIVITY, // automatically resets the rest
-      payload: reviewing ? selectedReviewItemId : null,
+      payload: {
+        userActivityId: reviewing ? selectedReviewItemId : null,
+        compactUserActivityListItem: reviewing
+          ? userActivityListItemsToBeReviewed?.find(
+              (ual) => ual.userActivityId == selectedReviewItemId
+            )
+          : null,
+      },
     });
   }
-  const navigation = useNavigation();
+
   const queryClient = useQueryClient();
-  // const {
-  //   mutate,
-  //   isPending,
-  //   error: postError,
-  // } = usePostUserActivityListItemReview();
-  // async function handlePostCheckin() {
-  //   mutate(
-  //     {
-  //       beforeMoodId: state.moodBefore,
-  //       afterMoodId: state.moodAfter,
-  //       beforeEnergy: state.energyBefore,
-  //       afterEnergy: state.energyAfter,
-  //       userActivityId: state.userActivityId,
-  //     },
-  //     {
-  //       onSuccess: (data) => {
-  //         console.log(data);
-  //         console.log(data.afterMoodId);
-  //         if (data.afterMoodId == null) {
-  //           queryClient.invalidateQueries({
-  //             queryKey: ["last-valid-checkin"],
-  //             refetchType: "active",
-  //           }); // we added a freestanding checkin so we want to invalidate the cache of the query so our mood screen updates
-  //         }
-  //         setAllowedToFetchList(true);
-  //       },
-  //     }
-  //   );
-  // }
-
+  const {
+    mutate,
+    isPending,
+    error: postError,
+  } = usePostUserActivityListItemReview();
+  async function handlePostCheckin() {
+    mutate(
+      {
+        beforeMoodId: state.moodBefore,
+        afterMoodId: state.moodAfter,
+        beforeEnergy: state.energyBefore,
+        afterEnergy: state.energyAfter,
+        userActivityId: state.userActivityId,
+      },
+      {
+        onSuccess: (data) => {
+          if (data.afterMoodId == null) {
+            queryClient.invalidateQueries({
+              queryKey: ["last-valid-checkin"],
+              refetchType: "active",
+            }); // we added a freestanding checkin so we want to invalidate the cache of the query so our mood screen updates
+          }
+          setAllowedToFetchList(true);
+          if (state.isOnboarding) {
+            router.replace("/onboarding/location");
+          }
+        },
+      }
+    );
+  }
   useEffect(() => {
-    // if (state.moodBefore != null && state.energyBefore != null) {
-    //   handlePostCheckin(); // if data is already in the context we should send it to the backend
-    // } else {
-    //   setAllowedToFetchList(true);
-    // }
-
-    setAllowedToFetchList(true);
-    const listener = navigation.addListener("beforeRemove", (e) => {
-      // e.preventDefault();
-    });
-
-    return () => {
-      navigation.removeListener("beforeRemove", listener);
-    };
+    if (state.moodBefore != null && state.energyBefore != null) {
+      handlePostCheckin(); // if data is already in the context we should send it to the backend
+    } else {
+      setAllowedToFetchList(true);
+    }
   }, []);
+
+  const insets = useSafeAreaInsets();
+
+  if (state.isOnboarding) {
+    return <Viloader message="Working on it!" />;
+  }
 
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
-      <ContextDebugView />
-      <View style={[styles.Container]}>
+      <View
+        style={[
+          styles.Container,
+          {
+            paddingBottom: insets.top,
+          },
+        ]}
+      >
         {isLoading ? (
-          <View
-            style={{
-              flex: 1,
-              width: "100%",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Viloader vitoMessage="Vito is looking through your plans!" />
-          </View>
+          <Viloader message="Vito is looking through your plans!" />
         ) : null}
         {fetchError ? (
           <VitoError error={fetchError} loading={isLoading} refetch={refetch} />
         ) : null}
-        {/* {postError ? <VitoError error={postError} loading={isPending} /> : null} */}
+        {postError ? <VitoError error={postError} loading={isPending} /> : null}
         {userActivityListItemsToBeReviewed ? (
           <View style={{ flex: 1, width: "100%" }}>
             <View
@@ -166,11 +163,11 @@ export default function ActivityReviewScreen() {
               }}
               data={userActivityListItemsToBeReviewed}
               renderItem={(content) => (
-                <ReviewItem
-                  key={content.index}
-                  selected={selectedReviewItemId == content.item.userActivityId}
+                <AgendaItem
                   item={content.item}
-                  onPress={toggleActivityId}
+                  includeDate={true}
+                  selected={selectedReviewItemId == content.item.userActivityId}
+                  onPress={() => toggleActivityId(content.item.userActivityId)}
                 />
               )}
               ListEmptyComponent={
@@ -209,7 +206,7 @@ export default function ActivityReviewScreen() {
               type="text-only"
               onPress={() => {
                 handleSetContextForActivityReview(false); // also clear when leaving
-                router.push({
+                router.replace({
                   pathname: "/mood",
                 });
               }}
@@ -223,7 +220,7 @@ export default function ActivityReviewScreen() {
               type="light"
               onPress={() => {
                 handleSetContextForActivityReview(true);
-                router.push("/mood/moodPicker");
+                router.replace("/mood/moodPicker");
               }}
             />
           </View>
@@ -233,83 +230,25 @@ export default function ActivityReviewScreen() {
   );
 }
 
-interface ReviewItemProps {
-  item: CompactUserActivityListItem;
-  selected: boolean;
-  onPress: (itemId: number) => void;
-}
-const ReviewItem = ({ item, selected, onPress }: ReviewItemProps) => {
-  var options = {
-    hour: "2-digit",
-    minute: "2-digit",
-  } as Intl.DateTimeFormatOptions;
-  var DateOptions = {
-    month: "long",
-    day: "numeric",
-    weekday: "short",
-  } as Intl.DateTimeFormatOptions;
-  const start = new Date(item.plannedStart!).toLocaleTimeString(
-    "en-nl",
-    options
-  );
-  const date = new Date(item.plannedStart!).toLocaleDateString(
-    "en-nl",
-    DateOptions
-  );
-  const end = new Date(item.plannedEnd!).toLocaleTimeString("en-nl", options);
-
+export const CheckinAgendaItemWrapper = ({
+  compactUserActivityListItem,
+}: {
+  compactUserActivityListItem: CompactUserActivityListItem | null;
+}) => {
   return (
     <View
-      style={[
-        styles.wrapper,
-        {
-          borderWidth: 2,
-          borderColor: selected
-            ? BackgroundColors.primary.backgroundColor
-            : "transparent",
-        },
-      ]}
+      style={{
+        width: "100%",
+        minHeight: 64 * 1,
+      }}
     >
-      <TouchableNativeFeedback onPress={() => onPress(item.userActivityId)}>
-        <View
-          style={[
-            styles.card,
-            {
-              padding: 10,
-              paddingInline: 12,
-            },
-          ]}
-        >
-          <View>
-            <Text style={{ fontWeight: 700 }}>{item.activityTitle}</Text>
-            <Text>
-              {date} at {start}
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 2,
-                }}
-              >
-                {item.categories.map((category) => (
-                  <Tag
-                    key={category.name}
-                    label={category.name}
-                    pillar={category.pillar?.toLowerCase() as PillarKey}
-                  />
-                ))}
-              </View>
-            </View>
-          </View>
-        </View>
-      </TouchableNativeFeedback>
+      {compactUserActivityListItem ? (
+        <AgendaItem
+          onPress={() => null}
+          includeDate={true}
+          item={compactUserActivityListItem}
+        />
+      ) : null}
     </View>
   );
 };
@@ -323,7 +262,6 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     flex: 1,
   },
-
   BottomContainer: {
     paddingBlock: 16,
     paddingInline: 16,
@@ -333,18 +271,5 @@ const styles = StyleSheet.create({
     display: "flex",
     alignItems: "flex-end",
     gap: 8,
-  },
-  wrapper: {
-    width: "100%",
-    marginBlock: 4,
-    //marginInline: 16,
-    flex: 1, // shrink if needed
-    //width: "100%", // expand as much as possible
-    borderRadius: 16 + 2,
-    overflow: "hidden",
-  },
-  card: {
-    width: "100%",
-    backgroundColor: "#fff",
   },
 });

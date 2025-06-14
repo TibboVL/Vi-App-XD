@@ -1,11 +1,9 @@
-// app/(authenticated)/onboarding/index.tsx
 import { ViButton } from "@/components/ViButton";
 import { textStyles } from "@/globalStyles";
 import { router } from "expo-router";
 import { View, Text, StyleSheet, Dimensions, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SwiperFlatList, Pagination } from "react-native-swiper-flatlist";
-import { useState } from "react";
+import { SwiperFlatList } from "react-native-swiper-flatlist";
 
 const vitoCheckinOnboarding = require("../../../assets/images/vitoCheckinOnboarding.png");
 const vitoActivityOnboarding = require("../../../assets/images/vitoActivityOnboarding.png");
@@ -31,8 +29,6 @@ const slides = [
 const { width } = Dimensions.get("window");
 
 export default function OnboardingWelcomeScreen() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
   const renderItem = ({ item }: { item: (typeof slides)[0] }) => (
     <View style={styles.slide}>
       <Image
@@ -51,20 +47,16 @@ export default function OnboardingWelcomeScreen() {
           <Text style={[textStyles.h1, styles.welcomeTitle]}>
             Welcome to Vi!
           </Text>
-          {/* SwiperFlatList for the slides */}
           <SwiperFlatList
             autoplay={false}
-            index={0}
             showPagination
             data={slides}
             renderItem={renderItem}
-            onChangeIndex={({ index }) => setCurrentIndex(index)}
             paginationStyle={styles.paginationContainer}
             paginationStyleItem={styles.paginationDot}
             paginationStyleItemActive={styles.paginationDotActive}
           />
         </View>
-
         <View style={styles.buttonArea}>
           <ViButton
             title="Continue"
@@ -101,9 +93,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     marginTop: 0,
   },
-  
+
   slide: {
-    width: width, 
+    width: width,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
@@ -111,8 +103,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   slideImage: {
-    width: "80%", 
-    height: 200, 
+    width: "80%",
+    height: 200,
     marginBottom: 15,
     resizeMode: "contain",
   },

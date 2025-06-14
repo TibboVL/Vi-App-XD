@@ -28,11 +28,14 @@ export default function OnboardingNotificationsScreen() {
   const notificationListener = useRef<Notifications.EventSubscription>();
   const responseListener = useRef<Notifications.EventSubscription>();
 
-  useEffect(() => {
+  const askNotificationPermission = () => {
     registerForPushNotificationsAsync().then(
       (token) => token && setExpoPushToken(token)
     );
 
+    router.replace("/onboarding/gettingThingsReady");
+  };
+  useEffect(() => {
     if (Platform.OS === "android") {
       Notifications.getNotificationChannelsAsync().then((value) =>
         setChannels(value ?? [])
@@ -99,14 +102,15 @@ export default function OnboardingNotificationsScreen() {
             width: "100%",
           }}
         >
-          <ViButton title="Maybe later" type="text-only" />
-          <ViButton
+          <ViButton title="Maybe later" type="text-only" enabled={false} />
+          {/* <ViButton
             title="Send test notification"
             onPress={() => schedulePushNotification()}
-          />
+          /> */}
           <ViButton
-            title="Complete onboarding"
-            onPress={() => router.push("/(authenticated)/(tabs)")}
+            title="Allow sending notifications"
+            onPress={() => askNotificationPermission()}
+            // onPress={() => router.push("/(authenticated)/(tabs)")}
           />
         </View>
       </View>

@@ -21,6 +21,7 @@ export const useApiClient = () => {
 
 export class ViCustomError extends Error {
   status: number;
+  meta?: any;
   data?: any;
 
   constructor(status: number, message: string, data?: any) {
@@ -53,8 +54,7 @@ const apiClient = async <T>(
     ...options,
     headers,
   });
-  console.log(response);
-  //   if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+
   if (!response.ok) {
     const data = await response.json();
     throw new ViCustomError(

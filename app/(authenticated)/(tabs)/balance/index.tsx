@@ -6,7 +6,6 @@ import {
   TouchableNativeFeedback,
   FlatList,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
   VictoryAxis,
   VictoryBar,
@@ -14,67 +13,20 @@ import {
   VictoryStack,
 } from "victory-native";
 import { textStyles } from "@/globalStyles";
-import { useEffect, useMemo, useState } from "react";
-import { ViSelect } from "@/components/ViSelect";
+import { useContext, useEffect, useMemo } from "react";
 import { getPillarInfo, PillarKey, Pillars } from "@/types/activity";
 import { useGetStatisticsPerPillar } from "@/hooks/useStatistics";
 import { RefreshControl } from "react-native-gesture-handler";
 import { Viloader } from "@/components/ViLoader";
 import VitoError from "@/components/ViErrorHandler";
-
-type TimespanOption = "week" | "month" | "year";
-const timespanOptions: { label: string; value: TimespanOption }[] = [
-  { label: "Week", value: "week" },
-  { label: "Month", value: "month" },
-  { label: "Year", value: "year" },
-];
+import { BalanceContext } from "./_layout";
 
 export default function BalanceScreen() {
-  const [selectedTimespan, setSelectedTimespan] =
-    useState<TimespanOption>("week");
-  const [dateRange, setDateRange] = useState<{ start: Date; end: Date }>();
-
-  useEffect(() => {
-    if (selectedTimespan) {
-      const now = new Date();
-
-      let start: Date;
-      let end: Date;
-
-      switch (selectedTimespan) {
-        case "week":
-          // Start = Monday of current week
-          start = new Date(now);
-          const day = start.getDay(); // 0 (Sun) to 6 (Sat)
-          const diffToMonday = (day + 6) % 7; // Shift Sunday (0) to last
-          start.setDate(start.getDate() - diffToMonday);
-          start.setHours(0, 0, 0, 0);
-
-          end = new Date(start);
-          end.setDate(start.getDate() + 6);
-          end.setHours(23, 59, 59, 999);
-          break;
-
-        case "month":
-          start = new Date(now.getFullYear(), now.getMonth(), 1);
-          end = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Last day of current month
-          end.setHours(23, 59, 59, 999);
-          break;
-
-        case "year":
-          start = new Date(now.getFullYear(), 0, 1);
-          end = new Date(now.getFullYear(), 11, 31);
-          end.setHours(23, 59, 59, 999);
-          break;
-
-        default:
-          console.error("Something went wrong when changing timespan");
-          return;
-      }
-
-      setDateRange({ start, end });
-    }
-  }, [selectedTimespan]);
+  const context = useContext(BalanceContext);
+  if (!context) {
+    return <Text>Loading context...</Text>;
+  }
+  const { dateRange, selectedTimespan } = context;
 
   const { isLoading, data, error, refetch } = useGetStatisticsPerPillar({
     startDate: dateRange?.start,
@@ -132,7 +84,7 @@ export default function BalanceScreen() {
         })
       );
     }
-    console.log("data changed");
+    //console.log("data changed");
     return result;
   }, [data]);
 
@@ -152,13 +104,12 @@ export default function BalanceScreen() {
       tickDate.setDate(start.getDate() + i);
       days.push(tickDate);
     }
-    console.log(days);
     return days;
   }, [data]);
   return (
-    <SafeAreaView>
+    <View>
       {isLoading ? (
-        <Viloader vitoMessage="Vito is sorting your activities" />
+        <Viloader message="Vito is sorting your activities" />
       ) : null}
       {error ? (
         <VitoError error={error} loading={isLoading} refetch={refetch} />
@@ -172,19 +123,6 @@ export default function BalanceScreen() {
           style={styles.Container}
           renderItem={() => (
             <>
-              <View
-                style={{
-                  paddingTop: 8,
-                }}
-              >
-                <ViSelect
-                  variant="secondary"
-                  selectedValue={selectedTimespan}
-                  onValueChange={(itemValue) => setSelectedTimespan(itemValue)}
-                  options={timespanOptions}
-                />
-              </View>
-
               <VictoryChart
                 scale={{ x: "time" }}
                 domainPadding={{
@@ -194,7 +132,6 @@ export default function BalanceScreen() {
               >
                 <VictoryStack>
                   {Object.entries(groupedData).map(([key, dataGroup]) => {
-                    console.log(key, dataGroup);
                     return (
                       <VictoryBar
                         barWidth={300 / tickValues.length}
@@ -204,7 +141,6 @@ export default function BalanceScreen() {
                         style={{
                           data: {
                             fill: ({ datum }) => datum?.fill,
-                            //strokeLinejoin: "round",
                           },
                         }}
                       />
@@ -308,7 +244,7 @@ export default function BalanceScreen() {
           )}
         />
       ) : null}
-    </SafeAreaView>
+    </View>
   );
 }
 

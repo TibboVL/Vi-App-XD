@@ -1,5 +1,3 @@
-// app/(authenticated)/onboarding/goalsScreen.tsx
-
 import React, { useRef, useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,11 +6,12 @@ import { textStyles } from "@/globalStyles";
 import {
   VitoAnimatedMoods,
   VitoAnimatedMoodHandles,
-  VitoEmoteConfig,
 } from "@/components/VitoAnimatedMoods";
-import { router } from "expo-router";
-import { Dimensions } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { router, useNavigation } from "expo-router";
+import {
+  CheckinContextAction,
+  useCheckinDispatch,
+} from "../(tabs)/mood/checkinContext";
 
 const goals = [
   "Be more present",
@@ -26,6 +25,7 @@ const goals = [
 export default function GoalsScreen() {
   const vitoMoodRef = useRef<VitoAnimatedMoodHandles>(null);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const dispatch = useCheckinDispatch();
 
   useEffect(() => {
     if (vitoMoodRef.current) {
@@ -37,23 +37,6 @@ export default function GoalsScreen() {
     }
   }, [selectedGoals]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (vitoMoodRef.current) {
-        if (selectedGoals.length > 0) {
-          vitoMoodRef.current.setMood("happy");
-        } else {
-          vitoMoodRef.current.setMood("default");
-        }
-      }
-      return () => {
-        if (vitoMoodRef.current) {
-          vitoMoodRef.current.setMood("default");
-        }
-      };
-    }, [selectedGoals])
-  );
-
   const handleGoalPress = (goal: string) => {
     setSelectedGoals((prevSelectedGoals) => {
       if (prevSelectedGoals.includes(goal)) {
@@ -61,6 +44,18 @@ export default function GoalsScreen() {
       } else {
         return [...prevSelectedGoals, goal];
       }
+    });
+  };
+
+  const handleContinue = () => {
+    dispatch({
+      action: CheckinContextAction.SET_ONBOARDING,
+      payload: true,
+    });
+    //! this is a hacky way to get the navbar to update itself and hide properly!
+    router.replace("/mood");
+    setTimeout(() => {
+      router.push("/mood/moodPicker");
     });
   };
 
@@ -85,7 +80,7 @@ export default function GoalsScreen() {
                 type={selectedGoals.includes(goal) ? "light" : "outline"}
                 variant="primary"
                 onPress={() => handleGoalPress(goal)}
-                style={styles.goalButton}
+                contentStyle={styles.goalButton}
               />
             </View>
           ))}
@@ -94,12 +89,7 @@ export default function GoalsScreen() {
         <View style={styles.bottomButtonContainer}>
           <ViButton
             title={selectedGoals.length === 0 ? "Skip" : "Continue"}
-            onPress={() =>
-              router.push({
-                pathname: "/(authenticated)/(tabs)/mood/moodPicker",
-                params: { fromOnboarding: "true" },
-              })
-            }
+            onPress={handleContinue}
           />
         </View>
       </View>

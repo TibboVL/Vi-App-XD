@@ -2,12 +2,15 @@ import { ViToggleButton } from "@/components/ViToggleButton";
 import { safeAreaEdges, safeAreaStyles } from "@/globalStyles";
 import { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ToastAndroid } from "react-native";
-import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Constants from "expo-constants";
 import { Mood } from "@/types/mood";
 import { ViButton } from "@/components/ViButton";
-import { router, useNavigation, useLocalSearchParams } from "expo-router";
+import {
+  router,
+  useGlobalSearchParams,
+  useNavigation,
+  usePathname,
+} from "expo-router";
 import {
   useCheckinDispatch,
   useCheckinState,
@@ -21,8 +24,11 @@ import {
   VitoEmoteConfig,
 } from "@/components/VitoAnimatedMoods";
 import { useGetMoods } from "@/hooks/useMoods";
+import { CheckinAgendaItemWrapper } from "./activityReview";
+import { usePreventUserBack } from "@/hooks/usePreventBack";
 
 export default function MoodPickerScreen() {
+  usePreventUserBack();
   const state = useCheckinState();
   const dispatch = useCheckinDispatch();
 
@@ -33,10 +39,8 @@ export default function MoodPickerScreen() {
 
   const emoteManagerRef = useRef<VitoAnimatedMoodHandles>(null);
 
-  const { fromOnboarding } = useLocalSearchParams();
-
   function toggleMood(stage: "primary" | "secondary", mood: Mood) {
-    console.log(mood);
+    //console.log(mood);
     if (stage == "primary") {
       if (selectedPrimaryMood == mood.moodId) {
         setSelectedPrimaryMoodMood(null);
@@ -57,8 +61,6 @@ export default function MoodPickerScreen() {
   }
 
   const updateChosenMoodId = () => {
-    //if (router.canDismiss()) router.dismissAll();
-
     dispatch({
       action:
         // if on stage before or stage null, set before, else set after
@@ -71,28 +73,16 @@ export default function MoodPickerScreen() {
 
   const { isLoading: loading, data: moods, error } = useGetMoods();
 
-  const navigation = useNavigation();
-
-  useEffect(() => {
-    const listener = navigation.addListener("beforeRemove", (e) => {
-      // e.preventDefault();
-      // ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
-    });
-
-    return () => {
-      navigation.removeListener("beforeRemove", listener);
-    };
-  }, []);
-
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       <ContextDebugView />
-
       <View style={[styles.Container]}>
+        <CheckinAgendaItemWrapper
+          compactUserActivityListItem={state.compactUserActivityListItem}
+        />
         <View
           id="ChosenPrimaryEmotion"
           style={{
-            //backgroundColor: "red",
             minHeight: 70,
             marginBlock: 32,
             marginInline: "auto",
@@ -167,7 +157,7 @@ export default function MoodPickerScreen() {
 
         <View id="BottomButtonContainer" style={[styles.BottomContainer]}>
           <ViButton
-            style={{
+            innerStyle={{
               display: selectedSecondaryMood ? "flex" : "none",
             }}
             title="Continue"
@@ -175,9 +165,8 @@ export default function MoodPickerScreen() {
             type="light"
             onPress={() => {
               updateChosenMoodId();
-              router.push({
+              router.replace({
                 pathname: "/mood/energyPicker",
-                params: fromOnboarding ? { fromOnboarding } : undefined,
               });
             }}
           />

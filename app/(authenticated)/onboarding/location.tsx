@@ -10,17 +10,20 @@ import {
   getReverseGeocodedLocation,
 } from "@/helpers/locationHelper";
 import { textStyles } from "@/globalStyles";
+import { safeAreaEdges } from "../../../globalStyles";
+import { Viloader } from "@/components/ViLoader";
 
 export default function OnboardingLocationScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
+  const [loading, setLoading] = useState<boolean>(false);
   const [reverseGeocodedLocation, setReverseGeocodedLocation] = useState<
     Location.LocationGeocodedAddress[] | null
   >();
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   async function getCurrentLocation() {
+    setLoading(true);
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
       ToastAndroid.showWithGravity(
@@ -28,10 +31,10 @@ export default function OnboardingLocationScreen() {
         ToastAndroid.SHORT,
         ToastAndroid.CENTER
       );
-      /*       setErrorMsg("Permission to access location was denied");
-       */ return;
+      return;
     }
     setLocation(await getLocation());
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -41,24 +44,17 @@ export default function OnboardingLocationScreen() {
       }
       getAddress();
     }
+    router.push("/(authenticated)/onboarding/notifications");
   }, [location]);
 
   let text = "Waiting...";
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (location) {
+  if (location) {
     text = JSON.stringify(location);
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView edges={safeAreaEdges} style={{ flex: 1 }}>
       <View style={styles.Container}>
-        {/*    <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-          }}
-        ></View> */}
         <View
           style={{
             width: "100%",
@@ -76,10 +72,10 @@ export default function OnboardingLocationScreen() {
             We suggest activities that match your location, like outdoor walks
             or local weather-friendly options.
           </Text>
-          <View>
+          {/* <View>
             <Text>coordinates: {text}</Text>
             <Text>address: {JSON.stringify(reverseGeocodedLocation)}</Text>
-          </View>
+          </View> */}
         </View>
 
         <View
@@ -91,17 +87,20 @@ export default function OnboardingLocationScreen() {
             width: "100%",
           }}
         >
-          <ViButton title="Maybe later" type="text-only" />
-          <ViButton
-            title="Enable location access"
-            onPress={() => getCurrentLocation()}
-          />
-          <ViButton
-            title="Continue"
-            onPress={() =>
-              router.push("/(authenticated)/onboarding/notifications")
-            }
-          />
+          <ViButton title="Maybe later" type="text-only" enabled={false} />
+          {location == null ? (
+            <ViButton
+              title="Grant location access"
+              onPress={() => getCurrentLocation()}
+            />
+          ) : (
+            <ViButton
+              title="Continue"
+              onPress={() =>
+                router.push("/(authenticated)/onboarding/notifications")
+              }
+            />
+          )}
         </View>
       </View>
     </SafeAreaView>

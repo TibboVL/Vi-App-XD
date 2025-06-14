@@ -3,25 +3,46 @@ import { StyleSheet, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, SplashScreen } from "expo-router";
 import { getLocation } from "@/helpers/locationHelper";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LocationObject } from "expo-location";
-import { TextColors } from "@/globalStyles";
+import { BackgroundColors, TextColors, textStyles } from "@/globalStyles";
 import { FlatList, RefreshControl } from "react-native-gesture-handler";
 import { ViActivitySuggestion } from "@/components/ViActivitySuggestion";
 import { Viloader } from "@/components/ViLoader";
 import { timeDifference } from "@/helpers/dateTimeHelpers";
-import { useGetSuggestedActivities } from "@/hooks/useSuggestedActivities";
+import {
+  useGenerateNewSuggestedActivities,
+  useGetSuggestedActivities,
+} from "@/hooks/useSuggestedActivities";
 import VitoError from "@/components/ViErrorHandler";
 import { useAuth0 } from "react-native-auth0";
+import { Repeat } from "phosphor-react-native";
+import { adjustLightness } from "@/constants/Colors";
+import { mapEnergyToFriendly } from "@/helpers/energyToFriendlyHelper";
+import { ExtendedCheckin } from "@/types/checkin";
+import { AISuggestionResponse } from "@/types/activity";
+import { Notifier } from "react-native-notifier";
+import { ViNotifierAlert } from "@/components/ViNotifierAlert";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { ViPremiumModalSheet } from "@/components/ViPremiumModalSheet";
+import ViNotificationDot from "@/components/ViNotificationDot";
+import { useQueryClient } from "@tanstack/react-query";
 SplashScreen.preventAutoHideAsync();
 
 export default function DiscoverScreen() {
+  const PremiumSheetRef = useRef<BottomSheetModal>(null);
+  const handleOpenSheet = () => PremiumSheetRef.current!.present();
+  const handleCloseSheet = () => PremiumSheetRef.current!.close();
+
   const [userLocation, setUserLocation] = useState<LocationObject | null>(null);
+  const [latestSuggestions, setLatestSuggestions] =
+    useState<AISuggestionResponse>();
 
   const {
-    isLoading,
-    data: activitySuggestionList,
-    error,
+    // isLoading: initialExistingSuggestions,
+    isFetching: loadingExistingSuggestions,
+    data: existingResults,
+    error: gettingExistingSuggestionsError,
     refetch,
   } = useGetSuggestedActivities({
     enabled: userLocation?.coords != undefined,
@@ -42,6 +63,56 @@ export default function DiscoverScreen() {
     logToken();
     fetchLocation();
   }, []);
+  const {
+    data: generationResults,
+    isFetching: generatingSuggestions,
+    error: generationError,
+    refetch: generationRefetch,
+  } = useGenerateNewSuggestedActivities({
+    enabled: false,
+    lon: userLocation?.coords.longitude,
+    lat: userLocation?.coords.latitude,
+  });
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (existingResults && !gettingExistingSuggestionsError) {
+      setLatestSuggestions(existingResults);
+    } else if (gettingExistingSuggestionsError?.status == 404) {
+      // This is a new user and has no existing suggestions, just get new suggestions for them to avoid confusion
+      generationRefetch().then(() =>
+        // invalidate the errored out data in the suggested activity list query
+        queryClient.invalidateQueries({ queryKey: ["suggested-activity-list"] })
+      );
+    }
+  }, [existingResults, gettingExistingSuggestionsError]);
+  useEffect(() => {
+    if (generationResults && !generationError) {
+      setLatestSuggestions(generationResults);
+    } else if (generationError?.status == 503) {
+      //console.log(generationError, generationResults);
+      Notifier.showNotification({
+        title: "Failed to generate suggestions",
+        description: `You used up your AI requests for today! Your limit resets at midnight UTC`,
+        Component: ViNotifierAlert,
+        componentProps: {
+          alertType: "error",
+        },
+      });
+    }
+  }, [generationResults, generationError]);
+
+  var dateOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+  } as Intl.DateTimeFormatOptions;
+
+  function getCheckinTimeDisplay(checkin: ExtendedCheckin) {
+    const date = new Date(checkin.plannedEnd ?? checkin.createdAt!);
+    const time = date.toLocaleTimeString("en-be", dateOptions);
+    const diff = timeDifference(date);
+    return `${diff}`;
+    // return `${time} ${diff}`;
+  }
 
   return (
     <SafeAreaView>
@@ -51,105 +122,174 @@ export default function DiscoverScreen() {
           display: "flex",
         }}
       >
-        {/* <Text
-          style={{
-            textAlign: "center",
-          }}
-        >
-          ENV:{process.env.NODE_ENV}
-        </Text>
-        <Text
-          style={{
-            textAlign: "center",
-          }}
-        >
-          APIURL{Constants.expoConfig?.extra?.apiUrl}
-        </Text> */}
-        {isLoading ? (
-          <View
-            style={{
-              height: "100%",
-              width: "100%",
-              flex: 1,
-              alignContent: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Viloader vitoMessage="Vito is gathering your reccomendation" />
-          </View>
-        ) : null}
-        {error ? (
-          <VitoError error={error} loading={isLoading} refetch={refetch} />
-        ) : null}
-        {!isLoading && !error && activitySuggestionList ? (
-          <View
-            style={{
-              width: "100%",
-              height: "100%",
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <View>
-              {activitySuggestionList?.length > 0 ? (
-                <Text
-                  style={[
-                    TextColors.muted,
-                    {
-                      paddingBlock: 8,
-                      textAlign: "center",
-                    },
-                  ]}
-                >
-                  Last updated{" "}
-                  <Text
-                    style={{
-                      fontWeight: 700,
-                    }}
-                  >
-                    {activitySuggestionList[0]?.created_at
-                      ? timeDifference(
-                          new Date(activitySuggestionList[0]?.created_at)
-                        )
-                      : "N/A"}
-                  </Text>
-                </Text>
-              ) : null}
-            </View>
-            <FlatList
-              refreshControl={
-                <RefreshControl refreshing={isLoading} onRefresh={refetch} />
-              }
-              data={activitySuggestionList}
-              keyExtractor={(item) => item.activityId?.toString()}
-              style={styles.FlatListStyles}
-              contentContainerStyle={{
-                gap: 8,
+        <View style={{ flex: 1, height: "100%" }}>
+          {loadingExistingSuggestions ? (
+            <Viloader message="Vito is gathering your reccomendation" />
+          ) : null}
+          {generatingSuggestions ? (
+            <Viloader message="Vito is looking for the perfect activities for you!" />
+          ) : null}
+          {gettingExistingSuggestionsError &&
+          gettingExistingSuggestionsError.status != 404 ? (
+            <VitoError
+              error={gettingExistingSuggestionsError}
+              loading={loadingExistingSuggestions}
+              refetch={refetch}
+            />
+          ) : null}
+
+          {generationError && generationError.status != 503 ? (
+            <VitoError
+              error={generationError}
+              loading={generatingSuggestions}
+              refetch={generationRefetch}
+            />
+          ) : null}
+          {!loadingExistingSuggestions &&
+          (!gettingExistingSuggestionsError ||
+            gettingExistingSuggestionsError.status === 404) && // excempt 404 on getting existing suggestions because we then generate new suggestions automatically
+          !generatingSuggestions &&
+          latestSuggestions?.activitySuggestionList ? (
+            <View
+              style={{
+                width: "100%",
+                height: "100%",
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
               }}
-              renderItem={({ item }) => (
-                <ViActivitySuggestion
-                  activity={item.activity}
-                  activitySuggestion={item}
-                />
-              )}
-              ListEmptyComponent={<Text>Something went wrong!</Text>}
+            >
+              <View>
+                <View>
+                  <Text
+                    style={[
+                      TextColors.muted,
+                      {
+                        paddingInline: 16,
+                        paddingBlock: 8,
+                        textAlign: "center",
+                      },
+                    ]}
+                  >
+                    Because you felt{" "}
+                    {(
+                      latestSuggestions.basedOnCheckin.afterMood ??
+                      latestSuggestions.basedOnCheckin.beforeMood
+                    ).toLowerCase()}{" "}
+                    with{" "}
+                    {mapEnergyToFriendly(
+                      latestSuggestions.basedOnCheckin.afterEnergyLevel ??
+                        latestSuggestions.basedOnCheckin.beforeEnergyLevel
+                    )}{" "}
+                    energy{" "}
+                    {getCheckinTimeDisplay(latestSuggestions.basedOnCheckin)}
+                  </Text>
+                </View>
+                {latestSuggestions.activitySuggestionList?.length > 0 ? (
+                  <Text
+                    style={[
+                      TextColors.muted,
+                      {
+                        paddingBottom: 8,
+                        textAlign: "center",
+                      },
+                    ]}
+                  >
+                    Generated{" "}
+                    <Text
+                      style={{
+                        fontWeight: 700,
+                      }}
+                    >
+                      {latestSuggestions.activitySuggestionList[0]?.created_at
+                        ? timeDifference(
+                            new Date(
+                              latestSuggestions.activitySuggestionList[0]?.created_at
+                            )
+                          )
+                        : "N/A"}
+                    </Text>
+                  </Text>
+                ) : null}
+              </View>
+              <FlatList
+                refreshControl={
+                  <RefreshControl
+                    refreshing={loadingExistingSuggestions}
+                    onRefresh={refetch}
+                  />
+                }
+                data={latestSuggestions.activitySuggestionList}
+                keyExtractor={(item) => item.activityId?.toString()}
+                style={styles.FlatListStyles}
+                contentContainerStyle={{
+                  gap: 8,
+                }}
+                renderItem={({ item }) => (
+                  <ViActivitySuggestion
+                    activity={item.activity}
+                    activitySuggestion={item}
+                    handleShowPremiumDialog={handleOpenSheet}
+                  />
+                )}
+                ListEmptyComponent={<Text>Something went wrong!</Text>}
+              />
+            </View>
+          ) : null}
+        </View>
+        <View style={[styles.BottomContainer]}>
+          <View>
+            <ViNotificationDot
+              styles={{
+                position: "absolute",
+                top: 6,
+                right: 6,
+                backgroundColor: adjustLightness(
+                  BackgroundColors.primary.backgroundColor,
+                  20
+                ),
+              }}
+              content={
+                latestSuggestions
+                  ? latestSuggestions!.subscriptionStatus.subscription
+                      .maxAIRequestsPerDay -
+                    latestSuggestions!.subscriptionStatus.usage
+                  : "N/A"
+              }
+            />
+            <ViButton
+              enabled={!loadingExistingSuggestions && !generatingSuggestions}
+              title="Update suggestions"
+              variant="primary"
+              type="light"
+              hideText={true}
+              Icon={Repeat}
+              onPress={() => generationRefetch()}
             />
           </View>
-        ) : null}
-        <View style={[styles.BottomContainer]}>
-          <ViButton
-            title="See Non-Personalized Activities"
-            variant="primary"
-            type="light"
-            onPress={() => {
-              router.push({
-                pathname: "/discover/activities",
-              });
+          <View
+            style={{
+              flex: 1,
             }}
-          />
+          >
+            <ViButton
+              title="See Non-Personalized Activities"
+              variant="primary"
+              type="light"
+              onPress={() => {
+                router.push({
+                  pathname: "/discover/activities",
+                });
+              }}
+            />
+          </View>
         </View>
       </View>
+      <ViPremiumModalSheet
+        BottomSheetModalRef={PremiumSheetRef}
+        handleOpen={handleOpenSheet}
+        handleClose={handleCloseSheet}
+      />
     </SafeAreaView>
   );
 }
@@ -173,7 +313,7 @@ const styles = StyleSheet.create({
   BottomContainer: {
     paddingBlock: 16,
     paddingInline: 16,
-    flexDirection: "column",
+    flexDirection: "row",
     width: "100%",
     display: "flex",
     gap: 8,

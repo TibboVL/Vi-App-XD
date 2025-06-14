@@ -1,6 +1,13 @@
 import { BackgroundColors, textStyles } from "@/globalStyles";
-import { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableNativeFeedback,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import {
   AgendaList,
   CalendarProvider,
@@ -17,8 +24,7 @@ import {
   Clock,
   Trash,
 } from "phosphor-react-native";
-import { Tag } from "@/components/ViCategoryTag";
-import { PillarKey } from "@/types/activity";
+import { Activity, getPillarInfo, PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import { adjustLightness } from "@/constants/Colors";
 import {
@@ -44,6 +50,9 @@ import {
   CheckinContextAction,
   useCheckinDispatch,
 } from "./mood/checkinContext";
+import { MarkedDates } from "react-native-calendars/src/types";
+import ViCategoryContainer from "@/components/ViCategoryContainer";
+import { AgendaItem } from "@/components/ViAgendaItem";
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];
@@ -65,6 +74,44 @@ export default function PlanningScreen() {
     setSelectedActivityListItem(item);
     handleOpenSheet();
   };
+
+  const getMarkedDates = useMemo(() => {
+    const marked: MarkedDates = {};
+
+    userActivityListContainers?.forEach((item) => {
+      // NOTE: only mark dates with data
+      if (item.data && item.data.length > 0) {
+        const dots = [];
+        for (const entry of item.data) {
+          dots.push({
+            key: entry.userActivityId.toString(),
+            color: adjustLightness(
+              getPillarInfo(
+                entry.categories[0].pillar.toLowerCase() as PillarKey
+              )?.color,
+              -10
+            ),
+          });
+        }
+        marked[item.title!] = {
+          marked: true,
+          dots: dots,
+          selectedColor: adjustLightness(
+            BackgroundColors.background.backgroundColor,
+            -15
+          ),
+
+          //selectedTextColor:
+        };
+      } else {
+        marked[item.title!] = {
+          disabled: true,
+        };
+      }
+    });
+    //console.log(JSON.stringify(marked));
+    return marked;
+  }, [userActivityListContainers]);
 
   return (
     <View
@@ -94,9 +141,91 @@ export default function PlanningScreen() {
               onDateChanged={(newDate) => setActiveDate(newDate)}
             >
               <ExpandableCalendar
+                dayComponent={({ date, state, marking, theme, onPress }) => {
+                  const isToday = date!.dateString === today;
+                  return (
+                    <View
+                      style={{
+                        borderRadius: 8,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <TouchableOpacity
+                        onPress={() => (onPress ? onPress(date) : null)}
+                      >
+                        <View
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            borderColor:
+                              state == "selected"
+                                ? BackgroundColors.primary.backgroundColor
+                                : isToday
+                                ? "#ccc"
+                                : "transparent",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color:
+                                state == "selected"
+                                  ? adjustLightness(
+                                      BackgroundColors.primary.backgroundColor,
+                                      -20
+                                    ) //"#fff"
+                                  : isToday
+                                  ? "#555" // adjustLightness(  BackgroundColors.primary.backgroundColor,   30     )
+                                  : date?.month ==
+                                    parseInt(activeDate.split("-")[1])
+                                  ? "#555"
+                                  : "#ccc",
+                            }}
+                          >
+                            {date!.day}
+                          </Text>
+                          {marking?.dots ? (
+                            <View
+                              style={{
+                                marginTop: 2,
+                                height: 4,
+                                width: 32,
+                                justifyContent: "center",
+                                alignItems: "center",
+                                flexDirection: "row",
+                                gap: 2,
+                              }}
+                            >
+                              {marking?.dots?.map((dot) => {
+                                // console.log(dot);
+                                return (
+                                  <View
+                                    key={dot.key}
+                                    style={{
+                                      bottom: 2,
+                                      width: 4,
+                                      height: 4,
+                                      borderRadius: 2,
+                                      backgroundColor: dot.color,
+                                    }}
+                                  />
+                                );
+                              })}
+                            </View>
+                          ) : null}
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                }}
+                markingType="multi-dot"
                 style={{
                   zIndex: 10,
                 }}
+                markedDates={getMarkedDates}
                 firstDay={1}
                 allowShadow={false}
                 hideArrows={true}
@@ -130,15 +259,7 @@ export default function PlanningScreen() {
                 />
               </View>
               {isLoading ? (
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Viloader vitoMessage="Vito is stitching together your schedule!" />
-                </View>
+                <Viloader message="Vito is stitching together your schedule!" />
               ) : null}
               {error ? (
                 <VitoError
@@ -261,9 +382,7 @@ function EditExistingEventSheet({
   } = useGetActivityDetails({
     activityId: compactUserActivityListItem?.activityId!,
   });
-  useEffect(() => {
-    console.log(activity);
-  }, [activity]);
+
   const queryClient = useQueryClient();
   const {
     mutate: handleUpdate,
@@ -292,28 +411,50 @@ function EditExistingEventSheet({
     error: deleteError,
   } = useDeleteActivityList();
   async function handleDeleteEvent() {
-    handleDelete(
-      {
-        userActivityId: compactUserActivityListItem?.userActivityId!,
-      },
-      {
-        onSuccess: (data) => {
-          handleClose();
-          queryClient.invalidateQueries({ queryKey: ["user-activity-list"] });
+    Alert.alert(
+      `Remove activity?`,
+      `Are you sure you want to remove "${activity?.name}" from your calendar?`,
+      [
+        {
+          text: "No, keep it!",
+          style: "cancel",
         },
-      }
+        {
+          text: "Yes, remove!",
+          style: "destructive",
+          onPress: () =>
+            handleDelete(
+              {
+                userActivityId: compactUserActivityListItem?.userActivityId!,
+              },
+              {
+                onSuccess: (data) => {
+                  handleClose();
+                  queryClient.invalidateQueries({
+                    queryKey: ["user-activity-list"],
+                  });
+                },
+              }
+            ),
+        },
+      ]
     );
   }
   const dispatch = useCheckinDispatch();
   const handleStartReview = () => {
     handleClose();
-    if (router.canDismiss()) router.dismissAll();
     dispatch({
       action: CheckinContextAction.SET_USER_ACTIVITY, // automatically resets the rest
-      payload: compactUserActivityListItem?.userActivityId,
+      payload: {
+        userActivityId: compactUserActivityListItem?.userActivityId,
+        compactUserActivityListItem: compactUserActivityListItem,
+      },
     });
-    router.push("/mood/moodPicker");
+    router.replace("/mood/moodPicker");
   };
+
+  const hasEnded =
+    new Date(compactUserActivityListItem?.plannedEnd!) <= new Date();
 
   var dateOptions = {
     day: "numeric",
@@ -342,7 +483,7 @@ function EditExistingEventSheet({
         />
       ) : null}
       {isDeleting || isUpdating || isLoading ? (
-        <Viloader vitoMessage="Vito is working on it!" />
+        <Viloader inPopup={true} message="Vito is working on it!" />
       ) : (
         <View
           style={{
@@ -380,22 +521,7 @@ function EditExistingEventSheet({
               />
             ) : null}
           </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 4,
-              marginTop: 8,
-            }}
-          >
-            {activity?.categories.map((category) => (
-              <Tag
-                key={category.name}
-                label={category.name}
-                pillar={category.pillar?.toLowerCase() as PillarKey}
-              />
-            ))}
-          </View>
+          <ViCategoryContainer activity={activity} />
           <Text
             style={{
               paddingTop: 8,
@@ -512,7 +638,9 @@ function EditExistingEventSheet({
         <View style={styles.BottomContainerButton}>
           <ViButton
             title={
-              compactUserActivityListItem
+              !hasEnded
+                ? "Has not ended!"
+                : compactUserActivityListItem
                 ? compactUserActivityListItem.markedCompletedAt == null
                   ? "Review"
                   : "Already reviewed!"
@@ -521,6 +649,7 @@ function EditExistingEventSheet({
             variant="primary"
             type="light"
             enabled={
+              !hasEnded ||
               isUpdating ||
               isDeleting ||
               compactUserActivityListItem?.markedCompletedAt != null
@@ -657,93 +786,6 @@ const SectionHeader = (date: any) => {
   );
 };
 
-interface ItemProps {
-  item: CompactUserActivityListItem;
-  onPress: () => void;
-}
-const AgendaItem = ({ item, onPress }: ItemProps) => {
-  var options = {
-    hour: "2-digit",
-    minute: "2-digit",
-  } as Intl.DateTimeFormatOptions;
-  const start = new Date(item.plannedStart!).toLocaleTimeString(
-    "en-nl",
-    options
-  );
-  const end = new Date(item.plannedEnd!).toLocaleTimeString("en-nl", options);
-
-  return (
-    <View style={styles.wrapper}>
-      <TouchableNativeFeedback onPress={onPress}>
-        <View
-          style={[
-            styles.card,
-            {
-              padding: 10,
-              paddingInline: 12,
-            },
-          ]}
-        >
-          <View>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ fontWeight: 700 }}>{item.activityTitle}</Text>
-              {item.markedCompletedAt != null ? (
-                <Check
-                  size={16}
-                  style={{
-                    transform: [
-                      {
-                        translateX: -3,
-                      },
-                      { translateY: -2 },
-                    ],
-                  }}
-                  weight="bold"
-                  color={adjustLightness(
-                    BackgroundColors.primary.backgroundColor,
-                    -20
-                  )}
-                />
-              ) : null}
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text>
-                {start} - {end}
-              </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 2,
-                }}
-              >
-                {item.categories.map((category) => (
-                  <Tag
-                    key={category.name}
-                    label={category.name}
-                    pillar={category.pillar?.toLowerCase() as PillarKey}
-                  />
-                ))}
-              </View>
-            </View>
-          </View>
-        </View>
-      </TouchableNativeFeedback>
-    </View>
-  );
-};
-
 const styles = StyleSheet.create({
   Container: {
     display: "flex",
@@ -752,18 +794,6 @@ const styles = StyleSheet.create({
     gap: 8,
     width: "100%",
     height: "100%",
-  },
-  wrapper: {
-    marginBlock: 4,
-    marginInline: 16,
-    flex: 1, // shrink if needed
-    //width: "100%", // expand as much as possible
-    borderRadius: 16,
-    overflow: "hidden",
-  },
-  card: {
-    width: "100%",
-    backgroundColor: "#fff",
   },
   BottomContainer: {
     paddingBlock: 16,

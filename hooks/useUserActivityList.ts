@@ -39,7 +39,7 @@ export const useGetUserActivityListsItemsReview = ({
       }>(`/useractivitylist/toReview`);
       return result.data;
     },
-    staleTime: 1000 * 60 * 60 * 24, // 1 day
+    staleTime: 0, // never save these
     enabled: enabled,
   });
 };
@@ -121,7 +121,6 @@ export const useUpdateUserActivityList = () => {
       plannedStart: Date;
       plannedEnd: Date;
     }) => {
-      console.log(userActivityId, plannedEnd, plannedStart);
       const result = await api<{
         data: CompactUserActivityListItem;
       }>(`/useractivitylist/update`, {
@@ -132,7 +131,6 @@ export const useUpdateUserActivityList = () => {
           plannedEnd: plannedEnd.toISOString(),
         }),
       });
-      console.log(result.data);
 
       return result.data;
     },
@@ -147,7 +145,6 @@ export const useDeleteActivityList = () => {
     }: {
       userActivityId: string | number;
     }) => {
-      console.log(userActivityId);
       await api(`/useractivitylist/delete?userActivityId=${userActivityId}`, {
         method: "DELETE",
       });

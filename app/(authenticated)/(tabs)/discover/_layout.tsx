@@ -1,14 +1,11 @@
-import { Stack, useGlobalSearchParams } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import { headerStyles } from "../../../../globalStyles";
-import { Funnel } from "phosphor-react-native";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function DiscoverStackLayout() {
-  const glob = useGlobalSearchParams();
-
   return (
     <>
       <Stack screenOptions={headerStyles}>

@@ -30,6 +30,7 @@ export function ViSelect({
 
   return (
     <DropDownPicker
+      listMode="FLATLIST"
       open={open}
       value={selectedValue}
       items={items}
@@ -66,10 +67,15 @@ export function ViSelect({
           : styles.textDanger)
       }
       dropDownContainerStyle={{
-        marginTop: 8,
         borderRadius: 16,
         borderWidth: 1,
         borderColor: outlineStyles[variant].borderColor,
+        overflow: "hidden",
+        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+      }}
+      listItemContainerStyle={{
+        borderRadius: 16,
+        overflow: "hidden",
       }}
     />
   );

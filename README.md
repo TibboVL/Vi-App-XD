@@ -38,7 +38,7 @@ To avoid long EAS build times, generate APKs locally using Gradle:
 1. Set production environment (Windows PowerShell):
 
    ```powershell
-   $env:NODE_ENV="production
+   $env:NODE_ENV="production"
    ```
 
    For macOS/Linux:

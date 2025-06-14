@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import {
-  runOnJS,
   useDerivedValue,
   useSharedValue,
   withTiming,
@@ -24,7 +23,7 @@ import {
   textStyles,
 } from "../../../../globalStyles";
 import { ViWave } from "@/components/ViWave";
-import { router, useNavigation, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import {
   CheckinContextAction,
   ReviewStage,
@@ -33,9 +32,8 @@ import {
 } from "./checkinContext";
 import ContextDebugView from "./checkinContextDebug";
 import { ReText } from "react-native-redash";
-import { usePostUserActivityListItemReview } from "@/hooks/useUserActivityList";
-import { useQueryClient } from "@tanstack/react-query";
-import { Viloader } from "@/components/ViLoader";
+import { CheckinAgendaItemWrapper } from "./activityReview";
+import { usePreventUserBack } from "@/hooks/usePreventBack";
 
 const batteryColors = [
   { low: "#FFA3A3", medium: "#f7cf9d", high: "#D4FF8F", veryHigh: "#A3FFE5" },
@@ -44,13 +42,13 @@ const batteryColors = [
 ];
 
 export default function EnergyPickerScreen() {
+  usePreventUserBack();
+
   const state = useCheckinState();
   const dispatch = useCheckinDispatch();
-  const navigation = useNavigation();
 
   const [batteryContainerHeight, setBatteryContainerHeight] = useState(500);
   const insets = useSafeAreaInsets();
-  const queryClient = useQueryClient();
 
   const fillLayerOffset = 0.035;
   const fill = useSharedValue(0.15); // 0 to 1
@@ -59,84 +57,36 @@ export default function EnergyPickerScreen() {
 
   // const [displayedPercentage, setDisplayedPercentage] = useState(15);
 
-  const { fromOnboarding } = useLocalSearchParams();
-  const {
-    mutate,
-    isPending,
-    error: postError,
-  } = usePostUserActivityListItemReview();
-
-  const derivedPercentage = useDerivedValue(
-    () => Math.floor(fill.value * 100) + "%"
-  );
-
-  async function handlePostCheckin(callback: () => void) {
-    mutate(
-      {
-        beforeMoodId: state.moodBefore,
-        afterMoodId: state.moodAfter,
-        beforeEnergy: state.energyBefore,
-        afterEnergy: state.energyBefore,
-        userActivityId: state.userActivityId,
-      },
-      {
-        onSuccess: (data) => {
-          queryClient.invalidateQueries({
-            queryKey: ["last-valid-checkin"],
-            refetchType: "active",
-          }); // we added a freestanding checkin so we want to invalidate the cache of the query so our mood screen updates
-
-          callback();
-        },
-      }
-    );
-  }
-
   const handleContinue = () => {
+    // if we are reviewing an activity and in the before state then go to the after state, dont go to the review page
+    if (state.reviewStage == ReviewStage.BEFORE) {
+      dispatch({
+        action: CheckinContextAction.SET_REVIEW_STAGE,
+        payload: ReviewStage.AFTER,
+      });
+      router.replace("/mood/moodPicker");
+    } else if (state.reviewStage == ReviewStage.AFTER) {
+      // in after state of activity review, show pros and cons page now
+      router.replace("/mood/prosCons");
+    } else {
+      // freestanding activity, reviewstage is null, go to review page
+      router.replace("/mood/activityReview");
+    }
     dispatch({
       action:
         state.reviewStage == ReviewStage.BEFORE || state.reviewStage == null
           ? CheckinContextAction.SET_ENERGY_BEFORE
           : CheckinContextAction.SET_ENERGY_AFTER,
-
-        payload: derivedPercentage.value.substring(
+      payload: derivedPercentage.value.substring(
         0,
         derivedPercentage.value.length - 1
       ),
     });
-    if (fromOnboarding === "true") {
-      // If the check-in originated from the onboarding flow
-      function goBackToOnboarding() {
-        router.replace("/(authenticated)/onboarding/location");
-      }
-      handlePostCheckin(goBackToOnboarding);
-      // Go back to the onboarding privacy screen
-      // return; // Stop further navigation in this function
-    } else {
-      // if we are reviewing an activity and in the before state then go to the after state, dont go to the review page
-
-      if (state.reviewStage == ReviewStage.BEFORE) {
-        dispatch({
-          action: CheckinContextAction.SET_REVIEW_STAGE,
-
-          payload: ReviewStage.AFTER,
-        });
-
-        router.push("/mood/moodPicker");
-      } else if (state.reviewStage == ReviewStage.AFTER) {
-        // in after state of activity review, show pros and cons page now
-
-        router.push("/mood/prosCons");
-      } else {
-        // freestanding activity, reviewstage is null, go to review page
-        function goToActivityReview() {
-          router.push("/mood/activityReview");
-        }
-
-        handlePostCheckin(goToActivityReview);
-      }
-    }
   };
+
+  const derivedPercentage = useDerivedValue(
+    () => Math.floor(fill.value * 100) + "%"
+  );
 
   const panGesture = useMemo(() => {
     return Gesture.Pan()
@@ -174,21 +124,6 @@ export default function EnergyPickerScreen() {
     setBatteryContainerHeight(event.nativeEvent.layout.height);
   };
 
-  useEffect(() => {
-    const listener = navigation.addListener("beforeRemove", (e) => {
-      if (fromOnboarding === "true") {
-        return;
-      } else {
-        // e.preventDefault();
-        // ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
-      }
-    });
-
-    return () => {
-      navigation.removeListener("beforeRemove", listener);
-    };
-  }, [fromOnboarding, navigation]);
-
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       <View
@@ -197,6 +132,9 @@ export default function EnergyPickerScreen() {
           paddingBottom: insets.top,
         }}
       >
+        <CheckinAgendaItemWrapper
+          compactUserActivityListItem={state.compactUserActivityListItem}
+        />
         <View style={styles.Container}>
           <ContextDebugView />
           <ReText
@@ -324,9 +262,7 @@ export default function EnergyPickerScreen() {
             variant="primary"
             type="light"
             onPress={handleContinue}
-            enabled={!isPending}
           />
-          {isPending ? <Viloader vitoMessage="" /> : <></>}
         </View>
       </View>
     </SafeAreaView>
@@ -337,7 +273,7 @@ const styles = StyleSheet.create({
   Container: {
     flex: 1,
     width: "100%",
-    paddingBlock: 16 * 6,
+    paddingBlock: 16 * 3,
     paddingInline: 16,
   },
   BottomContainer: {

@@ -1,3 +1,4 @@
+import { textStyles } from "@/globalStyles";
 import { useFocusEffect } from "expo-router";
 import {
   ForwardedRef,
@@ -347,30 +348,37 @@ export const VitoAnimatedMoods = forwardRef(
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     // use focus effect so this heavy component unmounts once the route changes
-    /*   useFocusEffect(() => {
-    const allMoods = Object.keys(vitoEmoteConfig).map((key) => key) as [
-      keyof VitoEmoteConfig
-    ];
+    /* useFocusEffect(() => {
+      const allMoods = Object.keys(vitoEmoteConfig).map((key) => key) as [
+        keyof VitoEmoteConfig
+      ];
 
-    // ! temporary just to test all possible emotes
-    intervalRef.current = setInterval(() => {
-      const currentIndex = allMoods.findIndex((m) => m == mood);
-      const len = allMoods.length;
-      setMood(() =>
-        currentIndex + 1 >= len ? allMoods[0] : allMoods[currentIndex + 1]
-      );
-    }, 2000);
+      // ! temporary just to test all possible emotes
+      intervalRef.current = setInterval(() => {
+        const currentIndex = allMoods.findIndex((m) => m == mood);
+        const len = allMoods.length;
+        setMood(() =>
+          currentIndex + 1 >= len ? allMoods[0] : allMoods[currentIndex + 1]
+        );
+      }, 2000);
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }); */
+      return () => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+      };
+    }); */
 
     const debugStrokeColor = "transparent";
 
     return (
       <>
-        {/* <Text>{mood}</Text> */}
+        {/* <Text
+          style={[
+            textStyles.h4,
+            { paddingBlock: 8, textTransform: "capitalize" },
+          ]}
+        >
+          {mood + " "}
+        </Text> */}
         <Svg width={225} height={202} viewBox="0 0 225 202" fill="none">
           <AnimatedPath
             id="Body"

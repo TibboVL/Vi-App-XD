@@ -1,18 +1,34 @@
-import { Tabs, useSegments } from "expo-router";
+import { Tabs, useNavigation } from "expo-router";
 import React, { useMemo } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { Calendar, Compass, Scales, Smiley, User } from "phosphor-react-native";
-import { CheckinProvider } from "./mood/checkinContext";
+import { useGlobalSearchParams, useRouteInfo } from "expo-router/build/hooks";
 
 export default function TabLayout() {
-  const segments = useSegments(); // console.log(pathname);
+  const routeInfo = useRouteInfo();
+  const glob = useGlobalSearchParams();
+  const showTabBar = useMemo(() => {
+    if (glob.showTabBar === "false") return false;
+    if (glob.showTabBar === "true") return true;
+    return routeInfo.segments.length <= 3;
+  }, [JSON.stringify(glob), JSON.stringify(routeInfo.segments)]);
 
-  const isRootTab = useMemo(() => {
-    return segments.length <= 3; // ["(authenticated)", "(tabs)", "HERE"] hide navbar on anything beyond these
-  }, [segments]);
+  const DiscoverIcon = useRenderIcon(Compass);
+  const PlanningIcon = useRenderIcon(Calendar);
+  const MoodIcon = useRenderIcon(Smiley);
+  const BalanceIcon = useRenderIcon(Scales);
+  const ProfileIcon = useRenderIcon(User);
+  const navigation = useNavigation();
+
+  const routeStack = navigation.getState()?.routes.length;
+  if (routeStack != undefined && routeStack > 1) {
+    console.warn(
+      `❌  More than 1 route stack is detected (currently: ${routeStack} routes stacked)! please look into this because it can cause a ton of lag if this piles up and causes weird unexpected behavior!`
+    );
+  }
 
   return (
     <Tabs
@@ -26,17 +42,16 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: "absolute",
+            position: "absolute" as const,
             height: 80,
             backgroundColor: "#f1f5f9",
-            display: isRootTab ? "flex" : "none",
+            display: showTabBar ? "flex" : "none",
           },
           android: {
             height: 80,
             backgroundColor: "#f1f5f9",
             paddingInline: 12,
-            display: isRootTab ? "flex" : "none",
+            display: showTabBar ? "flex" : "none",
           },
         }),
       }}
@@ -46,35 +61,35 @@ export default function TabLayout() {
         name="discover"
         options={{
           title: "Discover",
-          tabBarIcon: renderIcon(Compass),
+          tabBarIcon: DiscoverIcon,
         }}
       />
       <Tabs.Screen
         name="planning"
         options={{
           title: "Planning",
-          tabBarIcon: renderIcon(Calendar),
+          tabBarIcon: PlanningIcon,
         }}
       />
       <Tabs.Screen
         name="mood"
         options={{
           title: "Mood",
-          tabBarIcon: renderIcon(Smiley),
+          tabBarIcon: MoodIcon,
         }}
       />
       <Tabs.Screen
         name="balance"
         options={{
           title: "Balance",
-          tabBarIcon: renderIcon(Scales),
+          tabBarIcon: BalanceIcon,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: renderIcon(User),
+          tabBarIcon: ProfileIcon,
         }}
       />
     </Tabs>
@@ -84,18 +99,21 @@ interface navButtonProps {
   color: string;
   focused: boolean;
 }
-const renderIcon = (IconComponent: any) => {
-  return ({ color, focused }: navButtonProps) => (
-    <View
-      style={[
-        styles.NavIcon,
-        { backgroundColor: focused ? "#e0e0eb" : "#f1f5f9" },
-      ]}
-    >
-      <IconComponent color={color} weight={focused ? "fill" : "regular"} />
-    </View>
-  );
-};
+const useRenderIcon = (IconComponent: any) =>
+  useMemo(() => {
+    return ({ color, focused }: navButtonProps) => (
+      <View style={{}}>
+        <View
+          style={[
+            styles.NavIcon,
+            { backgroundColor: focused ? "#e0e0eb" : "#f1f5f9" },
+          ]}
+        >
+          <IconComponent color={color} weight={focused ? "fill" : "regular"} />
+        </View>
+      </View>
+    );
+  }, [IconComponent]);
 
 const styles = StyleSheet.create({
   NavIcon: {

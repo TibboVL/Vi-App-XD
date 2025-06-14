@@ -14,9 +14,9 @@ import {
   TouchableNativeFeedback,
   StyleProp,
   ViewStyle,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as Clipboard from "expo-clipboard";
 import {
   safeAreaEdges,
   safeAreaStyles,
@@ -25,7 +25,7 @@ import {
   BackgroundColors,
 } from "@/globalStyles";
 import { useRef, useState } from "react";
-import { Activity, ActivityDetails, PillarKey } from "@/types/activity";
+import { ActivityDetails, PillarKey } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import {
   BabyCarriage,
@@ -45,13 +45,13 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { Tag } from "@/components/ViCategoryTag";
 import { EnergyIcon } from "@/components/EnergyIcon";
 import { useQueryClient } from "@tanstack/react-query";
 import VitoError from "@/components/ViErrorHandler";
 import { useGetActivityDetails } from "@/hooks/useActivityDetails";
 import { usePostUserActivityList } from "@/hooks/useUserActivityList";
 import { ViIconButton } from "@/components/ViIconButton";
+import ViCategoryContainer from "@/components/ViCategoryContainer";
 
 export default function ActivityDetailsScreen() {
   const local = useLocalSearchParams();
@@ -71,17 +71,7 @@ export default function ActivityDetailsScreen() {
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       {isLoading ? (
-        <View
-          style={{
-            height: "100%",
-            width: "100%",
-            flex: 1,
-            alignContent: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Viloader vitoMessage="Vito is looking gathering more details..." />
-        </View>
+        <Viloader message="Vito is looking gathering more details..." />
       ) : null}
 
       {error ? (
@@ -139,9 +129,8 @@ interface ActivityDeetailInformaationProps {
   showHeader?: boolean;
   showAbout?: boolean;
   customStyles?: {
-    Container?: StyleProp<ViewStyle>; // For ScrollView style
-    ContentContainer?: StyleProp<ViewStyle>; // For contentContainerStyle
-    // Optional: Add others like Header, Description, etc.
+    Container?: StyleProp<ViewStyle>;
+    ContentContainer?: StyleProp<ViewStyle>;
   };
 }
 export const ActivityDetailInformation = ({
@@ -156,6 +145,22 @@ export const ActivityDetailInformation = ({
   function toggleDescriptionState() {
     setDescriptionExpandedState(!descriptionExpandedState);
   }
+
+  const openInMaps = () => {
+    let url = `https://www.google.com/maps/search/?api=1&query=${activity.locationLatitude},${activity.locationLongitude}`;
+    if (activity.locationStreetAddress) {
+      const address = `${
+        activity.locationStreetAddress
+          ? activity.locationStreetAddress + ", "
+          : "null"
+      }${activity.locationPostcode} ${activity.locationCity}`;
+      url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        address
+      )}`;
+    }
+    Linking.openURL(url);
+  };
+
   return (
     <ScrollView
       style={[customStyles?.Container, styles.Container]}
@@ -170,19 +175,7 @@ export const ActivityDetailInformation = ({
           }}
         >
           <Text style={[textStyles.h4]}>{activity.name}</Text>
-          {activity.categories?.length > 0 ? (
-            <View style={styles.tagsContainer}>
-              {activity.categories?.map((category) => (
-                <Tag
-                  key={category.activityCategoryId}
-                  label={category.name}
-                  pillar={category.pillar?.toLowerCase() as PillarKey}
-                />
-              ))}
-            </View>
-          ) : (
-            <Text>No categories - this shouldnt happen!</Text>
-          )}
+          <ViCategoryContainer activity={activity} />
         </View>
       ) : null}
       <View id="CoreInformation" style={styles.Card}>
@@ -194,7 +187,6 @@ export const ActivityDetailInformation = ({
         >
           <CoreInfoBox
             Icon={CurrencyEur}
-            activity={activity}
             label="Price"
             value={
               activity.estimatedCost ? `€${activity.estimatedCost}` : "Free"
@@ -203,28 +195,51 @@ export const ActivityDetailInformation = ({
           <CoreInfoBox
             Icon={() => (
               <EnergyIcon
-                style={{ color: TextColors.muted.color }}
+                style={{ color: TextColors.muted.color, marginTop: 8 }}
                 energy={activity.energyRequired}
                 size={20}
               />
             )}
-            activity={activity}
             label="Required energy"
             value={activity.energyRequired}
           />
           <CoreInfoBox
             Icon={BabyCarriage}
-            activity={activity}
             label="Min age"
-            value={`${activity.minAge ? activity.minAge + " +" : "N/A"}`}
+            value={`${activity.minAge ? activity.minAge + " +" : "Any"}`}
           />
         </View>
-        <CoreInfoBox
-          Icon={MapPinLine}
-          activity={activity}
-          label="Location"
-          value={`${activity.locationName ? activity.locationName : "N/A"}`}
-        />
+        {activity.locationName ? (
+          <View
+            style={{
+              borderRadius: 16,
+              overflow: "hidden",
+            }}
+          >
+            <TouchableNativeFeedback
+              onPress={activity.locationLongitude ? openInMaps : () => null}
+            >
+              <View>
+                <CoreInfoBox
+                  Icon={MapPinLine}
+                  label="Location"
+                  value={`${
+                    activity.locationName ? activity.locationName : "N/A"
+                  }`}
+                >
+                  <Text>
+                    {activity.locationStreetAddress
+                      ? activity.locationStreetAddress + ", "
+                      : ""}
+                    {activity.locationPostcode}{" "}
+                    {activity.locationCity ? activity.locationCity + ", " : ""}
+                    {activity.locationCountry?.toUpperCase()}
+                  </Text>
+                </CoreInfoBox>
+              </View>
+            </TouchableNativeFeedback>
+          </View>
+        ) : null}
       </View>
       {showAbout ? (
         <View
@@ -419,6 +434,7 @@ function PlanningSheetView({
         onSuccess: (data) => {
           handleClose();
           queryClient.invalidateQueries({ queryKey: ["user-activity-list"] });
+          if (router.canDismiss()) router.dismissAll();
           router.replace({
             pathname: "/planning",
           });
@@ -458,7 +474,7 @@ function PlanningSheetView({
       ) : null}
 
       {isPending ? (
-        <Viloader vitoMessage="Adding the event to your calendar!" />
+        <Viloader inPopup={true} message="Adding the event to your calendar!" />
       ) : (
         <View
           style={{
@@ -583,23 +599,31 @@ function PlanningSheetView({
 }
 
 interface infoBoxProps {
-  activity: ActivityDetails;
-  Icon: Icon;
+  Icon?: Icon;
   label: string;
   value: string;
+  children?: any;
 }
-const CoreInfoBox = ({ activity, Icon, label, value }: infoBoxProps) => {
+export const CoreInfoBox = ({ Icon, label, value, children }: infoBoxProps) => {
   return (
     <View
       style={{
         flexDirection: "row",
         gap: 4,
-        alignItems: "center",
+        alignItems: "flex-start",
         padding: 4,
         flex: 1,
       }}
     >
-      <Icon size={20} color={TextColors.muted.color} />
+      {Icon ? (
+        <Icon
+          size={20}
+          style={{
+            marginTop: 8,
+          }}
+          color={TextColors.muted.color}
+        />
+      ) : null}
       <View
         style={{
           flexDirection: "column",
@@ -616,6 +640,7 @@ const CoreInfoBox = ({ activity, Icon, label, value }: infoBoxProps) => {
         >
           {value}
         </Text>
+        {children}
       </View>
     </View>
   );
@@ -678,10 +703,4 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   BottomContainerButton: { flex: 1 },
-  tagsContainer: {
-    marginTop: 4,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 4,
-  },
 });

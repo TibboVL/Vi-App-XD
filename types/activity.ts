@@ -1,3 +1,5 @@
+import { Checkin, ExtendedCheckin } from "./checkin";
+
 export type Activity = {
   activityId: number;
   name: string;
@@ -9,6 +11,31 @@ export type Activity = {
   categories: Category[];
   debugUITId: string;
   distance: number;
+};
+
+export type Subscription = {
+  subscriptionId: number;
+  userId: number;
+  planId: number;
+  startDate: string | null;
+  endDate: string | null;
+  isActive: boolean;
+  autoRenew: boolean;
+  name: string;
+  slug: string;
+  price: number;
+  currency: string;
+  maxAIRequestsPerDay: number;
+  maxAIResultsShown: number;
+};
+
+export type AISuggestionResponse = {
+  basedOnCheckin: ExtendedCheckin;
+  subscriptionStatus: {
+    usage: number;
+    subscription: Subscription;
+  };
+  activitySuggestionList: ActivitySuggestion[];
 };
 
 export type ActivitySuggestion = {
@@ -27,6 +54,7 @@ export type ActivitySuggestion = {
   overwriteIsGroupActivity: boolean;
   updated_at: string | null;
   activity: Activity;
+  isPremiumLocked: boolean;
 };
 export type ActivityDetails = Activity & {
   description: string;

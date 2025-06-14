@@ -41,18 +41,26 @@ export default function ActivitiesScreen() {
   const handleOpenSheet = () => bottomModalSheetRef.current!.present();
   const handleCloseSheet = () => bottomModalSheetRef.current!.close();
 
-  const { isLoading, data, error, refetch } = useGetActivityList({
+  const {
+    isLoading,
+    data,
+    error,
+    refetch: refetchActivityList,
+  } = useGetActivityList({
     enabled: userLocation?.coords != undefined,
     lon: userLocation?.coords.longitude,
     lat: userLocation?.coords.latitude,
   });
+  async function fetchLocation() {
+    const res = await getLocation(true);
+    setUserLocation(res);
+  }
+
+  async function refetch() {
+    await fetchLocation().then(() => refetchActivityList());
+  }
 
   useEffect(() => {
-    async function fetchLocation() {
-      const res = await getLocation();
-      setUserLocation(res); // triggers the effect below
-    }
-
     fetchLocation();
 
     navigation.setOptions({
@@ -80,17 +88,7 @@ export default function ActivitiesScreen() {
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       {isLoading ? (
-        <View
-          style={{
-            height: "100%",
-            width: "100%",
-            flex: 1,
-            alignContent: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Viloader vitoMessage="Vito is looking for more activities..." />
-        </View>
+        <Viloader message="Vito is looking for more activities..." />
       ) : null}
       {error ? (
         <VitoError error={error} loading={isLoading} refetch={refetch} />

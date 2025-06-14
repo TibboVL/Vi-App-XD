@@ -5,8 +5,8 @@ let cachedLocation: Location.LocationObject | null = null;
 let cachedReverseGeocodedLocation: Location.LocationGeocodedAddress[] | null =
   null;
 
-export async function getLocation() {
-  if (cachedLocation) {
+export async function getLocation(forceRefresh?: boolean) {
+  if (cachedLocation && !forceRefresh) {
     return cachedLocation;
   }
   let { status } = await Location.requestForegroundPermissionsAsync();

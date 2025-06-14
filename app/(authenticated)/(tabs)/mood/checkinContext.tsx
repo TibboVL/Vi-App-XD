@@ -1,6 +1,5 @@
-// context/AppStateContext.tsx
+import { CompactUserActivityListItem } from "@/types/userActivityList";
 import React, { createContext, useContext, useReducer } from "react";
-import { Text, View } from "react-native";
 
 export enum ReviewStage {
   BEFORE = "BEFORE",
@@ -11,21 +10,25 @@ export interface UserActivityComment {
 }
 interface CheckinContextProps {
   userActivityId: number | null;
+  compactUserActivityListItem: CompactUserActivityListItem | null;
   reviewStage: ReviewStage | null;
   moodBefore: number | null;
   moodAfter: number | null;
   energyBefore: number | null;
   energyAfter: number | null;
   comments: UserActivityComment | null;
+  isOnboarding: boolean | null;
 }
 const initialState: CheckinContextProps = {
   userActivityId: null,
+  compactUserActivityListItem: null,
   reviewStage: null,
   moodBefore: null,
   moodAfter: null,
   energyBefore: null,
   energyAfter: null,
   comments: null,
+  isOnboarding: null,
 };
 
 export enum CheckinContextAction {
@@ -35,6 +38,7 @@ export enum CheckinContextAction {
   SET_ENERGY_BEFORE = "SET_ENERGY_BEFORE",
   SET_ENERGY_AFTER = "SET_ENERGY_AFTER",
   SET_REVIEW_STAGE = "SET_REVIEW_STAGE",
+  SET_ONBOARDING = "SET_ONBOARDING",
 }
 export interface CheckinContextPayload {
   action: CheckinContextAction;
@@ -42,19 +46,19 @@ export interface CheckinContextPayload {
 }
 
 function reducer(state: CheckinContextProps, action: CheckinContextPayload) {
-  console.log(state);
-
   switch (action.action) {
     case CheckinContextAction.SET_USER_ACTIVITY:
       return {
         ...state,
-        userActivityId: action.payload,
+        userActivityId: action.payload.userActivityId,
+        compactUserActivityListItem: action.payload.compactUserActivityListItem,
         moodBefore: null,
         moodAfter: null,
         energyBefore: null,
         energyAfter: null,
         comments: null,
-        reviewStage: action.payload != null ? ReviewStage.BEFORE : null,
+        reviewStage:
+          action.payload.userActivityId != null ? ReviewStage.BEFORE : null,
       } as CheckinContextProps;
     case CheckinContextAction.SET_MOOD_BEFORE:
       return {
@@ -75,6 +79,11 @@ function reducer(state: CheckinContextProps, action: CheckinContextPayload) {
       return {
         ...state,
         energyAfter: action.payload,
+      } as CheckinContextProps;
+    case CheckinContextAction.SET_ONBOARDING:
+      return {
+        ...state,
+        isOnboarding: action.payload,
       } as CheckinContextProps;
     case CheckinContextAction.SET_REVIEW_STAGE:
       return { ...state, reviewStage: action.payload } as CheckinContextProps;
