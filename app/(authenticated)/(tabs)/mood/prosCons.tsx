@@ -24,8 +24,8 @@ export default function MoodScreen() {
   const navigation = useNavigation();
   useEffect(() => {
     const listener = navigation.addListener("beforeRemove", (e) => {
-      e.preventDefault();
-      ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
+      // e.preventDefault();
+      // ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
     });
 
     return () => {

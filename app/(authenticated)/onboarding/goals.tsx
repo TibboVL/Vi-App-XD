@@ -94,7 +94,12 @@ export default function GoalsScreen() {
         <View style={styles.bottomButtonContainer}>
           <ViButton
             title={selectedGoals.length === 0 ? "Skip" : "Continue"}
-            onPress={() => router.push("/(authenticated)/onboarding/location")}
+            onPress={() =>
+              router.push({
+                pathname: "/(authenticated)/(tabs)/mood/moodPicker",
+                params: { fromOnboarding: "true" },
+              })
+            }
           />
         </View>
       </View>

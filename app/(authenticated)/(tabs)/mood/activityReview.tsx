@@ -63,45 +63,46 @@ export default function ActivityReviewScreen() {
   }
   const navigation = useNavigation();
   const queryClient = useQueryClient();
-  const {
-    mutate,
-    isPending,
-    error: postError,
-  } = usePostUserActivityListItemReview();
-  async function handlePostCheckin() {
-    mutate(
-      {
-        beforeMoodId: state.moodBefore,
-        afterMoodId: state.moodAfter,
-        beforeEnergy: state.energyBefore,
-        afterEnergy: state.energyAfter,
-        userActivityId: state.userActivityId,
-      },
-      {
-        onSuccess: (data) => {
-          console.log(data);
-          console.log(data.afterMoodId);
-          if (data.afterMoodId == null) {
-            queryClient.invalidateQueries({
-              queryKey: ["last-valid-checkin"],
-              refetchType: "active",
-            }); // we added a freestanding checkin so we want to invalidate the cache of the query so our mood screen updates
-          }
-          setAllowedToFetchList(true);
-        },
-      }
-    );
-  }
+  // const {
+  //   mutate,
+  //   isPending,
+  //   error: postError,
+  // } = usePostUserActivityListItemReview();
+  // async function handlePostCheckin() {
+  //   mutate(
+  //     {
+  //       beforeMoodId: state.moodBefore,
+  //       afterMoodId: state.moodAfter,
+  //       beforeEnergy: state.energyBefore,
+  //       afterEnergy: state.energyAfter,
+  //       userActivityId: state.userActivityId,
+  //     },
+  //     {
+  //       onSuccess: (data) => {
+  //         console.log(data);
+  //         console.log(data.afterMoodId);
+  //         if (data.afterMoodId == null) {
+  //           queryClient.invalidateQueries({
+  //             queryKey: ["last-valid-checkin"],
+  //             refetchType: "active",
+  //           }); // we added a freestanding checkin so we want to invalidate the cache of the query so our mood screen updates
+  //         }
+  //         setAllowedToFetchList(true);
+  //       },
+  //     }
+  //   );
+  // }
 
   useEffect(() => {
-    if (state.moodBefore != null && state.energyBefore != null) {
-      handlePostCheckin(); // if data is already in the context we should send it to the backend
-    } else {
-      setAllowedToFetchList(true);
-    }
+    // if (state.moodBefore != null && state.energyBefore != null) {
+    //   handlePostCheckin(); // if data is already in the context we should send it to the backend
+    // } else {
+    //   setAllowedToFetchList(true);
+    // }
 
+    setAllowedToFetchList(true);
     const listener = navigation.addListener("beforeRemove", (e) => {
-      e.preventDefault();
+      // e.preventDefault();
     });
 
     return () => {
@@ -128,7 +129,7 @@ export default function ActivityReviewScreen() {
         {fetchError ? (
           <VitoError error={fetchError} loading={isLoading} refetch={refetch} />
         ) : null}
-        {postError ? <VitoError error={postError} loading={isPending} /> : null}
+        {/* {postError ? <VitoError error={postError} loading={isPending} /> : null} */}
         {userActivityListItemsToBeReviewed ? (
           <View style={{ flex: 1, width: "100%" }}>
             <View

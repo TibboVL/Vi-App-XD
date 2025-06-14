@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 import { Mood } from "@/types/mood";
 import { ViButton } from "@/components/ViButton";
-import { router, useNavigation } from "expo-router";
+import { router, useNavigation, useLocalSearchParams } from "expo-router";
 import {
   useCheckinDispatch,
   useCheckinState,
@@ -32,6 +32,8 @@ export default function MoodPickerScreen() {
     useState<Number | null>(null);
 
   const emoteManagerRef = useRef<VitoAnimatedMoodHandles>(null);
+
+  const { fromOnboarding } = useLocalSearchParams();
 
   function toggleMood(stage: "primary" | "secondary", mood: Mood) {
     console.log(mood);
@@ -73,8 +75,8 @@ export default function MoodPickerScreen() {
 
   useEffect(() => {
     const listener = navigation.addListener("beforeRemove", (e) => {
-      e.preventDefault();
-      ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
+      // e.preventDefault();
+      // ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
     });
 
     return () => {
@@ -175,6 +177,7 @@ export default function MoodPickerScreen() {
               updateChosenMoodId();
               router.push({
                 pathname: "/mood/energyPicker",
+                params: fromOnboarding ? { fromOnboarding } : undefined,
               });
             }}
           />
