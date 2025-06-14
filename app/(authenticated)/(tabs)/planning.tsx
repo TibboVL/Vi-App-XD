@@ -51,7 +51,6 @@ import {
   useCheckinDispatch,
 } from "./mood/checkinContext";
 import { MarkedDates } from "react-native-calendars/src/types";
-import { timeDifference } from "../../../helpers/dateTimeHelpers";
 import ViCategoryContainer from "@/components/ViCategoryContainer";
 
 export default function PlanningScreen() {
