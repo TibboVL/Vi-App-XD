@@ -5,7 +5,12 @@ import { View, Text, StyleSheet, ToastAndroid } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Mood } from "@/types/mood";
 import { ViButton } from "@/components/ViButton";
-import { router, useNavigation } from "expo-router";
+import {
+  router,
+  useGlobalSearchParams,
+  useNavigation,
+  usePathname,
+} from "expo-router";
 import {
   useCheckinDispatch,
   useCheckinState,
@@ -20,8 +25,10 @@ import {
 } from "@/components/VitoAnimatedMoods";
 import { useGetMoods } from "@/hooks/useMoods";
 import { CheckinAgendaItemWrapper } from "./activityReview";
+import { usePreventUserBack } from "@/hooks/usePreventBack";
 
 export default function MoodPickerScreen() {
+  usePreventUserBack();
   const state = useCheckinState();
   const dispatch = useCheckinDispatch();
 
@@ -54,8 +61,6 @@ export default function MoodPickerScreen() {
   }
 
   const updateChosenMoodId = () => {
-    //if (router.canDismiss()) router.dismissAll();
-
     dispatch({
       action:
         // if on stage before or stage null, set before, else set after
@@ -67,19 +72,6 @@ export default function MoodPickerScreen() {
   };
 
   const { isLoading: loading, data: moods, error } = useGetMoods();
-
-  const navigation = useNavigation();
-
-  useEffect(() => {
-    const listener = navigation.addListener("beforeRemove", (e) => {
-      e.preventDefault();
-      ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
-    });
-
-    return () => {
-      navigation.removeListener("beforeRemove", listener);
-    };
-  }, []);
 
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
@@ -173,7 +165,7 @@ export default function MoodPickerScreen() {
             type="light"
             onPress={() => {
               updateChosenMoodId();
-              router.push({
+              router.replace({
                 pathname: "/mood/energyPicker",
               });
             }}

@@ -443,7 +443,6 @@ function EditExistingEventSheet({
   const dispatch = useCheckinDispatch();
   const handleStartReview = () => {
     handleClose();
-    if (router.canDismiss()) router.dismissAll();
     dispatch({
       action: CheckinContextAction.SET_USER_ACTIVITY, // automatically resets the rest
       payload: {
@@ -451,7 +450,7 @@ function EditExistingEventSheet({
         compactUserActivityListItem: compactUserActivityListItem,
       },
     });
-    router.push("/mood/moodPicker");
+    router.replace("/mood/moodPicker");
   };
 
   const hasEnded =

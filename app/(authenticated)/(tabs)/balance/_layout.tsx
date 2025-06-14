@@ -184,7 +184,7 @@ export default function BalanceStackLayout() {
                 router.navigate({
                   pathname: "/balance/perActivity",
                   params: {
-                    showTabBar: 1,
+                    showTabBar: "true",
                   },
                 })
               }

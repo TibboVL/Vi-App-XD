@@ -1,6 +1,6 @@
-import { Tabs } from "expo-router";
-import React, { useEffect, useMemo } from "react";
-import { Platform, StyleSheet, View, ViewStyle } from "react-native";
+import { Tabs, useNavigation } from "expo-router";
+import React, { useMemo } from "react";
+import { Platform, StyleSheet, View } from "react-native";
 import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
@@ -10,13 +10,26 @@ import { useGlobalSearchParams, useRouteInfo } from "expo-router/build/hooks";
 export default function TabLayout() {
   const routeInfo = useRouteInfo();
   const glob = useGlobalSearchParams();
-  const showTabBar = glob.showTabBar ?? routeInfo.segments.length <= 3;
+  const showTabBar = useMemo(() => {
+    if (glob.showTabBar === "false") return false;
+    if (glob.showTabBar === "true") return true;
+    return routeInfo.segments.length <= 3;
+  }, [JSON.stringify(glob), JSON.stringify(routeInfo.segments)]);
 
   const DiscoverIcon = useRenderIcon(Compass);
   const PlanningIcon = useRenderIcon(Calendar);
   const MoodIcon = useRenderIcon(Smiley);
   const BalanceIcon = useRenderIcon(Scales);
   const ProfileIcon = useRenderIcon(User);
+  const navigation = useNavigation();
+
+  const routeStack = navigation.getState()?.routes.length;
+  if (routeStack != undefined && routeStack > 1) {
+    console.warn(
+      `❌  More than 1 route stack is detected (currently: ${routeStack} routes stacked)! please look into this because it can cause a ton of lag if this piles up and causes weird unexpected behavior!`
+    );
+  }
+
   return (
     <Tabs
       screenOptions={{

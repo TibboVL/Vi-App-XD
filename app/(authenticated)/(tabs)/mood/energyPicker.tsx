@@ -23,7 +23,7 @@ import {
   textStyles,
 } from "../../../../globalStyles";
 import { ViWave } from "@/components/ViWave";
-import { router, useNavigation } from "expo-router";
+import { router } from "expo-router";
 import {
   CheckinContextAction,
   ReviewStage,
@@ -33,6 +33,7 @@ import {
 import ContextDebugView from "./checkinContextDebug";
 import { ReText } from "react-native-redash";
 import { CheckinAgendaItemWrapper } from "./activityReview";
+import { usePreventUserBack } from "@/hooks/usePreventBack";
 
 const batteryColors = [
   { low: "#FFA3A3", medium: "#f7cf9d", high: "#D4FF8F", veryHigh: "#A3FFE5" },
@@ -41,9 +42,10 @@ const batteryColors = [
 ];
 
 export default function EnergyPickerScreen() {
+  usePreventUserBack();
+
   const state = useCheckinState();
   const dispatch = useCheckinDispatch();
-  const navigation = useNavigation();
 
   const [batteryContainerHeight, setBatteryContainerHeight] = useState(500);
   const insets = useSafeAreaInsets();
@@ -62,13 +64,13 @@ export default function EnergyPickerScreen() {
         action: CheckinContextAction.SET_REVIEW_STAGE,
         payload: ReviewStage.AFTER,
       });
-      router.push("/mood/moodPicker");
+      router.replace("/mood/moodPicker");
     } else if (state.reviewStage == ReviewStage.AFTER) {
       // in after state of activity review, show pros and cons page now
-      router.push("/mood/prosCons");
+      router.replace("/mood/prosCons");
     } else {
       // freestanding activity, reviewstage is null, go to review page
-      router.push("/mood/activityReview");
+      router.replace("/mood/activityReview");
     }
     dispatch({
       action:
@@ -121,16 +123,6 @@ export default function EnergyPickerScreen() {
   const onLayout = (event: LayoutChangeEvent) => {
     setBatteryContainerHeight(event.nativeEvent.layout.height);
   };
-
-  useEffect(() => {
-    const listener = navigation.addListener("beforeRemove", (e) => {
-      e.preventDefault();
-      ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
-    });
-    return () => {
-      navigation.removeListener("beforeRemove", listener);
-    };
-  }, []);
 
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>

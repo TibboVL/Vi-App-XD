@@ -1,38 +1,27 @@
 import { ViButton } from "@/components/ViButton";
 import { safeAreaEdges, safeAreaStyles } from "@/globalStyles";
-import { router, useNavigation } from "expo-router";
+import { router } from "expo-router";
 import { View, Text, StyleSheet } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { useCheckinDispatch, useCheckinState } from "./checkinContext";
-import { useEffect } from "react";
-import { ToastAndroid } from "react-native";
 import ContextDebugView from "./checkinContextDebug";
 import { CheckinAgendaItemWrapper } from "./activityReview";
+import { usePreventUserBack } from "@/hooks/usePreventBack";
 
 export default function MoodScreen() {
+  usePreventUserBack();
   const insets = useSafeAreaInsets();
 
   const state = useCheckinState();
   const dispatch = useCheckinDispatch();
 
   function handleCompleteActivityReview() {
-    router.push("/mood/activityReview");
+    router.replace("/mood/activityReview");
   }
 
-  const navigation = useNavigation();
-  useEffect(() => {
-    const listener = navigation.addListener("beforeRemove", (e) => {
-      e.preventDefault();
-      ToastAndroid.show("Please complete the checkin", ToastAndroid.SHORT);
-    });
-
-    return () => {
-      navigation.removeListener("beforeRemove", listener);
-    };
-  }, []);
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       <View

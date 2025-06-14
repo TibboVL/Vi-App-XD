@@ -2,7 +2,6 @@ import { ViButton } from "@/components/ViButton";
 import { ViInput } from "@/components/ViInput";
 import { safeAreaEdges, safeAreaStyles, textStyles } from "@/globalStyles";
 import { router } from "expo-router";
-
 import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,6 +15,10 @@ export default function SettingsScreen() {
     } catch (e) {
       console.log(e);
     }
+  };
+  const handleForceRestartOnboarding = () => {
+    if (router.canDismiss()) router.dismissAll();
+    router.replace("/onboarding");
   };
 
   return (
@@ -69,9 +72,7 @@ export default function SettingsScreen() {
               title="Force restart onboarding (DEBUG)"
               variant="danger"
               type="light"
-              onPress={() => {
-                router.push("/(authenticated)/onboarding");
-              }}
+              onPress={handleForceRestartOnboarding}
             />
           </View>
         </ScrollView>

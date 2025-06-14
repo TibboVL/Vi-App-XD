@@ -10,7 +10,7 @@ export default function ContextDebugView() {
         backgroundColor: "rgba(255,0,0,0.4)",
         position: "absolute",
         zIndex: 1000,
-        display: "none",
+        //display: "none",
       }}
     >
       <Text>DEBUG</Text>
@@ -22,6 +22,14 @@ export default function ContextDebugView() {
       <Text>Mood2:{state.moodAfter ?? "null"}</Text>
       <Text>Energy1:{state.energyBefore ?? "null"}</Text>
       <Text>Energy2:{state.energyAfter ?? "null"}</Text>
+      <Text>
+        isOnboarding:
+        {state.isOnboarding
+          ? "true"
+          : state.isOnboarding == false
+          ? "false"
+          : "null"}
+      </Text>
     </View>
   );
 }

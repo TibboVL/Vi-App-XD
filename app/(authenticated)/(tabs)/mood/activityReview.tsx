@@ -26,8 +26,11 @@ import {
 import VitoError from "@/components/ViErrorHandler";
 import { useQueryClient } from "@tanstack/react-query";
 import { AgendaItem } from "@/components/ViAgendaItem";
+import { usePreventUserBack } from "@/hooks/usePreventBack";
 
 export default function ActivityReviewScreen() {
+  usePreventUserBack();
+
   const state = useCheckinState();
   const dispatch = useCheckinDispatch();
   const [selectedReviewItemId, setSelectedReviewItemId] = useState<
@@ -49,7 +52,6 @@ export default function ActivityReviewScreen() {
   }
 
   function handleSetContextForActivityReview(reviewing: boolean) {
-    if (router.canDismiss()) router.dismissAll();
     dispatch({
       action: CheckinContextAction.SET_USER_ACTIVITY, // automatically resets the rest
       payload: {
@@ -62,7 +64,7 @@ export default function ActivityReviewScreen() {
       },
     });
   }
-  const navigation = useNavigation();
+
   const queryClient = useQueryClient();
   const {
     mutate,
@@ -80,8 +82,6 @@ export default function ActivityReviewScreen() {
       },
       {
         onSuccess: (data) => {
-          //console.log(data);
-          //console.log(data.afterMoodId);
           if (data.afterMoodId == null) {
             queryClient.invalidateQueries({
               queryKey: ["last-valid-checkin"],
@@ -89,28 +89,26 @@ export default function ActivityReviewScreen() {
             }); // we added a freestanding checkin so we want to invalidate the cache of the query so our mood screen updates
           }
           setAllowedToFetchList(true);
+          if (state.isOnboarding) {
+            router.replace("/onboarding/location");
+          }
         },
       }
     );
   }
-
   useEffect(() => {
     if (state.moodBefore != null && state.energyBefore != null) {
       handlePostCheckin(); // if data is already in the context we should send it to the backend
     } else {
       setAllowedToFetchList(true);
     }
-
-    const listener = navigation.addListener("beforeRemove", (e) => {
-      e.preventDefault();
-    });
-
-    return () => {
-      navigation.removeListener("beforeRemove", listener);
-    };
   }, []);
 
   const insets = useSafeAreaInsets();
+
+  if (state.isOnboarding) {
+    return <Viloader message="Working on it!" />;
+  }
 
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
@@ -208,7 +206,7 @@ export default function ActivityReviewScreen() {
               type="text-only"
               onPress={() => {
                 handleSetContextForActivityReview(false); // also clear when leaving
-                router.push({
+                router.replace({
                   pathname: "/mood",
                 });
               }}
@@ -222,7 +220,7 @@ export default function ActivityReviewScreen() {
               type="light"
               onPress={() => {
                 handleSetContextForActivityReview(true);
-                router.push("/mood/moodPicker");
+                router.replace("/mood/moodPicker");
               }}
             />
           </View>

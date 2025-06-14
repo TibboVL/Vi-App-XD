@@ -434,6 +434,7 @@ function PlanningSheetView({
         onSuccess: (data) => {
           handleClose();
           queryClient.invalidateQueries({ queryKey: ["user-activity-list"] });
+          if (router.canDismiss()) router.dismissAll();
           router.replace({
             pathname: "/planning",
           });

@@ -1,4 +1,4 @@
-import { Text, View, ViewStyle } from "react-native";
+import { Text, TextStyle, View, ViewStyle } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
 import Animated, {
   Easing,
@@ -13,11 +13,13 @@ import { useEffect } from "react";
 interface ViLoaderProps {
   message: string;
   inPopup?: boolean;
+  messageStyling?: any;
 }
 
 export function Viloader({
   message = "Vito is working on it!",
   inPopup = false,
+  messageStyling,
 }: ViLoaderProps) {
   return (
     <View
@@ -32,7 +34,7 @@ export function Viloader({
       }}
     >
       <VitoLoader />
-      <Text>{message}</Text>
+      <Text style={messageStyling}>{message}</Text>
     </View>
   );
 }

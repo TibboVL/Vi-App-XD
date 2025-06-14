@@ -17,6 +17,7 @@ interface CheckinContextProps {
   energyBefore: number | null;
   energyAfter: number | null;
   comments: UserActivityComment | null;
+  isOnboarding: boolean | null;
 }
 const initialState: CheckinContextProps = {
   userActivityId: null,
@@ -27,6 +28,7 @@ const initialState: CheckinContextProps = {
   energyBefore: null,
   energyAfter: null,
   comments: null,
+  isOnboarding: null,
 };
 
 export enum CheckinContextAction {
@@ -36,6 +38,7 @@ export enum CheckinContextAction {
   SET_ENERGY_BEFORE = "SET_ENERGY_BEFORE",
   SET_ENERGY_AFTER = "SET_ENERGY_AFTER",
   SET_REVIEW_STAGE = "SET_REVIEW_STAGE",
+  SET_ONBOARDING = "SET_ONBOARDING",
 }
 export interface CheckinContextPayload {
   action: CheckinContextAction;
@@ -43,8 +46,6 @@ export interface CheckinContextPayload {
 }
 
 function reducer(state: CheckinContextProps, action: CheckinContextPayload) {
-  //console.log(state);
-
   switch (action.action) {
     case CheckinContextAction.SET_USER_ACTIVITY:
       return {
@@ -78,6 +79,11 @@ function reducer(state: CheckinContextProps, action: CheckinContextPayload) {
       return {
         ...state,
         energyAfter: action.payload,
+      } as CheckinContextProps;
+    case CheckinContextAction.SET_ONBOARDING:
+      return {
+        ...state,
+        isOnboarding: action.payload,
       } as CheckinContextProps;
     case CheckinContextAction.SET_REVIEW_STAGE:
       return { ...state, reviewStage: action.payload } as CheckinContextProps;
