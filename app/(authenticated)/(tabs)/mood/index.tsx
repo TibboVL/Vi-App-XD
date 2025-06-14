@@ -7,7 +7,6 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { EnergyLevel, EnergyMappings } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import { useGetLastValidCheckin } from "@/hooks/useCheckin";
 import {

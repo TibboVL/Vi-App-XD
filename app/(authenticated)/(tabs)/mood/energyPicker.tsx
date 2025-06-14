@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import {
-  runOnJS,
   useDerivedValue,
   useSharedValue,
   withTiming,

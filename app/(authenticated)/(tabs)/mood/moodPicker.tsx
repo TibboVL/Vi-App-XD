@@ -2,9 +2,7 @@ import { ViToggleButton } from "@/components/ViToggleButton";
 import { safeAreaEdges, safeAreaStyles } from "@/globalStyles";
 import { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ToastAndroid } from "react-native";
-import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Constants from "expo-constants";
 import { Mood } from "@/types/mood";
 import { ViButton } from "@/components/ViButton";
 import { router, useNavigation } from "expo-router";
@@ -21,7 +19,6 @@ import {
   VitoEmoteConfig,
 } from "@/components/VitoAnimatedMoods";
 import { useGetMoods } from "@/hooks/useMoods";
-import { AgendaItem } from "@/components/ViAgendaItem";
 import { CheckinAgendaItemWrapper } from "./activityReview";
 
 export default function MoodPickerScreen() {

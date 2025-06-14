@@ -171,12 +171,6 @@ export default function ActivityReviewScreen() {
                   selected={selectedReviewItemId == content.item.userActivityId}
                   onPress={() => toggleActivityId(content.item.userActivityId)}
                 />
-                /*  <ReviewItem
-                  key={content.index}
-                  selected={selectedReviewItemId == content.item.userActivityId}
-                  item={content.item}
-                  onPress={toggleActivityId}
-                /> */
               )}
               ListEmptyComponent={
                 <Text
