@@ -52,6 +52,7 @@
     "react-native-dotenv": "^3.4.11",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-gesture-handler": "~2.20.2",
+    "react-native-linear-gradient": "^2.8.3",
     "react-native-modal-datetime-picker": "^18.0.0",
     "react-native-notifier": "^2.0.0",
     "react-native-reanimated": "~3.16.1",
@@ -61,8 +62,10 @@
     "react-native-svg": "15.8.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
+    "rn-tooltip": "^3.0.3",
     "svg-path-bounds": "^1.0.2",
-    "victory-native": "^36.9.2"
+    "victory-native": "^36.9.2",
+    "expo-linear-gradient": "~14.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

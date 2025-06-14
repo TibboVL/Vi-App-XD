@@ -1,13 +1,7 @@
 import { View, Text, StyleSheet, TouchableNativeFeedback } from "react-native";
 import { Clock, CurrencyEur, MapPin, Users, User } from "phosphor-react-native";
-import { Tag } from "./ViCategoryTag";
 import { router } from "expo-router";
-import {
-  Activity,
-  ActivitySuggestion,
-  EnergyLevel,
-  PillarKey,
-} from "@/types/activity";
+import { Activity, ActivitySuggestion, EnergyLevel } from "@/types/activity";
 import { minutesToHoursMinutes } from "@/helpers/dateTimeHelpers";
 import { getIconByActivity } from "@/helpers/activityIconHelper";
 import { memo, useCallback, useMemo } from "react";
@@ -15,9 +9,7 @@ import { TextColors, textStyles } from "@/globalStyles";
 import { EnergyIcon } from "./EnergyIcon";
 import Svg, {
   Defs,
-  FeBlend,
   FeGaussianBlur,
-  FeOffset,
   Filter,
   G,
   RadialGradient,
@@ -25,6 +17,8 @@ import Svg, {
 } from "react-native-svg";
 import { Rect } from "victory-native";
 import ViCategoryContainer from "./ViCategoryContainer";
+import Tooltip from "rn-tooltip";
+import { LinearGradient } from "expo-linear-gradient";
 
 export const ViActivitySuggestion = memo(
   ({
@@ -89,6 +83,9 @@ export const ViActivitySuggestion = memo(
               >
                 {name}
               </Text>
+              {activitySuggestion ? (
+                <ConfidenceBadge suggestion={activitySuggestion} />
+              ) : null}
             </View>
             <ViCategoryContainer
               activity={activity}
@@ -138,23 +135,6 @@ export const ViActivitySuggestion = memo(
 
         {activitySuggestion?.isPremiumLocked ? (
           <TouchableNativeFeedback onPress={handleShowPremiumDialog}>
-            {/*       <BlurView
-              intensity={35}
-              style={[
-                styles.blurContainer,
-                {
-                  backgroundColor:
-                    Platform.OS == "android"
-                      ? "rgba(255,255,255,1)"
-                      : "transparent",
-                },
-              ]}
-            >
-              <Text style={[textStyles.h4]}>This is a Premium feature!</Text>
-              <Text style={[TextColors.muted]}>
-                Upgrade now to see up to 5 activity suggestions
-              </Text>
-            </BlurView> */}
             <View
               style={[
                 styles.blurContainer,
@@ -285,3 +265,122 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
+
+const ConfidenceBadge = ({
+  suggestion,
+}: {
+  suggestion: ActivitySuggestion;
+}) => {
+  if (!suggestion) return null;
+
+  const score = suggestion.confidence * 100;
+  const style = confidenceStyles(score);
+
+  return (
+    <View
+      style={{
+        position: "absolute",
+        top: 0,
+        right: 0,
+        borderRadius: 6,
+        //maxWidth: 200,
+        zIndex: 100,
+      }}
+    >
+      <Tooltip
+        actionType="press"
+        backgroundColor="#FFF"
+        //withOverlay={false}
+        overlayColor="rgba(0,0,0,0.1)"
+        width={300}
+        height={150}
+        //withPointer={false}
+
+        containerStyle={{
+          //          backgroundColor: "red",
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+        }}
+        popover={
+          <View>
+            <Text>{suggestion.reasoning}</Text>
+          </View>
+        }
+      >
+        <LinearGradient
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          colors={
+            [...style.colors] as unknown as readonly [
+              string,
+              string,
+              ...string[]
+            ]
+          }
+          style={{
+            paddingVertical: 4,
+            paddingHorizontal: 10,
+            borderRadius: 12,
+            ...style.shadow,
+          }}
+        >
+          <Text
+            style={[
+              textStyles.bodySmall,
+              { color: style.textColor, fontWeight: "600" },
+            ]}
+          >
+            {Math.round(score)}% fit
+          </Text>
+        </LinearGradient>
+      </Tooltip>
+    </View>
+  );
+};
+const confidenceStyles = (confidence: number) => {
+  if (confidence >= 95) {
+    return {
+      useGradient: true,
+      colors: ["#FFD700", "#FFC107"], // Rich Gold
+      textColor: "#3B2E00", // Dark brown text for contrast on gold
+      shadow: {
+        shadowColor: "#FFD700",
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.9,
+        shadowRadius: 10,
+      },
+    };
+  } else if (confidence >= 90) {
+    return {
+      useGradient: true,
+      colors: ["#FFECB3", "#FFD54F"], // Muted Gold
+      textColor: "#5A4D00", // Dark yellow text
+      shadow: {
+        shadowColor: "#FFD54F",
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.6,
+        shadowRadius: 6,
+      },
+    };
+  } else if (confidence >= 85) {
+    return {
+      useGradient: true,
+      colors: ["#C0C0C0", "#A9A9A9"], // Silver gradient
+      textColor: "#1A1A1A", // Very dark text
+      shadow: null,
+    };
+  } else if (confidence >= 70) {
+    return {
+      useGradient: true,
+      colors: ["#CD7F32", "#B87333"], // Bronze gradient
+      textColor: "#3E1F00", // Dark brown text
+      shadow: null,
+    };
+  } else {
+    return {
+      useGradient: true,
+      colors: ["#A9A9A9", "#707070"], // Gray gradient for low confidence
+      textColor: "#FFFFFF", // White text
+      shadow: null,
+    };
+  }
+};
