@@ -109,7 +109,7 @@ export default function PlanningScreen() {
         };
       }
     });
-    console.log(JSON.stringify(marked));
+    //console.log(JSON.stringify(marked));
     return marked;
   }, [userActivityListContainers]);
 
@@ -382,9 +382,7 @@ function EditExistingEventSheet({
   } = useGetActivityDetails({
     activityId: compactUserActivityListItem?.activityId!,
   });
-  useEffect(() => {
-    console.log(activity);
-  }, [activity]);
+
   const queryClient = useQueryClient();
   const {
     mutate: handleUpdate,

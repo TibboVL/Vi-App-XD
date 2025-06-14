@@ -80,8 +80,8 @@ export default function ActivityReviewScreen() {
       },
       {
         onSuccess: (data) => {
-          console.log(data);
-          console.log(data.afterMoodId);
+          //console.log(data);
+          //console.log(data.afterMoodId);
           if (data.afterMoodId == null) {
             queryClient.invalidateQueries({
               queryKey: ["last-valid-checkin"],
