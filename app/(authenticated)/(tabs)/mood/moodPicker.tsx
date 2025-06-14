@@ -21,6 +21,8 @@ import {
   VitoEmoteConfig,
 } from "@/components/VitoAnimatedMoods";
 import { useGetMoods } from "@/hooks/useMoods";
+import { AgendaItem } from "@/components/ViAgendaItem";
+import { CheckinAgendaItemWrapper } from "./activityReview";
 
 export default function MoodPickerScreen() {
   const state = useCheckinState();
@@ -85,12 +87,13 @@ export default function MoodPickerScreen() {
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       <ContextDebugView />
-
       <View style={[styles.Container]}>
+        <CheckinAgendaItemWrapper
+          compactUserActivityListItem={state.compactUserActivityListItem}
+        />
         <View
           id="ChosenPrimaryEmotion"
           style={{
-            //backgroundColor: "red",
             minHeight: 70,
             marginBlock: 32,
             marginInline: "auto",

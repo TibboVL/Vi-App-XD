@@ -52,6 +52,7 @@ import {
 } from "./mood/checkinContext";
 import { MarkedDates } from "react-native-calendars/src/types";
 import ViCategoryContainer from "@/components/ViCategoryContainer";
+import { AgendaItem } from "@/components/ViAgendaItem";
 
 export default function PlanningScreen() {
   const today = new Date().toISOString().split("T")[0];
@@ -447,7 +448,10 @@ function EditExistingEventSheet({
     if (router.canDismiss()) router.dismissAll();
     dispatch({
       action: CheckinContextAction.SET_USER_ACTIVITY, // automatically resets the rest
-      payload: compactUserActivityListItem?.userActivityId,
+      payload: {
+        userActivityId: compactUserActivityListItem?.userActivityId,
+        compactUserActivityListItem: compactUserActivityListItem,
+      },
     });
     router.push("/mood/moodPicker");
   };
@@ -785,86 +789,6 @@ const SectionHeader = (date: any) => {
   );
 };
 
-interface ItemProps {
-  item: CompactUserActivityListItem;
-  onPress: () => void;
-}
-const AgendaItem = ({ item, onPress }: ItemProps) => {
-  var options = {
-    hour: "2-digit",
-    minute: "2-digit",
-  } as Intl.DateTimeFormatOptions;
-  const start = new Date(item.plannedStart!).toLocaleTimeString(
-    "en-nl",
-    options
-  );
-  const end = new Date(item.plannedEnd!).toLocaleTimeString("en-nl", options);
-
-  return (
-    <View style={styles.wrapper}>
-      <TouchableNativeFeedback onPress={onPress}>
-        <View
-          style={[
-            styles.card,
-            {
-              padding: 10,
-              paddingInline: 12,
-            },
-          ]}
-        >
-          <View>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ fontWeight: 700 }}>{item.activityTitle}</Text>
-              {item.markedCompletedAt != null ? (
-                <Check
-                  size={16}
-                  style={{
-                    transform: [
-                      {
-                        translateX: -3,
-                      },
-                      { translateY: -2 },
-                    ],
-                  }}
-                  weight="bold"
-                  color={adjustLightness(
-                    BackgroundColors.primary.backgroundColor,
-                    -20
-                  )}
-                />
-              ) : null}
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text>
-                {start} - {end}
-              </Text>
-              <ViCategoryContainer
-                activity={
-                  {
-                    categories: item.categories,
-                  } as Activity
-                }
-              />
-            </View>
-          </View>
-        </View>
-      </TouchableNativeFeedback>
-    </View>
-  );
-};
-
 const styles = StyleSheet.create({
   Container: {
     display: "flex",
@@ -873,18 +797,6 @@ const styles = StyleSheet.create({
     gap: 8,
     width: "100%",
     height: "100%",
-  },
-  wrapper: {
-    marginBlock: 4,
-    marginInline: 16,
-    flex: 1, // shrink if needed
-    //width: "100%", // expand as much as possible
-    borderRadius: 16,
-    overflow: "hidden",
-  },
-  card: {
-    width: "100%",
-    backgroundColor: "#fff",
   },
   BottomContainer: {
     paddingBlock: 16,

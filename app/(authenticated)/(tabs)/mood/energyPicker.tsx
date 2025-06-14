@@ -33,6 +33,7 @@ import {
 } from "./checkinContext";
 import ContextDebugView from "./checkinContextDebug";
 import { ReText } from "react-native-redash";
+import { CheckinAgendaItemWrapper } from "./activityReview";
 
 const batteryColors = [
   { low: "#FFA3A3", medium: "#f7cf9d", high: "#D4FF8F", veryHigh: "#A3FFE5" },
@@ -140,6 +141,9 @@ export default function EnergyPickerScreen() {
           paddingBottom: insets.top,
         }}
       >
+        <CheckinAgendaItemWrapper
+          compactUserActivityListItem={state.compactUserActivityListItem}
+        />
         <View style={styles.Container}>
           <ContextDebugView />
           <ReText
@@ -278,7 +282,7 @@ const styles = StyleSheet.create({
   Container: {
     flex: 1,
     width: "100%",
-    paddingBlock: 16 * 6,
+    paddingBlock: 16 * 3,
     paddingInline: 16,
   },
   BottomContainer: {

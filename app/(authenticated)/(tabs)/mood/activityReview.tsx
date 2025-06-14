@@ -1,18 +1,11 @@
 import {
-  BackgroundColors,
   safeAreaEdges,
   safeAreaStyles,
   TextColors,
   textStyles,
 } from "@/globalStyles";
 import { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableNativeFeedback,
-  FlatList,
-} from "react-native";
+import { View, Text, StyleSheet, FlatList } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -20,21 +13,19 @@ import {
 import { ViButton } from "@/components/ViButton";
 import { router, useNavigation } from "expo-router";
 import { CompactUserActivityListItem } from "@/types/userActivityList";
-import { Activity } from "@/types/activity";
 import { Viloader } from "@/components/ViLoader";
 import {
   CheckinContextAction,
   useCheckinDispatch,
   useCheckinState,
 } from "./checkinContext";
-import ContextDebugView from "./checkinContextDebug";
 import {
   useGetUserActivityListsItemsReview,
   usePostUserActivityListItemReview,
 } from "@/hooks/useUserActivityList";
 import VitoError from "@/components/ViErrorHandler";
 import { useQueryClient } from "@tanstack/react-query";
-import ViCategoryContainer from "@/components/ViCategoryContainer";
+import { AgendaItem } from "@/components/ViAgendaItem";
 
 export default function ActivityReviewScreen() {
   const state = useCheckinState();
@@ -59,13 +50,16 @@ export default function ActivityReviewScreen() {
 
   function handleSetContextForActivityReview(reviewing: boolean) {
     if (router.canDismiss()) router.dismissAll();
-    // const activity = userActivityListItemsToBeReviewed?.find(
-    //   (a) => a.userActivityId == selectedReviewItemId
-    // );
-    // console.log(activity);
     dispatch({
       action: CheckinContextAction.SET_USER_ACTIVITY, // automatically resets the rest
-      payload: reviewing ? selectedReviewItemId : null,
+      payload: {
+        userActivityId: reviewing ? selectedReviewItemId : null,
+        compactUserActivityListItem: reviewing
+          ? userActivityListItemsToBeReviewed?.find(
+              (ual) => ual.userActivityId == selectedReviewItemId
+            )
+          : null,
+      },
     });
   }
   const navigation = useNavigation();
@@ -171,12 +165,18 @@ export default function ActivityReviewScreen() {
               }}
               data={userActivityListItemsToBeReviewed}
               renderItem={(content) => (
-                <ReviewItem
+                <AgendaItem
+                  item={content.item}
+                  includeDate={true}
+                  selected={selectedReviewItemId == content.item.userActivityId}
+                  onPress={() => toggleActivityId(content.item.userActivityId)}
+                />
+                /*  <ReviewItem
                   key={content.index}
                   selected={selectedReviewItemId == content.item.userActivityId}
                   item={content.item}
                   onPress={toggleActivityId}
-                />
+                /> */
               )}
               ListEmptyComponent={
                 <Text
@@ -238,72 +238,25 @@ export default function ActivityReviewScreen() {
   );
 }
 
-interface ReviewItemProps {
-  item: CompactUserActivityListItem;
-  selected: boolean;
-  onPress: (itemId: number) => void;
-}
-const ReviewItem = ({ item, selected, onPress }: ReviewItemProps) => {
-  var options = {
-    hour: "2-digit",
-    minute: "2-digit",
-  } as Intl.DateTimeFormatOptions;
-  var DateOptions = {
-    month: "long",
-    day: "numeric",
-    weekday: "short",
-  } as Intl.DateTimeFormatOptions;
-  const start = new Date(item.plannedStart!).toLocaleTimeString(
-    "en-nl",
-    options
-  );
-  const date = new Date(item.plannedStart!).toLocaleDateString(
-    "en-nl",
-    DateOptions
-  );
-  const end = new Date(item.plannedEnd!).toLocaleTimeString("en-nl", options);
-
+export const CheckinAgendaItemWrapper = ({
+  compactUserActivityListItem,
+}: {
+  compactUserActivityListItem: CompactUserActivityListItem | null;
+}) => {
   return (
     <View
-      style={[
-        styles.wrapper,
-        {
-          borderWidth: 2,
-          borderColor: selected
-            ? BackgroundColors.primary.backgroundColor
-            : "transparent",
-        },
-      ]}
+      style={{
+        width: "100%",
+        minHeight: 64 * 1,
+      }}
     >
-      <TouchableNativeFeedback onPress={() => onPress(item.userActivityId)}>
-        <View
-          style={[
-            styles.card,
-            {
-              padding: 10,
-              paddingInline: 12,
-            },
-          ]}
-        >
-          <View>
-            <Text style={{ fontWeight: 700 }}>{item.activityTitle}</Text>
-            <Text>
-              {date} at {start}
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <ViCategoryContainer
-                activity={{ categories: item.categories } as Activity}
-              />
-            </View>
-          </View>
-        </View>
-      </TouchableNativeFeedback>
+      {compactUserActivityListItem ? (
+        <AgendaItem
+          onPress={() => null}
+          includeDate={true}
+          item={compactUserActivityListItem}
+        />
+      ) : null}
     </View>
   );
 };
@@ -317,7 +270,6 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     flex: 1,
   },
-
   BottomContainer: {
     paddingBlock: 16,
     paddingInline: 16,
@@ -327,18 +279,5 @@ const styles = StyleSheet.create({
     display: "flex",
     alignItems: "flex-end",
     gap: 8,
-  },
-  wrapper: {
-    width: "100%",
-    marginBlock: 4,
-    //marginInline: 16,
-    flex: 1, // shrink if needed
-    //width: "100%", // expand as much as possible
-    borderRadius: 16 + 2,
-    overflow: "hidden",
-  },
-  card: {
-    width: "100%",
-    backgroundColor: "#fff",
   },
 });
