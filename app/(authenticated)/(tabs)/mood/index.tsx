@@ -48,7 +48,7 @@ export default function MoodScreen() {
     battery.value = lastKnownValidCheckin
       ? lastKnownValidCheckin.energy / 100
       : 0.1;
-    console.log(battery.value);
+    //console.log(battery.value);
     if (lastKnownValidCheckin?.validAtDate) {
       setDaysAgo(getDaysAgo(lastKnownValidCheckin.validAtDate));
     }

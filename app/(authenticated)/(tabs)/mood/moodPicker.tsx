@@ -33,7 +33,7 @@ export default function MoodPickerScreen() {
   const emoteManagerRef = useRef<VitoAnimatedMoodHandles>(null);
 
   function toggleMood(stage: "primary" | "secondary", mood: Mood) {
-    console.log(mood);
+    //console.log(mood);
     if (stage == "primary") {
       if (selectedPrimaryMood == mood.moodId) {
         setSelectedPrimaryMoodMood(null);

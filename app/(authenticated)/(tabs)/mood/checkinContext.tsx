@@ -43,7 +43,7 @@ export interface CheckinContextPayload {
 }
 
 function reducer(state: CheckinContextProps, action: CheckinContextPayload) {
-  console.log(state);
+  //console.log(state);
 
   switch (action.action) {
     case CheckinContextAction.SET_USER_ACTIVITY:

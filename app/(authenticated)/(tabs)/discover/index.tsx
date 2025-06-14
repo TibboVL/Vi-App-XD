@@ -89,7 +89,7 @@ export default function DiscoverScreen() {
     if (generationResults && !generationError) {
       setLatestSuggestions(generationResults);
     } else if (generationError?.status == 503) {
-      console.log(generationError, generationResults);
+      //console.log(generationError, generationResults);
       Notifier.showNotification({
         title: "Failed to generate suggestions",
         description: `You used up your AI requests for today! Your limit resets at midnight UTC`,

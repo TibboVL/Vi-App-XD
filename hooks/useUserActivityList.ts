@@ -145,7 +145,6 @@ export const useDeleteActivityList = () => {
     }: {
       userActivityId: string | number;
     }) => {
-      console.log(userActivityId);
       await api(`/useractivitylist/delete?userActivityId=${userActivityId}`, {
         method: "DELETE",
       });

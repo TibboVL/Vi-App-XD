@@ -13,7 +13,7 @@ import {
   VictoryStack,
 } from "victory-native";
 import { textStyles } from "@/globalStyles";
-import { useContext, useMemo } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { getPillarInfo, PillarKey, Pillars } from "@/types/activity";
 import { useGetStatisticsPerPillar } from "@/hooks/useStatistics";
 import { RefreshControl } from "react-native-gesture-handler";
@@ -84,7 +84,7 @@ export default function BalanceScreen() {
         })
       );
     }
-    console.log("data changed");
+    //console.log("data changed");
     return result;
   }, [data]);
 
@@ -104,7 +104,6 @@ export default function BalanceScreen() {
       tickDate.setDate(start.getDate() + i);
       days.push(tickDate);
     }
-    console.log(days);
     return days;
   }, [data]);
   return (
@@ -133,7 +132,6 @@ export default function BalanceScreen() {
               >
                 <VictoryStack>
                   {Object.entries(groupedData).map(([key, dataGroup]) => {
-                    console.log(key, dataGroup);
                     return (
                       <VictoryBar
                         barWidth={300 / tickValues.length}
@@ -143,7 +141,6 @@ export default function BalanceScreen() {
                         style={{
                           data: {
                             fill: ({ datum }) => datum?.fill,
-                            //strokeLinejoin: "round",
                           },
                         }}
                       />

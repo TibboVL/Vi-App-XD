@@ -1,5 +1,5 @@
 import { adjustLightness } from "@/constants/Colors";
-import { BackgroundColors, textStyles } from "@/globalStyles";
+import { textStyles } from "@/globalStyles";
 import {
   FlatList,
   LayoutChangeEvent,
@@ -19,7 +19,7 @@ import {
 import { useState } from "react";
 import { PerActivityStatistics } from "@/types/statistics";
 import ViNotificationDot from "@/components/ViNotificationDot";
-import { Activity, getPillarInfo, PillarKey } from "@/types/activity";
+import { getPillarInfo, PillarKey } from "@/types/activity";
 import {
   ViTable,
   ViTableBody,
