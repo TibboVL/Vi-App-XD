@@ -283,23 +283,15 @@ const ConfidenceBadge = ({
         top: 0,
         right: 0,
         borderRadius: 6,
-        //maxWidth: 200,
         zIndex: 100,
       }}
     >
       <Tooltip
         actionType="press"
         backgroundColor="#FFF"
-        //withOverlay={false}
         overlayColor="rgba(0,0,0,0.1)"
         width={300}
         height={150}
-        //withPointer={false}
-
-        containerStyle={{
-          //          backgroundColor: "red",
-          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-        }}
         popover={
           <View>
             <Text>{suggestion.reasoning}</Text>

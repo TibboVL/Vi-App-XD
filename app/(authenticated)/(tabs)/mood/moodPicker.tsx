@@ -2,9 +2,7 @@ import { ViToggleButton } from "@/components/ViToggleButton";
 import { safeAreaEdges, safeAreaStyles } from "@/globalStyles";
 import { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ToastAndroid } from "react-native";
-import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Constants from "expo-constants";
 import { Mood } from "@/types/mood";
 import { ViButton } from "@/components/ViButton";
 import { router, useNavigation } from "expo-router";
@@ -21,6 +19,7 @@ import {
   VitoEmoteConfig,
 } from "@/components/VitoAnimatedMoods";
 import { useGetMoods } from "@/hooks/useMoods";
+import { CheckinAgendaItemWrapper } from "./activityReview";
 
 export default function MoodPickerScreen() {
   const state = useCheckinState();
@@ -85,12 +84,13 @@ export default function MoodPickerScreen() {
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
       <ContextDebugView />
-
       <View style={[styles.Container]}>
+        <CheckinAgendaItemWrapper
+          compactUserActivityListItem={state.compactUserActivityListItem}
+        />
         <View
           id="ChosenPrimaryEmotion"
           style={{
-            //backgroundColor: "red",
             minHeight: 70,
             marginBlock: 32,
             marginInline: "auto",

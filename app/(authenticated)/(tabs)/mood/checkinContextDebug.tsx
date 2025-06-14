@@ -15,7 +15,9 @@ export default function ContextDebugView() {
     >
       <Text>DEBUG</Text>
       <Text>userActivityId:{state.userActivityId ?? "null"}</Text>
-      {/* <Text>Activity:{JSON.stringify(state.activity) ?? "null"}</Text> */}
+      <Text>
+        Activity:{JSON.stringify(state.compactUserActivityListItem) ?? "null"}
+      </Text>
       <Text>Mood1:{state.moodBefore ?? "null"}</Text>
       <Text>Mood2:{state.moodAfter ?? "null"}</Text>
       <Text>Energy1:{state.energyBefore ?? "null"}</Text>

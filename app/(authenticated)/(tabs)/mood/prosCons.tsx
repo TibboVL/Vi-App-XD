@@ -10,6 +10,7 @@ import { useCheckinDispatch, useCheckinState } from "./checkinContext";
 import { useEffect } from "react";
 import { ToastAndroid } from "react-native";
 import ContextDebugView from "./checkinContextDebug";
+import { CheckinAgendaItemWrapper } from "./activityReview";
 
 export default function MoodScreen() {
   const insets = useSafeAreaInsets();
@@ -41,6 +42,9 @@ export default function MoodScreen() {
         }}
       >
         <ContextDebugView />
+        <CheckinAgendaItemWrapper
+          compactUserActivityListItem={state.compactUserActivityListItem}
+        />
         <View style={styles.Container}>
           <View
             style={{
