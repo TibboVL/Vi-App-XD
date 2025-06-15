@@ -16,6 +16,17 @@ export type StatisticWrapper = {
   statistics: PerPillarStatistics[];
 };
 
+export type EnergyStatisticsWrapper = {
+  start: string;
+  end: string;
+  statistics: EnergyStatistics[];
+};
+
+export type EnergyStatistics = {
+  energy: number;
+  date: string;
+};
+
 export type PerPillarAverageDeltas = {
   deltaAlertness: number;
   deltaEnjoyment: number;

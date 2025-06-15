@@ -30,7 +30,7 @@ export function ViSelect({
 
   return (
     <DropDownPicker
-      listMode="FLATLIST"
+      //listMode="FLATLIST"
       open={open}
       value={selectedValue}
       items={items}
@@ -43,9 +43,10 @@ export function ViSelect({
       style={[
         {
           borderRadius: 16,
-          borderWidth: 1,
+          borderWidth: 0,
           paddingHorizontal: 16,
           height: 52,
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
         },
         outlineStyles[variant],
         style,
@@ -58,20 +59,23 @@ export function ViSelect({
           ? styles.textSecondary
           : styles.textDanger,
       ]}
-      labelStyle={
+      labelStyle={[
         (textStyles.CTA,
         variant === "primary"
           ? styles.textPrimary
           : variant === "secondary"
           ? styles.textSecondary
-          : styles.textDanger)
-      }
+          : styles.textDanger),
+      ]}
       dropDownContainerStyle={{
         borderRadius: 16,
-        borderWidth: 1,
+        borderWidth: 0,
         borderColor: outlineStyles[variant].borderColor,
         overflow: "hidden",
         boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+      }}
+      listItemLabelStyle={{
+        fontWeight: 600,
       }}
       listItemContainerStyle={{
         borderRadius: 16,
