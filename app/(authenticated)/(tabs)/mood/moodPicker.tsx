@@ -1,16 +1,11 @@
 import { ViToggleButton } from "@/components/ViToggleButton";
 import { safeAreaEdges, safeAreaStyles } from "@/globalStyles";
-import { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, ToastAndroid } from "react-native";
+import { useRef, useState } from "react";
+import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Mood } from "@/types/mood";
 import { ViButton } from "@/components/ViButton";
-import {
-  router,
-  useGlobalSearchParams,
-  useNavigation,
-  usePathname,
-} from "expo-router";
+import { router } from "expo-router";
 import {
   useCheckinDispatch,
   useCheckinState,

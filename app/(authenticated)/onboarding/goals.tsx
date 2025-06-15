@@ -12,20 +12,27 @@ import {
   CheckinContextAction,
   useCheckinDispatch,
 } from "../(tabs)/mood/checkinContext";
-
-const goals = [
-  "Be more present",
-  "Enhance focus",
-  "Increase energy",
-  "Awesome sleep",
-  "Stress relief",
-  "Nurture friendships",
-];
+import { useGetCurrentGoals, useGetGoals, useSetGoals } from "@/hooks/useGoals";
+import { Viloader } from "@/components/ViLoader";
+import { useQueryClient } from "@tanstack/react-query";
+import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
 
 export default function GoalsScreen() {
+  const params = useLocalSearchParams();
+  const { viaOnboarding = true } = params;
+
   const vitoMoodRef = useRef<VitoAnimatedMoodHandles>(null);
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [selectedGoals, setSelectedGoals] = useState<number[]>([]);
   const dispatch = useCheckinDispatch();
+
+  const { isLoading, data, error } = useGetGoals();
+  const {
+    isLoading: currentIsLoading,
+    data: currentData,
+    error: currentError,
+  } = useGetCurrentGoals({
+    enabled: viaOnboarding == "false",
+  });
 
   useEffect(() => {
     if (vitoMoodRef.current) {
@@ -36,8 +43,13 @@ export default function GoalsScreen() {
       }
     }
   }, [selectedGoals]);
+  useEffect(() => {
+    if (currentData) {
+      setSelectedGoals(currentData.map((goal) => goal.goalId));
+    }
+  }, [currentData]);
 
-  const handleGoalPress = (goal: string) => {
+  const handleGoalPress = (goal: number) => {
     setSelectedGoals((prevSelectedGoals) => {
       if (prevSelectedGoals.includes(goal)) {
         return prevSelectedGoals.filter((item) => item !== goal);
@@ -47,17 +59,37 @@ export default function GoalsScreen() {
     });
   };
 
-  const handleContinue = () => {
-    dispatch({
-      action: CheckinContextAction.SET_ONBOARDING,
-      payload: true,
-    });
-    //! this is a hacky way to get the navbar to update itself and hide properly!
-    router.replace("/mood");
-    setTimeout(() => {
-      router.push("/mood/moodPicker");
-    });
-  };
+  const queryClient = useQueryClient();
+  // TODO Add better pending and error handling here for the user
+  const { mutate, isPending, error: postError } = useSetGoals();
+  async function handleContinue() {
+    mutate(
+      {
+        goalIds: selectedGoals,
+      },
+      {
+        onSuccess: (data) => {
+          queryClient.invalidateQueries({
+            queryKey: ["current-goals"],
+            refetchType: "active",
+          }); // we added a freestanding checkin so we want to invalidate the cache of the query so our mood screen updates
+          if (viaOnboarding == "false") {
+            router.replace("/profile/");
+          } else {
+            dispatch({
+              action: CheckinContextAction.SET_ONBOARDING,
+              payload: true,
+            });
+            //! this is a hacky way to get the navbar to update itself and hide properly!
+            router.replace("/mood");
+            setTimeout(() => {
+              router.push("/mood/moodPicker");
+            });
+          }
+        },
+      }
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -73,17 +105,23 @@ export default function GoalsScreen() {
         </View>
 
         <View style={styles.goalsContainer}>
-          {goals.map((goal) => (
-            <View key={goal} style={styles.goalButtonWrapper}>
-              <ViButton
-                title={goal}
-                type={selectedGoals.includes(goal) ? "light" : "outline"}
-                variant="primary"
-                onPress={() => handleGoalPress(goal)}
-                contentStyle={styles.goalButton}
-              />
-            </View>
-          ))}
+          {isLoading ? <Viloader message="One moment!" /> : null}
+          {data &&
+            !isLoading &&
+            !error &&
+            data.map((goal) => (
+              <View key={goal.goalId} style={styles.goalButtonWrapper}>
+                <ViButton
+                  title={goal.label}
+                  type={
+                    selectedGoals.includes(goal.goalId) ? "light" : "outline"
+                  }
+                  variant="primary"
+                  onPress={() => handleGoalPress(goal.goalId)}
+                  contentStyle={styles.goalButton}
+                />
+              </View>
+            ))}
         </View>
 
         <View style={styles.bottomButtonContainer}>
@@ -133,7 +171,7 @@ const styles = StyleSheet.create({
     flexBasis: "auto",
   },
   goalButton: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
   },
   bottomButtonContainer: {
     width: "100%",
