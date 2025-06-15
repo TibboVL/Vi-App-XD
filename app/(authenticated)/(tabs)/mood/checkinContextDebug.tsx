@@ -10,7 +10,7 @@ export default function ContextDebugView() {
         backgroundColor: "rgba(255,0,0,0.4)",
         position: "absolute",
         zIndex: 1000,
-        //display: "none",
+        display: "none",
       }}
     >
       <Text>DEBUG</Text>
