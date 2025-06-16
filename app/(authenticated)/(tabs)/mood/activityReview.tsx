@@ -27,6 +27,7 @@ import VitoError from "@/components/ViErrorHandler";
 import { useQueryClient } from "@tanstack/react-query";
 import { AgendaItem } from "@/components/ViAgendaItem";
 import { usePreventUserBack } from "@/hooks/usePreventBack";
+import ContextDebugView from "./checkinContextDebug";
 
 export default function ActivityReviewScreen() {
   usePreventUserBack();
@@ -79,6 +80,7 @@ export default function ActivityReviewScreen() {
         beforeEnergy: state.energyBefore,
         afterEnergy: state.energyAfter,
         userActivityId: state.userActivityId,
+        comments: state.comments,
       },
       {
         onSuccess: (data) => {
@@ -92,6 +94,9 @@ export default function ActivityReviewScreen() {
           if (state.isOnboarding) {
             router.replace("/onboarding/location");
           }
+        },
+        onError: (error) => {
+          console.warn(error);
         },
       }
     );
@@ -112,6 +117,7 @@ export default function ActivityReviewScreen() {
 
   return (
     <SafeAreaView style={safeAreaStyles} edges={safeAreaEdges}>
+      <ContextDebugView />
       <View
         style={[
           styles.Container,
@@ -175,6 +181,8 @@ export default function ActivityReviewScreen() {
                   style={{
                     textAlign: "center",
                     width: "100%",
+                    paddingBlock: 32 * 6,
+                    //backgroundColor: "red",
                   }}
                 >
                   No planned activities to review!
