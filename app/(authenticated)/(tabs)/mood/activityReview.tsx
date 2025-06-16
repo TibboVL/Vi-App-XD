@@ -92,6 +92,11 @@ export default function ActivityReviewScreen() {
           }
           setAllowedToFetchList(true);
           if (state.isOnboarding) {
+            // ensure that we reset this value so the user can actually review after doing onboarding
+            dispatch({
+              action: CheckinContextAction.SET_ONBOARDING,
+              payload: false,
+            });
             router.replace("/onboarding/location");
           }
         },
