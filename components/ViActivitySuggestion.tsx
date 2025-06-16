@@ -76,13 +76,21 @@ export const ViActivitySuggestion = memo(
         <TouchableNativeFeedback onPress={handlePress}>
           <View style={styles.card}>
             <View style={styles.header}>
-              <Icon size={32} />
-              <Text
-                style={[textStyles.bodyLarge, { flexShrink: 1 }]}
-                numberOfLines={2}
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  gap: 8,
+                }}
               >
-                {name}
-              </Text>
+                <Icon size={32} />
+                <Text
+                  style={[textStyles.bodyLarge, { flexShrink: 1 }]}
+                  numberOfLines={2}
+                >
+                  {name}
+                </Text>
+              </View>
               {activitySuggestion ? (
                 <ConfidenceBadge suggestion={activitySuggestion} />
               ) : null}
@@ -230,7 +238,8 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     marginBottom: 8,
     gap: 8,
   },
@@ -279,11 +288,11 @@ const ConfidenceBadge = ({
   return (
     <View
       style={{
-        position: "absolute",
-        top: 0,
-        right: 0,
+        //position: "absolute",
+        //top: 0,
+        //right: 0,
         borderRadius: 6,
-        zIndex: 100,
+        //zIndex: 100,
       }}
     >
       <Tooltip
