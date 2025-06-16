@@ -5,8 +5,16 @@ export enum ReviewStage {
   BEFORE = "BEFORE",
   AFTER = "AFTER",
 }
+
+export const types = {
+  pro: "pro",
+  neutral: "neutral",
+  con: "con",
+};
+
 export interface UserActivityComment {
   comment: any;
+  type: keyof typeof types;
 }
 interface CheckinContextProps {
   userActivityId: number | null;
@@ -16,7 +24,7 @@ interface CheckinContextProps {
   moodAfter: number | null;
   energyBefore: number | null;
   energyAfter: number | null;
-  comments: UserActivityComment | null;
+  comments: UserActivityComment[] | null;
   isOnboarding: boolean | null;
 }
 const initialState: CheckinContextProps = {
@@ -39,6 +47,7 @@ export enum CheckinContextAction {
   SET_ENERGY_AFTER = "SET_ENERGY_AFTER",
   SET_REVIEW_STAGE = "SET_REVIEW_STAGE",
   SET_ONBOARDING = "SET_ONBOARDING",
+  SET_COMMENTS = "SET_COMMENTS",
 }
 export interface CheckinContextPayload {
   action: CheckinContextAction;
@@ -79,6 +88,11 @@ function reducer(state: CheckinContextProps, action: CheckinContextPayload) {
       return {
         ...state,
         energyAfter: action.payload,
+      } as CheckinContextProps;
+    case CheckinContextAction.SET_COMMENTS:
+      return {
+        ...state,
+        comments: action.payload,
       } as CheckinContextProps;
     case CheckinContextAction.SET_ONBOARDING:
       return {

@@ -5,6 +5,7 @@ import {
   CompactUserActivityListItem,
 } from "@/types/userActivityList";
 import { Checkin } from "@/types/checkin";
+import { UserActivityComment } from "@/app/(authenticated)/(tabs)/mood/checkinContext";
 
 export const useGetUserActivityList = ({
   enabled = true,
@@ -84,12 +85,14 @@ export const usePostUserActivityListItemReview = () => {
       beforeEnergy,
       afterEnergy,
       userActivityId,
+      comments,
     }: {
       beforeMoodId: number | null;
       afterMoodId: number | null;
       beforeEnergy: number | null;
       afterEnergy: number | null;
       userActivityId: number | null;
+      comments: UserActivityComment[] | null;
     }) => {
       const result = await api<{
         data: Checkin;
@@ -101,6 +104,7 @@ export const usePostUserActivityListItemReview = () => {
           beforeEnergy,
           afterEnergy,
           userActivityId,
+          comments,
         }),
       });
 

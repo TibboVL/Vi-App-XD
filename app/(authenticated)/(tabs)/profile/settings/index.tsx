@@ -12,7 +12,14 @@ import {
   ThumbsUp,
   User,
 } from "phosphor-react-native";
-import { View, Text, StyleSheet, Image, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Pressable,
+  TouchableNativeFeedback,
+} from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -49,8 +56,9 @@ export default function SettingsScreen() {
             justifyContent: "center",
             alignItems: "center",
             flexDirection: "column",
-            paddingInline: 32,
-            paddingBlock: 32,
+            paddingInline: 16,
+            paddingBlock: 32 + 16,
+            gap: 4,
           }}
         >
           <SettingsTile
@@ -86,29 +94,38 @@ interface settingsTilePorps {
 }
 const SettingsTile = ({ title, icon: Icon, onPress }: settingsTilePorps) => {
   return (
-    <Pressable
-      onPress={onPress}
+    <View
       style={{
-        width: "100%",
-        flexDirection: "row",
-        gap: 8,
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingBlock: 16,
+        borderRadius: 16,
+        overflow: "hidden",
       }}
     >
-      <View
-        style={{
-          flexDirection: "row",
-          gap: 8,
-          alignItems: "center",
-        }}
-      >
-        <Icon />
-        <Text style={textStyles.bodyLarge}>{title}</Text>
-      </View>
-      <CaretRight />
-    </Pressable>
+      <TouchableNativeFeedback onPress={onPress}>
+        <View
+          style={{
+            width: "100%",
+            flexDirection: "row",
+            gap: 8,
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingBlock: 16,
+            paddingInline: 16,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 8,
+              alignItems: "center",
+            }}
+          >
+            <Icon />
+            <Text style={textStyles.bodyLarge}>{title}</Text>
+          </View>
+          <CaretRight />
+        </View>
+      </TouchableNativeFeedback>
+    </View>
   );
 };
 
